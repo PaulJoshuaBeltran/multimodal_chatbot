@@ -1,0 +1,56 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/app/generated/prisma"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("MONGODB_URI")
+}
+
+model User {
+  id            String         @id @default(auto()) @map("_id") @db.ObjectId
+  email         String         @unique
+  name          String?
+  password      String
+  conversations Conversation[]
+  models        AiModel[]
+  createdAt     DateTime       @default(now())
+}
+
+model Conversation {
+  id        String    @id @default(auto()) @map("_id") @db.ObjectId
+  title     String
+  user      User      @relation(fields: [userId], references: [id])
+  userId    String    @db.ObjectId
+  messages  Message[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime? @updatedAt
+}
+
+model Message {
+  id             String       @id @default(auto()) @map("_id") @db.ObjectId
+  conversation   Conversation @relation(fields: [conversationId], references: [id])
+  conversationId String       @db.ObjectId
+  role           String
+  content        String
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime?    @updatedAt
+}
+
+model AiModel {
+  id          String    @id @default(auto()) @map("_id") @db.ObjectId
+  name        String
+  modelId     String
+  description String?
+  user        User      @relation(fields: [userId], references: [id])
+  userId      String    @db.ObjectId
+  isValid     Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime? @updatedAt
+}
