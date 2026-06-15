@@ -16,7 +16,6 @@ export default function MessageList({
   onEdit?: (id: string, content: string) => void
   onDelete?: (id: string) => void
 }) {
-  // Index of the last assistant message (the one currently streaming)
   const lastAssistantIndex = messages.reduce(
     (last, m, i) => (m.role === 'assistant' ? i : last),
     -1
@@ -24,24 +23,27 @@ export default function MessageList({
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 8, padding: 8 }}>
-      {messages.map((m: Message, index: number) => (
-        <MessageBubble
-          key={m.id ?? m.createdAt ?? index}
-          role={m.role}
-          content={m.content}
-          // Only the last assistant bubble gets the streaming indicator
-          streaming={streaming && index === lastAssistantIndex}
-          onEdit={
-            m.id && onEdit
-              ? () => {
-                  const result = prompt('Edit message', m.content)
-                  if (result !== null) onEdit(m.id!, result || m.content)
-                }
-              : undefined
-          }
-          onDelete={m.id && onDelete ? () => onDelete(m.id!) : undefined}
-        />
-      ))}
+      {messages.map((m: Message, index: number) => {
+        const isUser = m.role === 'user'
+        return (
+          <MessageBubble
+            key={m.id ?? m.createdAt ?? index}
+            id={m.id}
+            role={m.role as 'user' | 'assistant'}
+            content={m.content}
+            streaming={streaming && index === lastAssistantIndex}
+            onEdit={
+              isUser && m.id && onEdit
+                ? () => {
+                    const result = prompt('Edit message', m.content)
+                    if (result !== null) onEdit(m.id!, result || m.content)
+                  }
+                : undefined
+            }
+            onDelete={isUser && m.id && onDelete ? () => onDelete(m.id!) : undefined}
+          />
+        )
+      })}
     </div>
   )
 }

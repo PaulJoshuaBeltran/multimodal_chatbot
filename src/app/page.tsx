@@ -1,4 +1,5 @@
 // src/app/page.tsx
+// src/app/page.tsx
 'use client'
 
 import React, { useCallback, useEffect, useReducer, useRef, useState } from 'react'
@@ -6,7 +7,26 @@ import ConversationList from '@/src/components/ConversationList'
 import MessageList from '@/src/components/MessageList'
 import ModelSelect from '@/src/components/ModelSelect'
 import ModelManager from '@/src/components/ModelManager'
+import SearchDialog from '@/src/components/SearchDialog'
 import type { Conversation, Message as ChatMessage, AiModel } from '@/src/types/msg_conversation_model'
+
+// Helper function to decode JWT claims client-side securely
+function getUserNameFromToken(token: string | null): string {
+  if (!token) return 'Account'
+  try {
+    const base64Url = token.split('.')[1]
+    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/')
+    const jsonPayload = decodeURIComponent(
+      window.atob(base64)
+        .split('')
+        .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+        .join('')
+    )
+    return JSON.parse(jsonPayload).name || 'User Account'
+  } catch {
+    return 'User Account'
+  }
+}
 
 export default function Page() {
   const [auth, dispatch] = useReducer(
@@ -16,7 +36,7 @@ export default function Page() {
 
   useEffect(() => {
     const stored = localStorage.getItem('token')
-    dispatch({ token: stored, ready: true })  // dispatch is exempt from the rule
+    dispatch({ token: stored, ready: true })
   }, [])
 
   const [conversations, setConversations] = useState<Conversation[]>([])
@@ -29,6 +49,10 @@ export default function Page() {
   const [selectedModel, setSelectedModel] = useState<AiModel | null>(null)
   const [modelsRefresh, setModelsRefresh] = useState(0)
   const [showModelManager, setShowModelManager] = useState(false)
+  const [isSearchOpen, setIsSearchOpen] = useState(false)
+  
+  // Controls state for the bottom-left settings popover menu
+  const [profileMenuOpen, setProfileMenuOpen] = useState(false)
 
   const fetchConversations = useCallback(async (q?: string) => {
     const url = q ? `/api/conversations?q=${encodeURIComponent(q)}` : '/api/conversations'
@@ -53,6 +77,26 @@ export default function Page() {
     if (res.ok) setMessages(await res.json())
   }
 
+  async function handleSelectSearchResult(conversationId: string, messageId?: string) {
+    setSelectedConv(conversationId)
+    const res = await fetch(`/api/messages?conversationId=${conversationId}`, { 
+      headers: auth.token ? { Authorization: `Bearer ${auth.token}` } : undefined 
+    })
+    if (res.ok) {
+      setMessages(await res.json())
+      if (messageId) {
+        setTimeout(() => {
+          const element = document.getElementById(`msg-${messageId}`)
+          if (element) {
+            element.scrollIntoView({ behavior: 'smooth', block: 'center' })
+            element.style.outline = '2px solid #ffeb3b'
+            setTimeout(() => { element.style.outline = 'none' }, 2000)
+          }
+        }, 300)
+      }
+    }
+  }
+
   async function send() {
     if (!input.trim() || streaming) return
     if (!selectedConv) return alert('Select a conversation first')
@@ -61,19 +105,20 @@ export default function Page() {
     setMessages(prev => [...prev, userMsg])
     setInput('')
 
-    // save user message
     {
       const headers: Record<string,string> = { 'Content-Type': 'application/json' }
       if (auth.token) headers.Authorization = `Bearer ${auth.token}`
-      await fetch('/api/messages', { method: 'POST', headers, body: JSON.stringify({ conversationId: selectedConv, role: 'user', content: userMsg.content }) })
+      const response = await fetch('/api/messages', { method: 'POST', headers, body: JSON.stringify({ conversationId: selectedConv, role: 'user', content: userMsg.content }) })
+      if (response.ok) {
+        const savedMsg = await response.json()
+        setMessages(prev => prev.map(m => m === userMsg ? savedMsg : m))
+      }
     }
 
-    // stream assistant reply from ollama
     setStreaming(true)
     abortRef.current = new AbortController()
 
     const context = [...messages, userMsg].map(m => ({ role: m.role, content: m.content }))
-
     const payload = { messages: context } as { messages: { role: 'user' | 'assistant'; content: string }[]; model?: string }
     if (selectedModel?.modelId) payload.model = selectedModel.modelId
 
@@ -82,7 +127,6 @@ export default function Page() {
     const dec = new TextDecoder()
     let reply = ''
 
-    // optimistic assistant message
     setMessages(prev => [...prev, { role: 'assistant', content: '' }])
 
     try {
@@ -97,15 +141,21 @@ export default function Page() {
         })
       }
     } catch (e) {
-      // aborted
       console.log(`Stream stopped: ${e}`)
     } finally {
       setStreaming(false)
-      // persist assistant message
       {
         const headers: Record<string,string> = { 'Content-Type': 'application/json' }
         if (auth.token) headers.Authorization = `Bearer ${auth.token}`
-        await fetch('/api/messages', { method: 'POST', headers, body: JSON.stringify({ conversationId: selectedConv, role: 'assistant', content: reply }) })
+        const response = await fetch('/api/messages', { method: 'POST', headers, body: JSON.stringify({ conversationId: selectedConv, role: 'assistant', content: reply }) })
+        if (response.ok) {
+          const savedAssistantMsg = await response.json()
+          setMessages(prev => {
+            const copy = [...prev]
+            copy[copy.length - 1] = savedAssistantMsg
+            return copy
+          })
+        }
       }
     }
   }
@@ -125,30 +175,42 @@ export default function Page() {
     dispatch({ token: null, ready: true })
     setConversations([])
     setMessages([])
+    setProfileMenuOpen(false)
+  }
+
+  async function handleDeactivate() {
+    if (!confirm('CRITICAL WARNING: Are you absolutely sure you want to deactivate your account? This will permanently wipe your profile, conversations, models, and messages. This action is irreversible.')) return
+    
+    const headers: Record<string, string> = { Authorization: `Bearer ${auth.token}` }
+    const res = await fetch('/api/auth/deactivate', { method: 'DELETE', headers })
+    
+    if (res.ok) {
+      alert('Your account has been successfully deactivated.')
+      handleLogout()
+    } else {
+      alert('Failed to process deactivation. Please try again.')
+    }
   }
 
   async function handleEditMessage(id: string, content: string) {
     const headers: Record<string, string> = { 'Content-Type': 'application/json' }
     if (auth.token) headers.Authorization = `Bearer ${auth.token}`
 
-    // 1. Persist the edit
     await fetch(`/api/messages/${id}`, {
       method: 'PATCH',
       headers,
       body: JSON.stringify({ content }),
     })
 
-    // 2. Find the edited message's index and truncate everything after it
     const editedIndex = messages.findIndex(m => m.id === id)
     if (editedIndex === -1) return
 
     const updatedMessages = messages
-      .slice(0, editedIndex + 1)          // keep up to & including edited msg
+      .slice(0, editedIndex + 1)
       .map(m => (m.id === id ? { ...m, content } : m))
 
     setMessages(updatedMessages)
 
-    // 3. Delete all subsequent messages from the DB
     const toDelete = messages.slice(editedIndex + 1).filter(m => m.id)
     await Promise.all(
       toDelete.map(m =>
@@ -159,7 +221,6 @@ export default function Page() {
       )
     )
 
-    // 4. Re-stream an assistant reply based on the updated context
     if (!selectedConv) return
     setStreaming(true)
     abortRef.current = new AbortController()
@@ -182,7 +243,6 @@ export default function Page() {
     const dec = new TextDecoder()
     let reply = ''
 
-    // Optimistic empty assistant bubble
     setMessages(prev => [...prev, { role: 'assistant', content: '' }])
 
     try {
@@ -200,7 +260,6 @@ export default function Page() {
       console.log(`Stream stopped: ${e}`)
     } finally {
       setStreaming(false)
-      // Persist the new assistant reply
       const saveHeaders: Record<string, string> = { 'Content-Type': 'application/json' }
       if (auth.token) saveHeaders.Authorization = `Bearer ${auth.token}`
       await fetch('/api/messages', {
@@ -213,15 +272,95 @@ export default function Page() {
 
   return (
     <div style={{ display: 'flex', gap: 16, height: '100vh', padding: 16 }}>
-      <aside style={{ width: 300 }}>
+      <aside style={{ width: 300, display: 'flex', flexDirection: 'column', height: '100%' }}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 12 }}>
           <ModelSelect token={auth.token} value={selectedModel?.id ?? null} onChange={m => setSelectedModel(m)} onManage={() => setShowModelManager(true)} refreshToken={modelsRefresh} />
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <h3>Conversations</h3>
-            {auth.token ? <button onClick={handleLogout}>Logout</button> : null}
+            <div style={{ display: 'flex', gap: 6 }}>
+              <button onClick={() => setIsSearchOpen(true)} style={{ padding: '2px 8px', fontSize: 13 }}>🔍 Search</button>
+            </div>
           </div>
         </div>
-        <ConversationList onSelect={loadMessages} onCreate={() => fetchConversations()} token={auth.token} conversations={conversations} />
+        
+        {/* Main conversation section body */}
+        <div style={{ flex: 1, overflowY: 'auto' }}>
+          <ConversationList 
+            selectedConvId={selectedConv}
+            onSelect={loadMessages} 
+            onCreate={() => fetchConversations()} 
+            onUpdate={() => fetchConversations()} 
+            token={auth.token} 
+            conversations={conversations} 
+          />
+        </div>
+
+        {/* New Account details panel locked directly to the Bottom Left */}
+        {auth.token && (
+          <div style={{
+            position: 'relative',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            padding: '12px 8px 0 8px',
+            marginTop: 12,
+            borderTop: '1px solid #e5e5e5'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, overflow: 'hidden', flex: 1 }}>
+              <div style={{
+                width: 28, height: 28, borderRadius: '50%', backgroundColor: '#1a1a1a',
+                color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontSize: 13, fontWeight: 'bold', flexShrink: 0
+              }}>
+                {getUserNameFromToken(auth.token).charAt(0).toUpperCase()}
+              </div>
+              <span style={{ fontSize: 14, fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                {getUserNameFromToken(auth.token)}
+              </span>
+            </div>
+
+            <button 
+              onClick={() => setProfileMenuOpen(!profileMenuOpen)}
+              style={{
+                background: 'none', border: 'none', fontSize: 16, cursor: 'pointer',
+                color: '#666', padding: '4px 8px', borderRadius: 4
+              }}
+            >
+              ⋮
+            </button>
+
+            {profileMenuOpen && (
+              <div 
+                onMouseLeave={() => setProfileMenuOpen(false)}
+                style={{
+                  position: 'absolute', bottom: '100%', left: 0, marginBottom: 8,
+                  backgroundColor: '#fff', border: '1px solid #ddd', borderRadius: 8,
+                  boxShadow: '0 -2px 10px rgba(0,0,0,0.1)', display: 'flex', flexDirection: 'column',
+                  minWidth: 140, overflow: 'hidden', zIndex: 10
+                }}
+              >
+                <button 
+                  onClick={handleLogout}
+                  style={{
+                    padding: '10px 12px', background: 'none', border: 'none', textAlign: 'left',
+                    fontSize: 13, cursor: 'pointer', color: '#333', borderBottom: '1px solid #eee'
+                  }}
+                >
+                  Logout
+                </button>
+                <button 
+                  onClick={handleDeactivate}
+                  style={{
+                    padding: '10px 12px', background: 'none', border: 'none', textAlign: 'left',
+                    fontSize: 13, cursor: 'pointer', color: '#dc3545', fontWeight: 500
+                  }}
+                >
+                  Deactivate Account
+                </button>
+              </div>
+            )}
+          </div>
+        )}
       </aside>
 
       <main style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
@@ -240,7 +379,7 @@ export default function Page() {
         </div>
 
         <div style={{ display: 'flex', gap: 8, paddingTop: 12, borderTop: '1px solid #e5e5e5' }}>
-          <input value={input} onChange={e => setInput(e.target.value)} onKeyDown={e => e.key === 'Enter' && !e.shiftKey && send()} placeholder="Message gemma4:e4b…" disabled={streaming} style={{ flex: 1, padding: '10px 14px', borderRadius: 10, border: '1px solid #ddd', fontSize: 15 }} />
+          <input value={input} onChange={e => setInput(e.target.value)} onKeyDown={e => e.key === 'Enter' && !e.shiftKey && send()} placeholder="Message..." disabled={streaming} style={{ flex: 1, padding: '10px 14px', borderRadius: 10, border: '1px solid #ddd', fontSize: 15 }} />
           {streaming ? <button onClick={stop} style={{ padding: '10px 18px' }}>Stop</button> : <button onClick={send} disabled={!input.trim()} style={{ padding: '10px 18px' }}>Send</button>}
         </div>
 
@@ -252,6 +391,13 @@ export default function Page() {
       </main>
 
       {showModelManager && <ModelManager token={auth.token} onClose={() => { setShowModelManager(false); setModelsRefresh(x => x + 1) }} onUpdated={() => setModelsRefresh(x => x + 1)} />}
+      
+      <SearchDialog 
+        isOpen={isSearchOpen} 
+        onClose={() => setIsSearchOpen(false)} 
+        token={auth.token} 
+        onSelectResult={handleSelectSearchResult} 
+      />
     </div>
   )
 }
@@ -266,7 +412,6 @@ function AuthBox({ onLogin }: { onLogin: (token: string) => void }) {
     e.preventDefault()
     const url = mode === 'login' ? '/api/auth/login' : '/api/auth/signup'
     const res = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(mode === 'login' ? { email, password } : { name, email, password }) })
-    alert(`Auth response: ${res.status}`)
     if (res.ok) {
       const data = await res.json()
       onLogin(data.token)

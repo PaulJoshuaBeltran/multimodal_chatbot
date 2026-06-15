@@ -1,35 +1,96 @@
 // src/components/MessageBubble.tsx
 'use client'
 
-import React from 'react'
+import React, { useState } from 'react'
 
-export default function MessageBubble({ role, content, streaming, onEdit, onDelete }:
+export default function MessageBubble({ role, id, content, streaming, onEdit, onDelete }:
   { role: 'user' | 'assistant';
+    id?: string;
     content: string;
     streaming?: boolean;
     onEdit?: () => void;
     onDelete?: () => void }) {
+  
+  const [menuOpen, setMenuOpen] = useState(false)
+  const isUser = role === 'user'
+
   return (
-    <div style={{
-      alignSelf: role === 'user' ? 'flex-end' : 'flex-start',
-      background: role === 'user' ? '#1a1a1a' : '#f1f1f1',
-      color: role === 'user' ? '#fff' : '#111',
-      padding: '10px 16px',
-      borderRadius: 16,
-      borderBottomRightRadius: role === 'user' ? 4 : 16,
-      borderBottomLeftRadius: role === 'assistant' ? 4 : 16,
-      maxWidth: '80%',
-      whiteSpace: 'pre-wrap',
-      lineHeight: 1.6,
-      fontSize: 15,
-      marginBottom: 8,
-    }}>
-      <div>{content}</div>
-      <div style={{ marginTop: 6, display: 'flex', gap: 8 }}>
-        {onEdit ? <button onClick={onEdit} style={{ fontSize: 12 }}>Edit</button> : null}
-        {onDelete ? <button onClick={onDelete} style={{ fontSize: 12 }}>Delete</button> : null}
-        {streaming ? <span style={{ marginLeft: 8, color: '#888' }}>• thinking…</span> : null}
+    <div 
+      id={id ? `msg-${id}` : undefined}
+      className="message-bubble-row"
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignSelf: isUser ? 'flex-end' : 'flex-start',
+        maxWidth: '80%',
+        position: 'relative',
+        marginBottom: 8,
+      }}
+    >
+      {/* Dynamic injection to reliably show 3 dots menu on hover regardless of when it's rendered */}
+      <style dangerouslySetInnerHTML={{__html: `
+        .message-bubble-row .settings-menu-trigger { opacity: 0; transition: opacity 0.15s ease-in-out; }
+        .message-bubble-row:hover .settings-menu-trigger { opacity: 1; }
+      `}} />
+
+      <div style={{
+        background: isUser ? '#1a1a1a' : '#f1f1f1',
+        color: isUser ? '#fff' : '#111',
+        padding: '10px 16px',
+        borderRadius: 16,
+        borderBottomRightRadius: isUser ? 4 : 16,
+        borderBottomLeftRadius: !isUser ? 4 : 16,
+        whiteSpace: 'pre-wrap',
+        lineHeight: 1.6,
+        fontSize: 15,
+        position: 'relative',
+      }}>
+        <div>{content}</div>
+
+        {/* 3-dots Menu settings wrapper: limited strictly to user role blocks */}
+        {isUser && (onEdit || onDelete) && (
+          <div className="settings-menu-trigger" style={{
+            position: 'absolute', top: '50%', left: '-34px', transform: 'translateY(-50%)', zIndex: 5
+          }}>
+            <button 
+              onClick={(e) => { e.stopPropagation(); setMenuOpen(!menuOpen); }}
+              style={{
+                background: '#fff', border: '1px solid #ddd', borderRadius: '50%',
+                width: 26, height: 26, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontSize: 14, fontWeight: 'bold', color: '#333', cursor: 'pointer', boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+              }}
+            >
+              ⋮
+            </button>
+
+            {menuOpen && (
+              <div 
+                onMouseLeave={() => setMenuOpen(false)}
+                style={{
+                  position: 'absolute', top: '100%', left: 0, backgroundColor: '#fff',
+                  border: '1px solid #ddd', borderRadius: 6, boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
+                  display: 'flex', flexDirection: 'column', minWidth: 80, overflow: 'hidden'
+                }}
+              >
+                {onEdit && (
+                  <button onClick={() => { setMenuOpen(false); onEdit(); }} style={{ padding: '6px 12px', background: 'none', border: 'none', textAlign: 'left', fontSize: 13, cursor: 'pointer', color: '#333' }}>
+                    Edit
+                  </button>
+                )}
+                {onDelete && (
+                  <button onClick={() => { setMenuOpen(false); onDelete(); }} style={{ padding: '6px 12px', background: 'none', border: 'none', textAlign: 'left', fontSize: 13, cursor: 'pointer', color: '#dc3545' }}>
+                    Delete
+                  </button>
+                )}
+              </div>
+            )}
+          </div>
+        )}
       </div>
+
+      {streaming && !isUser && (
+        <span style={{ marginTop: 4, marginLeft: 4, fontSize: 12, color: '#888' }}>• thinking…</span>
+      )}
     </div>
   )
 }
