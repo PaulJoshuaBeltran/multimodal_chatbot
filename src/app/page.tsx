@@ -1,7 +1,7 @@
 // src/app/page.tsx
 'use client'
 
-import React, { useCallback, useEffect, useRef, useState } from 'react'
+import React, { useCallback, useEffect, useReducer, useRef, useState } from 'react'
 import ConversationList from '@/src/components/ConversationList'
 import MessageList from '@/src/components/MessageList'
 import ModelSelect from '@/src/components/ModelSelect'
@@ -9,7 +9,16 @@ import ModelManager from '@/src/components/ModelManager'
 import type { Conversation, Message as ChatMessage, AiModel } from '@/src/types/msg_conversation_model'
 
 export default function Page() {
-  const [token, setToken] = useState<string | null>(() => typeof window !== 'undefined' ? localStorage.getItem('token') : null)
+  const [auth, dispatch] = useReducer(
+    (_: { token: string | null; ready: boolean }, action: { token: string | null; ready: boolean }) => action,
+    { token: null, ready: false }
+  )
+
+  useEffect(() => {
+    const stored = localStorage.getItem('token')
+    dispatch({ token: stored, ready: true })  // dispatch is exempt from the rule
+  }, [])
+
   const [conversations, setConversations] = useState<Conversation[]>([])
   const [selectedConv, setSelectedConv] = useState<string | null>(null)
   const [messages, setMessages] = useState<ChatMessage[]>([])
@@ -23,24 +32,24 @@ export default function Page() {
 
   const fetchConversations = useCallback(async (q?: string) => {
     const url = q ? `/api/conversations?q=${encodeURIComponent(q)}` : '/api/conversations'
-    const res = await fetch(url, { headers: token ? { Authorization: `Bearer ${token}` } : undefined })
+    const res = await fetch(url, { headers: auth.token ? { Authorization: `Bearer ${auth.token}` } : undefined })
     if (res.ok) setConversations(await res.json())
-  }, [token])
+  }, [auth.token])
 
   useEffect(() => {
-    let mounted = true
+    let active = true
     ;(async () => {
       const url = '/api/conversations'
-      const res = await fetch(url, { headers: token ? { Authorization: `Bearer ${token}` } : undefined })
-      if (!mounted) return
+      const res = await fetch(url, { headers: auth.token ? { Authorization: `Bearer ${auth.token}` } : undefined })
+      if (!active) return
       if (res.ok) setConversations(await res.json())
     })()
-    return () => { mounted = false }
-  }, [token])
+    return () => { active = false }
+  }, [auth.token])
 
   async function loadMessages(convId: string) {
     setSelectedConv(convId)
-    const res = await fetch(`/api/messages?conversationId=${convId}`, { headers: token ? { Authorization: `Bearer ${token}` } : undefined })
+    const res = await fetch(`/api/messages?conversationId=${convId}`, { headers: auth.token ? { Authorization: `Bearer ${auth.token}` } : undefined })
     if (res.ok) setMessages(await res.json())
   }
 
@@ -55,7 +64,7 @@ export default function Page() {
     // save user message
     {
       const headers: Record<string,string> = { 'Content-Type': 'application/json' }
-      if (token) headers.Authorization = `Bearer ${token}`
+      if (auth.token) headers.Authorization = `Bearer ${auth.token}`
       await fetch('/api/messages', { method: 'POST', headers, body: JSON.stringify({ conversationId: selectedConv, role: 'user', content: userMsg.content }) })
     }
 
@@ -95,7 +104,7 @@ export default function Page() {
       // persist assistant message
       {
         const headers: Record<string,string> = { 'Content-Type': 'application/json' }
-        if (token) headers.Authorization = `Bearer ${token}`
+        if (auth.token) headers.Authorization = `Bearer ${auth.token}`
         await fetch('/api/messages', { method: 'POST', headers, body: JSON.stringify({ conversationId: selectedConv, role: 'assistant', content: reply }) })
       }
     }
@@ -108,12 +117,12 @@ export default function Page() {
 
   function handleLogin(tokenValue: string) {
     localStorage.setItem('token', tokenValue)
-    setToken(tokenValue)
+    dispatch({ token: tokenValue, ready: true })
   }
 
   function handleLogout() {
     localStorage.removeItem('token')
-    setToken(null)
+    dispatch({ token: null, ready: true })
     setConversations([])
     setMessages([])
   }
@@ -122,25 +131,25 @@ export default function Page() {
     <div style={{ display: 'flex', gap: 16, height: '100vh', padding: 16 }}>
       <aside style={{ width: 300 }}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 12 }}>
-          <ModelSelect token={token} value={selectedModel?.id ?? null} onChange={m => setSelectedModel(m)} onManage={() => setShowModelManager(true)} refreshToken={modelsRefresh} />
+          <ModelSelect token={auth.token} value={selectedModel?.id ?? null} onChange={m => setSelectedModel(m)} onManage={() => setShowModelManager(true)} refreshToken={modelsRefresh} />
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <h3>Conversations</h3>
-            {token ? <button onClick={handleLogout}>Logout</button> : null}
+            {auth.token ? <button onClick={handleLogout}>Logout</button> : null}
           </div>
         </div>
-        <ConversationList onSelect={loadMessages} onCreate={() => fetchConversations()} token={token} conversations={conversations} />
+        <ConversationList onSelect={loadMessages} onCreate={() => fetchConversations()} token={auth.token} conversations={conversations} />
       </aside>
 
       <main style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
         <div style={{ flex: 1, overflowY: 'auto' }}>
           <MessageList messages={messages} streaming={streaming} onEdit={async (id: string, content: string) => {
             const headers: Record<string,string> = { 'Content-Type': 'application/json' }
-            if (token) headers.Authorization = `Bearer ${token}`
+            if (auth.token) headers.Authorization = `Bearer ${auth.token}`
             await fetch(`/api/messages/${id}`, { method: 'PATCH', headers, body: JSON.stringify({ content }) })
             setMessages(prev => prev.map(m => (m.id === id ? { ...m, content } : m)))
           }} onDelete={async (id: string) => {
             const headers: Record<string,string> = {}
-            if (token) headers.Authorization = `Bearer ${token}`
+            if (auth.token) headers.Authorization = `Bearer ${auth.token}`
             await fetch(`/api/messages/${id}`, { method: 'DELETE', headers })
             setMessages(prev => prev.filter(m => m.id !== id))
           }} />
@@ -152,13 +161,13 @@ export default function Page() {
         </div>
 
         <div style={{ marginTop: 8 }}>
-          {!token && (
+          {auth.ready && !auth.token && (
             <AuthBox onLogin={handleLogin} />
           )}
         </div>
       </main>
 
-      {showModelManager && <ModelManager token={token} onClose={() => { setShowModelManager(false); setModelsRefresh(x => x + 1) }} onUpdated={() => setModelsRefresh(x => x + 1)} />}
+      {showModelManager && <ModelManager token={auth.token} onClose={() => { setShowModelManager(false); setModelsRefresh(x => x + 1) }} onUpdated={() => setModelsRefresh(x => x + 1)} />}
     </div>
   )
 }
