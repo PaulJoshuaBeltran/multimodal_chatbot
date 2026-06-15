@@ -127,6 +127,90 @@ export default function Page() {
     setMessages([])
   }
 
+  async function handleEditMessage(id: string, content: string) {
+    const headers: Record<string, string> = { 'Content-Type': 'application/json' }
+    if (auth.token) headers.Authorization = `Bearer ${auth.token}`
+
+    // 1. Persist the edit
+    await fetch(`/api/messages/${id}`, {
+      method: 'PATCH',
+      headers,
+      body: JSON.stringify({ content }),
+    })
+
+    // 2. Find the edited message's index and truncate everything after it
+    const editedIndex = messages.findIndex(m => m.id === id)
+    if (editedIndex === -1) return
+
+    const updatedMessages = messages
+      .slice(0, editedIndex + 1)          // keep up to & including edited msg
+      .map(m => (m.id === id ? { ...m, content } : m))
+
+    setMessages(updatedMessages)
+
+    // 3. Delete all subsequent messages from the DB
+    const toDelete = messages.slice(editedIndex + 1).filter(m => m.id)
+    await Promise.all(
+      toDelete.map(m =>
+        fetch(`/api/messages/${m.id}`, {
+          method: 'DELETE',
+          headers: auth.token ? { Authorization: `Bearer ${auth.token}` } : undefined,
+        })
+      )
+    )
+
+    // 4. Re-stream an assistant reply based on the updated context
+    if (!selectedConv) return
+    setStreaming(true)
+    abortRef.current = new AbortController()
+
+    const context = updatedMessages.map(m => ({ role: m.role, content: m.content }))
+    const payload = { messages: context } as {
+      messages: { role: 'user' | 'assistant'; content: string }[]
+      model?: string
+    }
+    if (selectedModel?.modelId) payload.model = selectedModel.modelId
+
+    const res = await fetch('/api/chat/ollama', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+      signal: abortRef.current.signal,
+    })
+
+    const reader = res.body!.getReader()
+    const dec = new TextDecoder()
+    let reply = ''
+
+    // Optimistic empty assistant bubble
+    setMessages(prev => [...prev, { role: 'assistant', content: '' }])
+
+    try {
+      while (true) {
+        const { done, value } = await reader.read()
+        if (done) break
+        reply += dec.decode(value)
+        setMessages(prev => {
+          const copy = [...prev]
+          copy[copy.length - 1] = { role: 'assistant', content: reply }
+          return copy
+        })
+      }
+    } catch (e) {
+      console.log(`Stream stopped: ${e}`)
+    } finally {
+      setStreaming(false)
+      // Persist the new assistant reply
+      const saveHeaders: Record<string, string> = { 'Content-Type': 'application/json' }
+      if (auth.token) saveHeaders.Authorization = `Bearer ${auth.token}`
+      await fetch('/api/messages', {
+        method: 'POST',
+        headers: saveHeaders,
+        body: JSON.stringify({ conversationId: selectedConv, role: 'assistant', content: reply }),
+      })
+    }
+  }
+
   return (
     <div style={{ display: 'flex', gap: 16, height: '100vh', padding: 16 }}>
       <aside style={{ width: 300 }}>
@@ -142,17 +226,17 @@ export default function Page() {
 
       <main style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
         <div style={{ flex: 1, overflowY: 'auto' }}>
-          <MessageList messages={messages} streaming={streaming} onEdit={async (id: string, content: string) => {
-            const headers: Record<string,string> = { 'Content-Type': 'application/json' }
-            if (auth.token) headers.Authorization = `Bearer ${auth.token}`
-            await fetch(`/api/messages/${id}`, { method: 'PATCH', headers, body: JSON.stringify({ content }) })
-            setMessages(prev => prev.map(m => (m.id === id ? { ...m, content } : m)))
-          }} onDelete={async (id: string) => {
-            const headers: Record<string,string> = {}
-            if (auth.token) headers.Authorization = `Bearer ${auth.token}`
-            await fetch(`/api/messages/${id}`, { method: 'DELETE', headers })
-            setMessages(prev => prev.filter(m => m.id !== id))
-          }} />
+          <MessageList
+            messages={messages}
+            streaming={streaming}
+            onEdit={handleEditMessage}
+            onDelete={async (id: string) => {
+              const headers: Record<string,string> = {}
+              if (auth.token) headers.Authorization = `Bearer ${auth.token}`
+              await fetch(`/api/messages/${id}`, { method: 'DELETE', headers })
+              setMessages(prev => prev.filter(m => m.id !== id))
+            }}
+          />
         </div>
 
         <div style={{ display: 'flex', gap: 8, paddingTop: 12, borderTop: '1px solid #e5e5e5' }}>
