@@ -3,7 +3,12 @@
 
 import React from 'react'
 
-export default function MessageBubble({ role, content, streaming, onEdit, onDelete }: { role: 'user' | 'assistant'; content: string; streaming?: boolean; onEdit?: () => void; onDelete?: () => void }) {
+export default function MessageBubble({ role, content, streaming, onEdit, onDelete }:
+  { role: 'user' | 'assistant';
+    content: string;
+    streaming?: boolean;
+    onEdit?: () => void;
+    onDelete?: () => void }) {
   return (
     <div style={{
       alignSelf: role === 'user' ? 'flex-end' : 'flex-start',
