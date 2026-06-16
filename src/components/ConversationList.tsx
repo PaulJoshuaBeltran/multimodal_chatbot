@@ -60,7 +60,12 @@ export default function ConversationList({
   return (
     <div>
       <div style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
-        <input value={title} onChange={e => setTitle(e.target.value)} placeholder="New conversation title" style={{ flex: 1 }} />
+        <input
+          value={title}
+          onChange={e => setTitle(e.target.value)}
+          placeholder="New conversation title"
+          style={{ flex: 1 }}
+        />
         <button onClick={create}>New</button>
       </div>
 
@@ -73,25 +78,57 @@ export default function ConversationList({
             <div 
               key={c.id} 
               style={{
-                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                padding: '6px 8px', borderRadius: 6, border: '1px solid #eee',
-                backgroundColor: isSelected ? '#f5f5f5' : 'transparent'
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                padding: '6px 8px',
+                borderRadius: 6,
+                border: '1px solid #ffffff',
+                backgroundColor: isSelected ? '#ffffff' : '#000000',
+                color: isSelected ? '#000000' : '#ffffff'
               }}
             >
               {isEditing ? (
                 <div style={{ display: 'flex', gap: 4, flex: 1 }}>
-                  <input value={editTitle} onChange={e => setEditTitle(e.target.value)} style={{ flex: 1 }} autoFocus />
-                  <button onClick={() => renameConversation(c.id)} style={{ fontSize: 11 }}>Save</button>
-                  <button onClick={() => setEditingId(null)} style={{ fontSize: 11 }}>X</button>
+                  <input
+                    value={editTitle}
+                    onChange={e => setEditTitle(e.target.value)}
+                    style={{ flex: 1 }}
+                    autoFocus 
+                  />
+                  <button
+                    onClick={() => renameConversation(c.id)}
+                    style={{ fontSize: 11 }}>Save
+                  </button>
+                  <button
+                    onClick={() => setEditingId(null)}
+                    style={{ fontSize: 11 }}>X
+                  </button>
                 </div>
               ) : (
                 <>
-                  <span onClick={() => onSelect(c.id)} style={{ cursor: 'pointer', flex: 1, textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap', fontSize: 14 }}>
+                  <span
+                    onClick={() => onSelect(c.id)}
+                    style={{
+                      cursor: 'pointer',
+                      flex: 1,
+                      textOverflow: 'ellipsis',
+                      overflow: 'hidden',
+                      whiteSpace: 'nowrap',
+                      fontSize: 14 }}>
                     {c.title}
                   </span>
                   <div style={{ display: 'flex', gap: 2 }}>
-                    <button onClick={() => { setEditingId(c.id); setEditTitle(c.title); }} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 12 }} title="Rename">✏️</button>
-                    <button onClick={(e) => deleteConversation(c.id, e)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 12 }} title="Delete">🗑️</button>
+                    <button
+                      onClick={() => { setEditingId(c.id); setEditTitle(c.title); }}
+                      style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 12 }}
+                      title="Rename">✏️
+                    </button>
+                    <button
+                      onClick={(e) => deleteConversation(c.id, e)}
+                      style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 12 }}
+                      title="Delete">🗑️
+                    </button>
                   </div>
                 </>
               )}
