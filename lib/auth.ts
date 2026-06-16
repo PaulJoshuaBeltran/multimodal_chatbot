@@ -10,7 +10,8 @@ export async function verifyPassword(password: string, hash: string) {
   return bcrypt.compare(password, hash)
 }
 
-export function signToken(payload: { userId: string }) {
+// 1. Update the payload type here to include name
+export function signToken(payload: { userId: string; name?: string | null }) {
   const secret = process.env.JWT_SECRET || 'dev-secret'
   return jwt.sign(payload, secret, { expiresIn: '7d' })
 }
@@ -28,11 +29,12 @@ export function getAuthToken(req: Request): string | null {
   try { return new URL(req.url).searchParams.get('token') } catch { return null }
 }
 
+// 2. Update the type assertion here as well
 export function verifyToken(token?: string) {
   if (!token) return null
   try {
     const secret = process.env.JWT_SECRET || 'dev-secret'
-    return jwt.verify(token, secret) as { userId: string }
+    return jwt.verify(token, secret) as { userId: string; name?: string | null }
   } catch (err) {
     console.log('Token verification failed:', err)
     return null
