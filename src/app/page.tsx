@@ -7,6 +7,7 @@ import MessageList from '@/src/components/MessageList'
 import ModelSelect from '@/src/components/ModelSelect'
 import ModelManager from '@/src/components/ModelManager'
 import SearchDialog from '@/src/components/SearchDialog'
+import AuthBox from '@/src/components/AuthBox' // Added Import Here
 import type { Conversation, Message as ChatMessage, AiModel } from '@/src/types/msg_conversation_model'
 
 // ── shared mini design tokens ─────────────────────────────────────────────────
@@ -14,7 +15,7 @@ const colors = {
   bg: '#000',
   text: '#fff',
   muted: '#888',
-  border: '#222', // Subtle separator lines
+  border: '#222', 
   hover: '#111',
 }
 
@@ -127,7 +128,6 @@ export default function Page() {
     if (!input.trim() || streaming) return
     if (!selectedConv) return alert('Select a conversation first')
     
-    // Model Selection Validation
     if (!selectedModel?.modelId) {
       alert('Please add or select an AI model first.')
       setShowModelManager(true)
@@ -162,19 +162,26 @@ export default function Page() {
     }
     payload.model = selectedModel.modelId
 
-    const res = await fetch('/api/chat/ollama', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
-      signal: abortRef.current.signal,
-    })
-    const reader = res.body!.getReader()
-    const dec = new TextDecoder()
     let reply = ''
 
-    setMessages((prev) => [...prev, { role: 'assistant', content: '' }])
-
     try {
+      const res = await fetch('/api/chat/ollama', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+        signal: abortRef.current.signal,
+      })
+
+      if (!res.ok) {
+        const errText = await res.text()
+        throw new Error(errText || `HTTP status ${res.status}`)
+      }
+
+      const reader = res.body!.getReader()
+      const dec = new TextDecoder()
+
+      setMessages((prev) => [...prev, { role: 'assistant', content: '' }])
+
       while (true) {
         const { done, value } = await reader.read()
         if (done) break
@@ -185,24 +192,41 @@ export default function Page() {
           return copy
         })
       }
-    } catch (e) {
-      console.log(`Stream stopped: ${e}`)
-    } finally {
-      setStreaming(false)
-      const headers: Record<string, string> = { 'Content-Type': 'application/json' }
-      if (auth.token) headers.Authorization = `Bearer ${auth.token}`
-      const response = await fetch('/api/messages', {
-        method: 'POST',
-        headers,
-        body: JSON.stringify({ conversationId: selectedConv, role: 'assistant', content: reply }),
-      })
-      if (response.ok) {
-        const savedAssistantMsg = await response.json()
+    } catch (e: unknown) {
+      const err = e as Error
+      if (err.name === 'AbortError') {
+        console.log('Stream stopped by user')
+      } else {
+        reply = `Error connecting to model: ${err.message}`
         setMessages((prev) => {
           const copy = [...prev]
-          copy[copy.length - 1] = savedAssistantMsg
+          // If we already inserted an empty assistant message, overwrite it. Otherwise, add it.
+          if (copy.length > 0 && copy[copy.length - 1].role === 'assistant' && copy[copy.length - 1].content === '') {
+            copy[copy.length - 1] = { role: 'assistant', content: reply }
+          } else {
+            copy.push({ role: 'assistant', content: reply })
+          }
           return copy
         })
+      }
+    } finally {
+      setStreaming(false)
+      if (reply) {
+        const headers: Record<string, string> = { 'Content-Type': 'application/json' }
+        if (auth.token) headers.Authorization = `Bearer ${auth.token}`
+        const response = await fetch('/api/messages', {
+          method: 'POST',
+          headers,
+          body: JSON.stringify({ conversationId: selectedConv, role: 'assistant', content: reply }),
+        })
+        if (response.ok) {
+          const savedAssistantMsg = await response.json()
+          setMessages((prev) => {
+            const copy = [...prev]
+            copy[copy.length - 1] = savedAssistantMsg
+            return copy
+          })
+        }
       }
     }
   }
@@ -284,20 +308,26 @@ export default function Page() {
     }
     payload.model = selectedModel.modelId
 
-    const res = await fetch('/api/chat/ollama', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
-      signal: abortRef.current.signal,
-    })
-
-    const reader = res.body!.getReader()
-    const dec = new TextDecoder()
     let reply = ''
 
-    setMessages((prev) => [...prev, { role: 'assistant', content: '' }])
-
     try {
+      const res = await fetch('/api/chat/ollama', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+        signal: abortRef.current.signal,
+      })
+
+      if (!res.ok) {
+        const errText = await res.text()
+        throw new Error(errText || `HTTP status ${res.status}`)
+      }
+
+      const reader = res.body!.getReader()
+      const dec = new TextDecoder()
+
+      setMessages((prev) => [...prev, { role: 'assistant', content: '' }])
+
       while (true) {
         const { done, value } = await reader.read()
         if (done) break
@@ -308,17 +338,33 @@ export default function Page() {
           return copy
         })
       }
-    } catch (e) {
-      console.log(`Stream stopped: ${e}`)
+    } catch (e: unknown) {
+      const err = e as Error
+      if (err.name === 'AbortError') {
+        console.log('Stream stopped by user')
+      } else {
+        reply = `Error connecting to model: ${err.message}`
+        setMessages((prev) => {
+          const copy = [...prev]
+          if (copy.length > 0 && copy[copy.length - 1].role === 'assistant' && copy[copy.length - 1].content === '') {
+            copy[copy.length - 1] = { role: 'assistant', content: reply }
+          } else {
+            copy.push({ role: 'assistant', content: reply })
+          }
+          return copy
+        })
+      }
     } finally {
       setStreaming(false)
-      const saveHeaders: Record<string, string> = { 'Content-Type': 'application/json' }
-      if (auth.token) saveHeaders.Authorization = `Bearer ${auth.token}`
-      await fetch('/api/messages', {
-        method: 'POST',
-        headers: saveHeaders,
-        body: JSON.stringify({ conversationId: selectedConv, role: 'assistant', content: reply }),
-      })
+      if (reply) {
+        const saveHeaders: Record<string, string> = { 'Content-Type': 'application/json' }
+        if (auth.token) saveHeaders.Authorization = `Bearer ${auth.token}`
+        await fetch('/api/messages', {
+          method: 'POST',
+          headers: saveHeaders,
+          body: JSON.stringify({ conversationId: selectedConv, role: 'assistant', content: reply }),
+        })
+      }
     }
   }
 
@@ -334,7 +380,6 @@ export default function Page() {
         boxSizing: 'border-box',
       }}
     >
-      {/* Dynamic styles to ensure inputs/buttons have black background and white hover border */}
       <style dangerouslySetInnerHTML={{__html: `
         .hover-ui {
           background-color: #000;
@@ -385,7 +430,6 @@ export default function Page() {
           </div>
         </div>
 
-        {/* Conversation list */}
         <div style={{ flex: 1, overflowY: 'auto' }}>
           <ConversationList
             selectedConvId={selectedConv}
@@ -397,7 +441,6 @@ export default function Page() {
           />
         </div>
 
-        {/* Profile strip */}
         {auth.token && (
           <div
             style={{
@@ -601,91 +644,5 @@ export default function Page() {
         onSelectResult={handleSelectSearchResult}
       />
     </div>
-  )
-}
-
-// ── Auth box ──────────────────────────────────────────────────────────────────
-function AuthBox({ onLogin }: { onLogin: (token: string) => void }) {
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [name, setName] = useState('')
-  const [mode, setMode] = useState<'login' | 'signup'>('login')
-
-  const inputStyle: React.CSSProperties = {
-    padding: '8px 10px',
-    borderRadius: 6,
-    fontSize: 13,
-  }
-
-  async function submit(e: React.FormEvent) {
-    e.preventDefault()
-    const url = mode === 'login' ? '/api/auth/login' : '/api/auth/signup'
-    const res = await fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(
-        mode === 'login' ? { email, password } : { name, email, password }
-      ),
-    })
-    if (res.ok) {
-      const data = await res.json()
-      onLogin(data.token)
-    } else {
-      alert('Authentication failed')
-    }
-  }
-
-  return (
-    <form onSubmit={submit} style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
-      {mode === 'signup' && (
-        <input
-          className="hover-ui"
-          placeholder="Name"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          style={inputStyle}
-        />
-      )}
-      <input
-        className="hover-ui"
-        placeholder="Email"
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
-        style={inputStyle}
-      />
-      <input
-        className="hover-ui"
-        placeholder="Password"
-        type="password"
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
-        style={inputStyle}
-      />
-      <button
-        className="hover-ui"
-        type="submit"
-        style={{
-          padding: '8px 14px',
-          fontSize: 13,
-          borderRadius: 6,
-          cursor: 'pointer',
-        }}
-      >
-        {mode === 'login' ? 'Login' : 'Sign up'}
-      </button>
-      <button
-        className="hover-ui"
-        type="button"
-        onClick={() => setMode((m) => (m === 'login' ? 'signup' : 'login'))}
-        style={{
-          padding: '8px 14px',
-          fontSize: 13,
-          borderRadius: 6,
-          cursor: 'pointer',
-        }}
-      >
-        {mode === 'login' ? 'Create account' : 'Have an account?'}
-      </button>
-    </form>
   )
 }

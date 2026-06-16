@@ -17,7 +17,6 @@ export async function POST(req: Request) {
   const hashed = await hashPassword(password);
   const user = await prisma.user.create({ data: { name, email, password: hashed } });
   
-  // CHANGED: Added name to the token payload
   const token = signToken({ userId: user.id, name: user.name });
   
   return new Response(JSON.stringify({ token, user: { id: user.id, name: user.name, email: user.email } }),
