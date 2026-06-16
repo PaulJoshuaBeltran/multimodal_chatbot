@@ -1,3 +1,4 @@
+// src/app/api/search/route.ts
 import { prisma } from '@/lib/prisma'
 import { verifyToken, getAuthToken } from '@/lib/auth'
 

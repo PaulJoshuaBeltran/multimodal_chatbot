@@ -3,16 +3,44 @@
 
 import React, { useState } from 'react'
 
-export default function MessageBubble({ role, id, content, streaming, onEdit, onDelete }:
+export default function MessageBubble({ role, id, content, streaming, onEdit, onDelete, highlightQuery }:
   { role: 'user' | 'assistant';
     id?: string;
     content: string;
     streaming?: boolean;
     onEdit?: () => void;
-    onDelete?: () => void }) {
+    onDelete?: () => void;
+    highlightQuery?: string }) {
   
   const [menuOpen, setMenuOpen] = useState(false)
   const isUser = role === 'user'
+
+  // Helper utility to safely inject highlight markings on matched live search text
+  function highlightLiveText(text: string, keyword?: string) {
+    if (!keyword || !keyword.trim()) return text
+    const escapedKeyword = keyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+    const parts = text.split(new RegExp(`(${escapedKeyword})`, 'gi'))
+    return (
+      <>
+        {parts.map((part, i) =>
+          part.toLowerCase() === keyword.toLowerCase() ? (
+            <mark
+              key={i}
+              style={{
+                backgroundColor: '#ffeb3b',
+                padding: '0 2px',
+                borderRadius: 2,
+                color: '#000',
+              }}>
+              {part}
+            </mark>
+          ) : (
+            part
+          )
+        )}
+      </>
+    )
+  }
 
   return (
     <div 
@@ -27,7 +55,6 @@ export default function MessageBubble({ role, id, content, streaming, onEdit, on
         marginBottom: 8,
       }}
     >
-      {/* Dynamic injection to reliably show 3 dots menu on hover regardless of when it's rendered */}
       <style dangerouslySetInnerHTML={{__html: `
         .message-bubble-row .settings-menu-trigger { opacity: 0; transition: opacity 0.15s ease-in-out; }
         .message-bubble-row:hover .settings-menu-trigger { opacity: 1; }
@@ -45,9 +72,9 @@ export default function MessageBubble({ role, id, content, streaming, onEdit, on
         fontSize: 15,
         position: 'relative',
       }}>
-        <div>{content}</div>
+        {/* FIXED: Highlights matching search text inline within the chat stream bubble */}
+        <div>{highlightLiveText(content, highlightQuery)}</div>
 
-        {/* 3-dots Menu settings wrapper: limited strictly to user role blocks */}
         {isUser && (onEdit || onDelete) && (
           <div className="settings-menu-trigger" style={{
             position: 'absolute', top: '50%', left: '-34px', transform: 'translateY(-50%)', zIndex: 5

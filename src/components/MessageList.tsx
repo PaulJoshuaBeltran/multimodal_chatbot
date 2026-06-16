@@ -10,11 +10,13 @@ export default function MessageList({
   streaming,
   onEdit,
   onDelete,
+  highlightQuery, // Added to receive target highlight string from the parent view context
 }: {
   messages: Message[]
   streaming?: boolean
   onEdit?: (id: string, content: string) => void
   onDelete?: (id: string) => void
+  highlightQuery?: string
 }) {
   const lastAssistantIndex = messages.reduce(
     (last, m, i) => (m.role === 'assistant' ? i : last),
@@ -32,6 +34,7 @@ export default function MessageList({
             role={m.role as 'user' | 'assistant'}
             content={m.content}
             streaming={streaming && index === lastAssistantIndex}
+            highlightQuery={highlightQuery} // Forwarded here
             onEdit={
               isUser && m.id && onEdit
                 ? () => {
