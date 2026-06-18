@@ -3,6 +3,16 @@
 
 import React, { useEffect, useState } from 'react'
 import type { AiModel } from '@/src/types/msg_conversation_model'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from './ui/select'
+import { Button } from './ui/button'
+import { Label } from './ui/label'
+import { Settings2 } from 'lucide-react'
 
 interface ModelSelectProps {
   token: string | null
@@ -27,7 +37,6 @@ export default function ModelSelect({ token, value, onChange, onManage, refreshT
         if (res.ok && active) {
           const data = await res.json()
           setModels(data)
-          // If a model was selected but deleted, or no model is selected and we have options, update state
           if (data.length > 0 && (!value || !data.find((m: AiModel) => m.id === value))) {
             onChange(data[0])
           } else if (data.length === 0) {
@@ -35,61 +44,53 @@ export default function ModelSelect({ token, value, onChange, onManage, refreshT
           }
         }
       } catch (err) {
-        console.error("Failed to fetch models", err)
+        console.error('Failed to fetch models', err)
       } finally {
         if (active) setLoading(false)
       }
     }
     fetchModels()
     return () => { active = false }
-  }, [token, refreshToken, value, onChange])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [token, refreshToken])
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-      <label style={{ fontSize: 12, fontWeight: 600, color: '#666' }}>AI Model</label>
-      <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-        <select
+    <div className="flex flex-col gap-1.5">
+      <Label className="text-xs text-muted-foreground font-medium">AI Model</Label>
+      <div className="flex gap-1.5 items-center">
+        <Select
           value={value || ''}
-          onChange={(e) => {
-            const selected = models.find((m) => m.id === e.target.value) || null
+          onValueChange={(val) => {
+            const selected = models.find((m) => m.id === val) || null
             onChange(selected)
           }}
           disabled={loading || models.length === 0}
-          style={{
-            flex: 1,
-            padding: '6px 1px',
-            borderRadius: 6,
-            border: '1px solid #ccc',
-            fontSize: 13,
-            backgroundColor: '#000000',
-            outline: 'none',
-            cursor: models.length === 0 ? 'not-allowed' : 'pointer'
-          }}
         >
-          {models.length === 0 ? (
-            <option value="" disabled>No models available</option>
-          ) : (
-            models.map((m) => (
-              <option key={m.id} value={m.id}>
-                {m.name} ({m.modelId})
-              </option>
-            ))
-          )}
-        </select>
-        <button
+          <SelectTrigger className="flex-1 h-8 text-xs">
+            <SelectValue placeholder={loading ? 'Loading…' : 'No models available'} />
+          </SelectTrigger>
+          <SelectContent>
+            {models.map((m) => (
+              <SelectItem key={m.id} value={m.id} className="text-xs">
+                <span className="font-medium">{m.name}</span>
+                <span className="text-muted-foreground ml-1">({m.modelId})</span>
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-8 w-8 flex-shrink-0"
           onClick={onManage}
-          style={{
-            padding: '6px 6px',
-            fontSize: 13,
-            borderRadius: 6,
-            border: '1px solid #ccc',
-            backgroundColor: '#000000',
-            cursor: 'pointer',
-          }}
-        > ⚙️ </button>
+          title="Manage models"
+        >
+          <Settings2 className="w-4 h-4" />
+        </Button>
       </div>
       {models.length === 0 && !loading && (
-        <span style={{ fontSize: 11, color: '#d32f2f' }}>Please add or select a model to chat.</span>
+        <p className="text-xs text-destructive">Please add a model to start chatting.</p>
       )}
     </div>
   )

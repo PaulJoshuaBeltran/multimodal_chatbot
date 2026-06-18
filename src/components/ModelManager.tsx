@@ -3,19 +3,31 @@
 
 import React, { useCallback, useEffect, useState } from 'react'
 import type { AiModel } from '@/src/types/msg_conversation_model'
-
-const btnBase: React.CSSProperties = {
-  padding: '6px 12px',
-  fontSize: 13,
-  borderRadius: 6,
-  cursor: 'pointer',
-}
-
-const inputBase: React.CSSProperties = {
-  padding: '6px 10px',
-  fontSize: 13,
-  borderRadius: 6,
-}
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from './ui/dialog'
+import { Input } from './ui/input'
+import { Button } from './ui/button'
+import { Label } from './ui/label'
+import { ScrollArea } from './ui/scroll-area'
+import { Separator } from './ui/separator'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from './ui/alert-dialog'
+import { toast } from 'sonner'
+import { Search, Pencil, Trash2, Check, X, Plus } from 'lucide-react'
+import { cn } from '@/lib/utils'
 
 export default function ModelManager({
   token,
@@ -34,6 +46,7 @@ export default function ModelManager({
   const [loading, setLoading] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [editFields, setEditFields] = useState({ name: '', modelId: '', description: '' })
+  const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null)
 
   const load = useCallback(
     async (query?: string): Promise<AiModel[]> => {
@@ -51,8 +64,6 @@ export default function ModelManager({
     let mounted = true
     load().then(async (data) => {
       if (!mounted) return
-      
-      // Auto-add gemma4:e4b if database is completely empty
       if (data.length === 0) {
         try {
           const headers: Record<string, string> = { 'Content-Type': 'application/json' }
@@ -65,15 +76,13 @@ export default function ModelManager({
           const freshData = await load()
           if (mounted) setModels(freshData)
         } catch (err) {
-          console.error("Failed to seed default model", err)
+          console.error('Failed to seed default model', err)
         }
       } else {
         setModels(data)
       }
     })
-    return () => {
-      mounted = false
-    }
+    return () => { mounted = false }
   }, [load, token])
 
   async function handleSearch() {
@@ -81,17 +90,17 @@ export default function ModelManager({
     setModels(data)
   }
 
-  async function createModel(e: React.FormEvent) {
-    e.preventDefault()
-    
-    // Validation
+  async function createModel() {
     if (!name.trim() || !modelId.trim()) {
-      return alert('Error: Display Name and Model ID are required.')
+      // toast({ title: 'Display Name and Model ID are required.', variant: 'destructive' })
+      toast.error('Display Name and Model ID are required.')
+      return
     }
-    if (models.some(m => m.modelId.toLowerCase() === modelId.trim().toLowerCase())) {
-      return alert('Error: A model with this Model ID already exists.')
+    if (models.some((m) => m.modelId.toLowerCase() === modelId.trim().toLowerCase())) {
+      // toast({ title: 'A model with this Model ID already exists.', variant: 'destructive' })
+      toast.error('A model with this Model ID already exists.')
+      return
     }
-
     setLoading(true)
     try {
       const headers: Record<string, string> = { 'Content-Type': 'application/json' }
@@ -103,7 +112,7 @@ export default function ModelManager({
       })
       if (!res.ok) {
         const err = await res.json().catch(() => ({ error: 'Unknown' }))
-        alert('Create failed: ' + (err?.error || JSON.stringify(err)))
+        toast.error(`Create failed: ${err?.error || 'Unknown error'}`)
         return
       }
       setName('')
@@ -112,6 +121,8 @@ export default function ModelManager({
       const newModels = await load()
       setModels(newModels)
       onUpdated?.()
+      // toast({ title: 'Model added' })
+      toast.success('Model added')
     } finally {
       setLoading(false)
     }
@@ -123,14 +134,14 @@ export default function ModelManager({
   }
 
   async function saveEdit(m: AiModel) {
-    // Validation
     if (!editFields.name.trim() || !editFields.modelId.trim()) {
-      return alert('Error: Display Name and Model ID are required.')
+      toast.error('Display Name and Model ID are required.')
+      return
     }
-    if (models.some(mod => mod.id !== m.id && mod.modelId.toLowerCase() === editFields.modelId.trim().toLowerCase())) {
-      return alert('Error: This Model ID is already in use by another model.')
+    if (models.some((mod) => mod.id !== m.id && mod.modelId.toLowerCase() === editFields.modelId.trim().toLowerCase())) {
+      toast.error('This Model ID is already in use.')
+      return
     }
-
     const headers: Record<string, string> = { 'Content-Type': 'application/json' }
     if (token) headers.Authorization = `Bearer ${token}`
     const res = await fetch(`/api/models/${m.id}`, {
@@ -140,224 +151,188 @@ export default function ModelManager({
     })
     if (!res.ok) {
       const err = await res.json().catch(() => ({ error: 'Unknown' }))
-      alert('Update failed: ' + (err?.error || JSON.stringify(err)))
+      toast.error(`Update failed: ${err?.error || 'Unknown error'}`)
       return
     }
     setEditingId(null)
     const newModels = await load()
     setModels(newModels)
     onUpdated?.()
+    toast.success('Model updated')
   }
 
-  async function deleteModel(m: AiModel) {
-    if (!confirm(`Delete model "${m.name}"?`)) return
+  async function deleteModel(id: string) {
     const headers: Record<string, string> = {}
     if (token) headers.Authorization = `Bearer ${token}`
-    const res = await fetch(`/api/models/${m.id}`, { method: 'DELETE', headers })
+    const res = await fetch(`/api/models/${id}`, { method: 'DELETE', headers })
     if (!res.ok) {
       const err = await res.json().catch(() => ({ error: 'Unknown' }))
-      alert('Delete failed: ' + (err?.error || JSON.stringify(err)))
+      toast.error(`Delete failed: ${err?.error || 'Unknown error'}`)
+      setDeleteTargetId(null)
       return
     }
     const newModels = await load()
     setModels(newModels)
     onUpdated?.()
+    toast.success('Model deleted')
+    setDeleteTargetId(null)
   }
 
-  return (
-    // Backdrop
-    <div
-      style={{
-        position: 'fixed',
-        inset: 0,
-        backgroundColor: 'rgba(0,0,0,0.85)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        zIndex: 1000,
-      }}
-      onClick={(e) => e.target === e.currentTarget && onClose()}
-    >
-      {/* Dialog */}
-      <div
-        style={{
-          backgroundColor: '#000',
-          color: '#fff',
-          border: '1px solid #333',
-          width: 580,
-          maxWidth: '95vw',
-          maxHeight: '85vh',
-          borderRadius: 12,
-          display: 'flex',
-          flexDirection: 'column',
-          boxShadow: '0 8px 32px rgba(0,0,0,0.8)',
-          overflow: 'hidden',
-        }}
-      >
-        {/* Header */}
-        <div
-          style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            padding: '16px 20px',
-            borderBottom: '1px solid #222',
-          }}
-        >
-          <h3 style={{ margin: 0, fontSize: 16, fontWeight: 600, color: '#fff' }}>
-            Manage Models
-          </h3>
-          <button
-            className="hover-ui"
-            onClick={onClose}
-            style={{
-              fontSize: 22,
-              cursor: 'pointer',
-              lineHeight: 1,
-              padding: '0 8px',
-              borderRadius: 4,
-            }}
-          >
-            &times;
-          </button>
-        </div>
+  const deleteTarget = models.find((m) => m.id === deleteTargetId)
 
-        {/* Body */}
-        <div style={{ flex: 1, overflowY: 'auto', padding: '16px 20px', display: 'flex', flexDirection: 'column', gap: 20 }}>
+  return (
+    <>
+      <Dialog open onOpenChange={(open) => !open && onClose()}>
+        <DialogContent className="sm:max-w-xl max-h-[85vh] flex flex-col">
+          <DialogHeader>
+            <DialogTitle>Manage models</DialogTitle>
+            <DialogDescription>Add, search, edit, or remove AI models.</DialogDescription>
+          </DialogHeader>
 
           {/* Search */}
-          <div style={{ display: 'flex', gap: 8 }}>
-            <input
-              className="hover-ui"
-              placeholder="Search models…"
-              value={q}
-              onChange={(e) => setQ(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-              style={{ ...inputBase, flex: 1 }}
-            />
-            <button className="hover-ui" onClick={handleSearch} style={btnBase}>
-              Search
-            </button>
+          <div className="flex gap-2">
+            <div className="relative flex-1">
+              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Search models…"
+                value={q}
+                onChange={(e) => setQ(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+                className="pl-8"
+              />
+            </div>
+            <Button variant="outline" onClick={handleSearch}>Search</Button>
           </div>
 
-          {/* Add new model */}
-          <div style={{ backgroundColor: '#000', border: '1px solid #222', borderRadius: 8, padding: 14 }}>
-            <p style={{ margin: '0 0 10px 0', fontSize: 13, fontWeight: 600, color: '#ccc' }}>
-              Add new model
-            </p>
-            <form onSubmit={createModel} style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-              <div style={{ display: 'flex', gap: 8 }}>
-                <input
-                  className="hover-ui"
-                  placeholder="Display name"
+          {/* Add new model form */}
+          <div className="rounded-lg border border-border p-4 flex flex-col gap-3">
+            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Add new model</p>
+            <div className="grid grid-cols-2 gap-2">
+              <div className="flex flex-col gap-1">
+                <Label htmlFor="model-name" className="text-xs">Display name</Label>
+                <Input
+                  id="model-name"
+                  placeholder="e.g. Gemma 4"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  style={{ ...inputBase, flex: 1 }}
-                  required
                 />
-                <input
-                  className="hover-ui"
-                  placeholder="Model ID (e.g. gemma4:e4b)"
+              </div>
+              <div className="flex flex-col gap-1">
+                <Label htmlFor="model-id" className="text-xs">Model ID</Label>
+                <Input
+                  id="model-id"
+                  placeholder="e.g. gemma4:e4b"
                   value={modelId}
                   onChange={(e) => setModelId(e.target.value)}
-                  style={{ ...inputBase, flex: 1 }}
-                  required
                 />
               </div>
-              <div style={{ display: 'flex', gap: 8 }}>
-                <input
-                  className="hover-ui"
-                  placeholder="Description (optional)"
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  style={{ ...inputBase, flex: 1 }}
-                />
-                <button
-                  className="hover-ui"
-                  type="submit"
-                  disabled={loading}
-                  style={{
-                    ...btnBase,
-                    padding: '6px 16px',
-                  }}
-                >
-                  {loading ? 'Adding…' : '+ Add'}
-                </button>
-              </div>
-            </form>
+            </div>
+            <div className="flex gap-2">
+              <Input
+                placeholder="Description (optional)"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                className="flex-1"
+              />
+              <Button onClick={createModel} disabled={loading} className="flex-shrink-0">
+                <Plus className="w-4 h-4 mr-1" />
+                {loading ? 'Adding…' : 'Add'}
+              </Button>
+            </div>
           </div>
 
           {/* Model list */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
-            {models.length === 0 && (
-              <p style={{ fontSize: 13, color: '#888', margin: 0 }}>No models yet.</p>
-            )}
-            {models.map((m, i) => (
-              <div
-                key={m.id}
-                style={{
-                  borderBottom: i < models.length - 1 ? '1px solid #222' : 'none',
-                  padding: '12px 0',
-                }}
-              >
-                {editingId === m.id ? (
-                  // Inline edit form
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                    <div style={{ display: 'flex', gap: 8 }}>
-                      <input
-                        className="hover-ui"
-                        value={editFields.name}
-                        onChange={(e) => setEditFields((f) => ({ ...f, name: e.target.value }))}
-                        style={{ ...inputBase, flex: 1 }}
-                        placeholder="Display name"
-                      />
-                      <input
-                        className="hover-ui"
-                        value={editFields.modelId}
-                        onChange={(e) => setEditFields((f) => ({ ...f, modelId: e.target.value }))}
-                        style={{ ...inputBase, flex: 1 }}
-                        placeholder="Model ID"
-                      />
+          <ScrollArea className="flex-1 pr-1">
+            {models.length === 0 ? (
+              <p className="text-sm text-muted-foreground py-4 text-center">No models yet.</p>
+            ) : (
+              <div className="flex flex-col">
+                {models.map((m, i) => (
+                  <React.Fragment key={m.id}>
+                    {i > 0 && <Separator />}
+                    <div className="py-3">
+                      {editingId === m.id ? (
+                        <div className="flex flex-col gap-2">
+                          <div className="grid grid-cols-2 gap-2">
+                            <Input
+                              value={editFields.name}
+                              onChange={(e) => setEditFields((f) => ({ ...f, name: e.target.value }))}
+                              placeholder="Display name"
+                            />
+                            <Input
+                              value={editFields.modelId}
+                              onChange={(e) => setEditFields((f) => ({ ...f, modelId: e.target.value }))}
+                              placeholder="Model ID"
+                            />
+                          </div>
+                          <div className="flex gap-2">
+                            <Input
+                              value={editFields.description}
+                              onChange={(e) => setEditFields((f) => ({ ...f, description: e.target.value }))}
+                              placeholder="Description"
+                              className="flex-1"
+                            />
+                            <Button size="icon" variant="ghost" onClick={() => saveEdit(m)} title="Save">
+                              <Check className="w-4 h-4" />
+                            </Button>
+                            <Button size="icon" variant="ghost" onClick={() => setEditingId(null)} title="Cancel">
+                              <X className="w-4 h-4" />
+                            </Button>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="flex items-center justify-between gap-3">
+                          <div className="min-w-0">
+                            <p className="font-medium text-sm">{m.name}</p>
+                            <p className="text-xs text-muted-foreground font-mono mt-0.5">{m.modelId}</p>
+                            {m.description && (
+                              <p className="text-xs text-muted-foreground mt-0.5">{m.description}</p>
+                            )}
+                          </div>
+                          <div className="flex gap-1 flex-shrink-0">
+                            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => startEdit(m)}>
+                              <Pencil className="w-3.5 h-3.5" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className={cn('h-7 w-7 text-destructive hover:text-destructive')}
+                              onClick={() => setDeleteTargetId(m.id)}
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </Button>
+                          </div>
+                        </div>
+                      )}
                     </div>
-                    <div style={{ display: 'flex', gap: 8 }}>
-                      <input
-                        className="hover-ui"
-                        value={editFields.description}
-                        onChange={(e) => setEditFields((f) => ({ ...f, description: e.target.value }))}
-                        style={{ ...inputBase, flex: 1 }}
-                        placeholder="Description"
-                      />
-                      <button className="hover-ui" onClick={() => saveEdit(m)} style={btnBase}>
-                        Save
-                      </button>
-                      <button className="hover-ui" onClick={() => setEditingId(null)} style={btnBase}>
-                        Cancel
-                      </button>
-                    </div>
-                  </div>
-                ) : (
-                  // Read-only view
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <div>
-                      <div style={{ fontWeight: 600, fontSize: 14 }}>{m.name}</div>
-                      <div style={{ fontSize: 12, color: '#aaa', marginTop: 2 }}>{m.modelId}</div>
-                      {m.description && <div style={{ fontSize: 12, color: '#888', marginTop: 4 }}>{m.description}</div>}
-                    </div>
-                    <div style={{ display: 'flex', gap: 8 }}>
-                      <button className="hover-ui" onClick={() => startEdit(m)} style={btnBase}>
-                        Edit
-                      </button>
-                      <button className="hover-ui" onClick={() => deleteModel(m)} style={{ ...btnBase, color: '#ff4444' }}>
-                        Delete
-                      </button>
-                    </div>
-                  </div>
-                )}
+                  </React.Fragment>
+                ))}
               </div>
-            ))}
-          </div>
-        </div>
-      </div>
-    </div>
+            )}
+          </ScrollArea>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete confirmation */}
+      <AlertDialog open={!!deleteTargetId} onOpenChange={(open) => !open && setDeleteTargetId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete model?</AlertDialogTitle>
+            <AlertDialogDescription>
+              {deleteTarget?.name} ({deleteTarget?.modelId}) will be permanently removed.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={() => deleteTargetId && deleteModel(deleteTargetId)}
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   )
 }

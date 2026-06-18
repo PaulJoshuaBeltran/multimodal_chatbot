@@ -3,139 +3,202 @@
 
 import React, { useState } from 'react'
 import type { Conversation } from '@/src/types/msg_conversation_model'
+import { Button } from './ui/button'
+import { Input } from './ui/input'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from './ui/alert-dialog'
+import { toast } from 'sonner'
+import { MoreVertical, Edit2, Trash2, Check, X, MessageSquare } from 'lucide-react'
+import { cn } from '@/lib/utils'
 
-export default function ConversationList({ 
-  conversations, 
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/src/components/ui/dropdown-menu'
+
+export default function ConversationList({
+  conversations,
   selectedConvId,
-  onSelect, 
-  onCreate, 
+  onSelect,
+  onCreate,
   onUpdate,
-  token 
-}: { 
-  conversations: Conversation[]; 
-  selectedConvId: string | null;
-  onSelect: (id: string) => void; 
-  onCreate: () => void; 
-  onUpdate: () => void;
-  token?: string | null 
+  token,
+}: {
+  conversations: Conversation[]
+  selectedConvId: string | null
+  onSelect: (id: string) => void
+  onCreate: () => void
+  onUpdate: () => void
+  token?: string | null
 }) {
-  const [title, setTitle] = useState('')
   const [editingId, setEditingId] = useState<string | null>(null)
   const [editTitle, setEditTitle] = useState('')
-
-  async function create() {
-    if (!token) return alert('Please log in to create a conversation')
-    const headers: Record<string,string> = { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }
-    const res = await fetch('/api/conversations', { method: 'POST', headers, body: JSON.stringify({ title }) })
-    if (res.ok) {
-      setTitle('')
-      onCreate()
-    }
-  }
+  const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null)
 
   async function renameConversation(id: string) {
     if (!editTitle.trim()) return
-    const headers: Record<string, string> = { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    }
     const res = await fetch(`/api/conversations/${id}`, {
       method: 'PATCH',
       headers,
-      body: JSON.stringify({ title: editTitle })
+      body: JSON.stringify({ title: editTitle }),
     })
     if (res.ok) {
       setEditingId(null)
       onUpdate()
+      toast.success('Conversation renamed')
+    } else {
+      toast.error('Rename failed')
     }
   }
 
-  async function deleteConversation(id: string, e: React.MouseEvent) {
-    e.stopPropagation()
-    if (!confirm('Are you sure you want to delete this conversation?')) return
+  async function deleteConversation(id: string) {
     const headers: Record<string, string> = { Authorization: `Bearer ${token}` }
     const res = await fetch(`/api/conversations/${id}`, { method: 'DELETE', headers })
     if (res.ok || res.status === 204) {
       onUpdate()
+      toast.success('Conversation deleted')
+    } else {
+      toast.error('Delete failed')
     }
+    setDeleteTargetId(null)
   }
 
+  const deleteTarget = conversations.find((c) => c.id === deleteTargetId)
+
   return (
-    <div>
-      <div style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
-        <input
-          value={title}
-          onChange={e => setTitle(e.target.value)}
-          placeholder="New conversation title"
-          style={{ flex: 1 }}
-        />
-        <button onClick={create}>New</button>
-      </div>
+    <div className="flex flex-col gap-0.5 pb-2">
+      {conversations.length === 0 && (
+        <p className="text-xs text-muted-foreground px-2 py-3 text-center">
+          No conversations yet. Create one to get started.
+        </p>
+      )}
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-        {conversations.map((c: Conversation) => {
-          const isSelected = selectedConvId === c.id
-          const isEditing = editingId === c.id
+      {conversations.map((c: Conversation) => {
+        const isSelected = selectedConvId === c.id
+        const isEditing = editingId === c.id
 
-          return (
-            <div 
-              key={c.id} 
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                padding: '6px 8px',
-                borderRadius: 6,
-                border: '1px solid #ffffff',
-                backgroundColor: isSelected ? '#ffffff' : '#000000',
-                color: isSelected ? '#000000' : '#ffffff'
-              }}
+        return (
+          <div
+            key={c.id}
+            className={cn(
+              'group flex items-center gap-1.5 rounded-md px-2 py-1.5 text-sm transition-colors',
+              isSelected
+                ? 'bg-accent text-accent-foreground'
+                : 'hover:bg-muted/60 text-foreground/80'
+            )}
+          >
+            {isEditing ? (
+              <div className="flex items-center gap-1 flex-1 min-w-0">
+                <Input
+                  value={editTitle}
+                  onChange={(e) => setEditTitle(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') renameConversation(c.id)
+                    if (e.key === 'Escape') setEditingId(null)
+                  }}
+                  className="h-6 text-xs px-1.5 flex-1"
+                  autoFocus
+                />
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-5 w-5 flex-shrink-0"
+                  onClick={() => renameConversation(c.id)}
+                >
+                  <Check className="w-3 h-3" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-5 w-5 flex-shrink-0"
+                  onClick={() => setEditingId(null)}
+                >
+                  <X className="w-3 h-3" />
+                </Button>
+              </div>
+            ) : (
+              <>
+                <MessageSquare className="w-3.5 h-3.5 flex-shrink-0 text-muted-foreground" />
+                <span
+                  className="flex-1 truncate text-sm cursor-pointer"
+                  onClick={() => onSelect(c.id)}
+                >
+                  {c.title}
+                </span>
+                
+                {/* 3-Dots Menu for Rename and Delete */}
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0"
+                    >
+                      <MoreVertical className="w-4 h-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-32">
+                    <DropdownMenuItem
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        setEditingId(c.id)
+                        setEditTitle(c.title)
+                      }}
+                      className="cursor-pointer"
+                    >
+                      <Edit2 className="w-4 h-4 mr-2" /> Rename
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      className="cursor-pointer text-destructive focus:text-destructive focus:bg-destructive/10"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        setDeleteTargetId(c.id)
+                      }}
+                    >
+                      <Trash2 className="w-4 h-4 mr-2" /> Delete
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </>
+            )}
+          </div>
+        )
+      })}
+
+      {/* Delete confirmation */}
+      <AlertDialog open={!!deleteTargetId} onOpenChange={(open) => !open && setDeleteTargetId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete conversation?</AlertDialogTitle>
+            <AlertDialogDescription>
+              {deleteTarget?.title} and all its messages will be permanently deleted. This cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={() => deleteTargetId && deleteConversation(deleteTargetId)}
             >
-              {isEditing ? (
-                <div style={{ display: 'flex', gap: 4, flex: 1 }}>
-                  <input
-                    value={editTitle}
-                    onChange={e => setEditTitle(e.target.value)}
-                    style={{ flex: 1 }}
-                    autoFocus 
-                  />
-                  <button
-                    onClick={() => renameConversation(c.id)}
-                    style={{ fontSize: 11 }}>Save
-                  </button>
-                  <button
-                    onClick={() => setEditingId(null)}
-                    style={{ fontSize: 11 }}>X
-                  </button>
-                </div>
-              ) : (
-                <>
-                  <span
-                    onClick={() => onSelect(c.id)}
-                    style={{
-                      cursor: 'pointer',
-                      flex: 1,
-                      textOverflow: 'ellipsis',
-                      overflow: 'hidden',
-                      whiteSpace: 'nowrap',
-                      fontSize: 14 }}>
-                    {c.title}
-                  </span>
-                  <div style={{ display: 'flex', gap: 2 }}>
-                    <button
-                      onClick={() => { setEditingId(c.id); setEditTitle(c.title); }}
-                      style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 12 }}
-                      title="Rename">✏️
-                    </button>
-                    <button
-                      onClick={(e) => deleteConversation(c.id, e)}
-                      style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 12 }}
-                      title="Delete">🗑️
-                    </button>
-                  </div>
-                </>
-              )}
-            </div>
-          )
-        })}
-      </div>
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }

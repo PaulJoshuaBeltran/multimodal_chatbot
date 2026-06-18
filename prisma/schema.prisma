@@ -11,6 +11,8 @@ generator client {
 datasource db {
   provider = "mongodb"
   url      = env("MONGODB_URI")
+  // url was kept despite error since it works and MongoDB isnt compatible with Prisma v7
+  // so v6 is used, for some reason the code checker only validates v7 configuration
 }
 
 model User {

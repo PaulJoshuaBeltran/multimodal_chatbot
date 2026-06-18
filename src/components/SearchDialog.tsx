@@ -1,13 +1,23 @@
 // src/components/SearchDialog.tsx
 'use client'
 
-import React, { useState, useEffect, useMemo } from 'react'
+import React, { useEffect, useMemo, useReducer } from 'react'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from './ui/dialog'
+import { Input } from './ui/input'
+import { ScrollArea } from './ui/scroll-area'
+import { Separator } from './ui/separator'
+import { Search, FolderOpen, MessageSquare, Loader2 } from 'lucide-react'
 
 interface SearchDialogProps {
   isOpen: boolean
   onClose: () => void
   token: string | null
-  // Added optional third parameter to forward the keyword for highlighting upon redirect
   onSelectResult: (conversationId: string, messageId?: string, query?: string) => void
 }
 
@@ -21,69 +31,110 @@ interface SearchMessage {
   conversationId: string
   content: string
   role: string
-  conversation?: {
-    title: string
+  conversation?: { title: string }
+}
+
+// 1. Define the State Structure
+interface SearchState {
+  query: string
+  results: {
+    conversations: SearchConversation[]
+    messages: SearchMessage[]
+  }
+  loading: boolean
+}
+
+// 2. Define Action Types
+type SearchAction =
+  | { type: 'SET_QUERY'; payload: string }
+  | { type: 'START_SEARCH' }
+  | { type: 'SEARCH_SUCCESS'; payload: { conversations: SearchConversation[]; messages: SearchMessage[] } }
+  | { type: 'SEARCH_FAILURE' }
+  | { type: 'RESET' }
+
+const initialState: SearchState = {
+  query: '',
+  results: { conversations: [], messages: [] },
+  loading: false,
+}
+
+// 3. Define the Reducer Logic
+function searchReducer(state: SearchState, action: SearchAction): SearchState {
+  switch (action.type) {
+    case 'SET_QUERY':
+      return {
+        ...state,
+        query: action.payload,
+        // Immediately wipe results if the user clears the text field manually
+        results: action.payload.trim() ? state.results : { conversations: [], messages: [] },
+      }
+    case 'START_SEARCH':
+      return { ...state, loading: true }
+    case 'SEARCH_SUCCESS':
+      return { ...state, loading: false, results: action.payload }
+    case 'SEARCH_FAILURE':
+      return { ...state, loading: false }
+    case 'RESET':
+      return initialState
+    default:
+      return state
   }
 }
 
 export default function SearchDialog({ isOpen, onClose, token, onSelectResult }: SearchDialogProps) {
-  const [query, setQuery] = useState('')
-  const [results, setResults] = useState<{
-    conversations: SearchConversation[]
-    messages: SearchMessage[]
-  }>({ conversations: [], messages: [] })
-  const [loading, setLoading] = useState(false)
+  const [state, dispatch] = useReducer(searchReducer, initialState)
+  const { query, results, loading } = state
 
+  // Handle Search API calls
   useEffect(() => {
     if (!isOpen) return
+    
+    if (!query.trim()) {
+      return
+    }
+
+    dispatch({ type: 'START_SEARCH' })
 
     async function performSearch() {
-      if (!query.trim()) {
-        setResults({ conversations: [], messages: [] })
-        return
-      }
-      setLoading(true)
       try {
         const res = await fetch(`/api/search?q=${encodeURIComponent(query)}`, {
           headers: token ? { Authorization: `Bearer ${token}` } : undefined,
         })
         if (res.ok) {
-          setResults(await res.json())
+          const data = await res.json()
+          dispatch({ type: 'SEARCH_SUCCESS', payload: data })
+        } else {
+          dispatch({ type: 'SEARCH_FAILURE' })
         }
       } catch (err) {
         console.error('Search error:', err)
-      } finally {
-        setLoading(false)
+        dispatch({ type: 'SEARCH_FAILURE' })
       }
     }
 
-    const delayDebounce = setTimeout(() => {
-      performSearch()
-    }, 300)
-
-    return () => clearTimeout(delayDebounce)
+    const timer = setTimeout(performSearch, 300)
+    return () => clearTimeout(timer)
   }, [query, isOpen, token])
 
-  // --- FIXED: Returns a single focused contextual fragment per message bubble to avoid repetitive rows ---
-  function getSnippets(text: string, keyword: string, contextLength = 40): string[] {
-    if (!keyword.trim()) return [text.substring(0, 100) + '...']
-    
+  // Atomic Reset: Clears input, results, and loading indicators instantly when dialog closes
+  useEffect(() => {
+    if (!isOpen) {
+      dispatch({ type: 'RESET' })
+    }
+  }, [isOpen])
+
+  function getSnippet(text: string, keyword: string, contextLength = 50): string {
+    if (!keyword.trim()) return text.substring(0, 120) + (text.length > 120 ? '…' : '')
     const escapedKeyword = keyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
     const regex = new RegExp(escapedKeyword, 'gi')
     const match = regex.exec(text)
-
-    if (!match) {
-      return [text.substring(0, 100) + '...']
-    }
-
+    if (!match) return text.substring(0, 120) + (text.length > 120 ? '…' : '')
     const start = Math.max(0, match.index - contextLength)
     const end = Math.min(text.length, match.index + keyword.length + contextLength)
     let snippet = text.substring(start, end)
-    
-    if (start > 0) snippet = '...' + snippet
-    if (end < text.length) snippet = snippet + '...'
-    
-    return [snippet]
+    if (start > 0) snippet = '…' + snippet
+    if (end < text.length) snippet = snippet + '…'
+    return snippet
   }
 
   function highlightText(text: string, keyword: string) {
@@ -94,16 +145,7 @@ export default function SearchDialog({ isOpen, onClose, token, onSelectResult }:
       <span>
         {parts.map((part, i) =>
           part.toLowerCase() === keyword.toLowerCase() ? (
-            <mark
-              key={i}
-              style={{
-                backgroundColor: '#ffeb3b',
-                padding: '0 2px',
-                borderRadius: 2,
-                color: '#000'
-              }}>
-              {part}
-            </mark>
+            <mark key={i} className="bg-yellow-200 text-black px-0.5 rounded-[2px]">{part}</mark>
           ) : (
             part
           )
@@ -112,191 +154,114 @@ export default function SearchDialog({ isOpen, onClose, token, onSelectResult }:
     )
   }
 
-  // --- FIXED: Explicitly deduplicates incoming message items by unique message ID ---
   const groupedMessages = useMemo(() => {
     return results.messages.reduce((acc, m) => {
       if (!acc[m.conversationId]) {
-        acc[m.conversationId] = {
-          title: m.conversation?.title || 'Untitled',
-          messages: []
-        }
+        acc[m.conversationId] = { title: m.conversation?.title || 'Untitled', messages: [] }
       }
-      
-      const exists = acc[m.conversationId].messages.some(msg => msg.id === m.id)
-      if (!exists) {
+      if (!acc[m.conversationId].messages.some((msg) => msg.id === m.id)) {
         acc[m.conversationId].messages.push(m)
       }
-      
       return acc
-    }, {} as Record<string, { title: string, messages: SearchMessage[] }>)
+    }, {} as Record<string, { title: string; messages: SearchMessage[] }>)
   }, [results.messages])
 
-  if (!isOpen) return null
+  const hasResults = results.conversations.length > 0 || results.messages.length > 0
 
   return (
-    <div style={{
-      backgroundColor: 'rgba(0,0,0,0.5)',
-      border: '#ffffff',
-      position: 'fixed',
-      top: 0, left: 0, right: 0, bottom: 0,
-      display: 'flex',
-      justifyContent: 'center',
-      alignItems: 'center',
-      zIndex: 1000
-    }}>
-      <div style={{
-        backgroundColor: '#000000',
-        border: '#ffffff',
-        borderRadius: 12,
-        width: '550px',
-        maxHeight: '80vh',
-        padding: 20,
-        display: 'flex',
-        flexDirection: 'column',
-        color: '#333'
-      }}>
-        <div style={{
-          backgroundColor: '#000000',
-          border: '#ffffff',
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          marginBottom: 12
-        }}>
-          <h3 style={{ color: '#ffffff', margin: 0 }}>Global Search</h3>
-          <button onClick={onClose} style={{
-            backgroundColor: '#000000',
-            border: '#ffffff',
-            fontSize: 20,
-            cursor: 'pointer' 
-          }}>&times;</button>
+    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent className="sm:max-w-lg max-h-[80vh] flex flex-col gap-0 p-0">
+        <DialogHeader className="px-4 pt-4 pb-0">
+          <DialogTitle>Search</DialogTitle>
+          <DialogDescription>Search across all conversations and messages.</DialogDescription>
+        </DialogHeader>
+
+        {/* Search input */}
+        <div className="px-4 py-3">
+          <div className="relative">
+            {loading ? (
+              <Loader2 className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground animate-spin" />
+            ) : (
+              <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+            )}
+            <Input
+              placeholder="Type to search…"
+              value={query}
+              onChange={(e) => dispatch({ type: 'SET_QUERY', payload: e.target.value })}
+              className="pl-9"
+              autoFocus
+            />
+          </div>
         </div>
 
-        <input
-          value={query}
-          onChange={e => setQuery(e.target.value)}
-          placeholder="Type keywords to look up..."
-          style={{
-            width: '100%',
-            padding: '10px 12px',
-            backgroundColor: '#ffffff',
-            border: '#ffffff',
-            borderRadius: 8,
-            color: '#000000',
-            fontSize: 14,
-            marginBottom: 16,
-            boxSizing: 'border-box'
-          }}
-          autoFocus
-        />
+        <Separator />
 
-        <div style={{
-          backgroundColor: 'rgba(0,0,0,0.5)',
-          border: '#ffffff',
-          flex: 1,
-          overflowY: 'auto',
-          display: 'flex',
-          flexDirection: 'column',
-          gap: 16,
-          paddingRight: 4
-        }}>
-          {loading && <div style={{ fontSize: 14, color: '#000000' }}>Searching...</div>}
-
-          {!loading && results.conversations.length === 0
-            && results.messages.length === 0 && query.trim() !== '' && (
-            <div style={{ color: '#888', fontSize: 14, textAlign: 'center' }}>No matches found</div>
+        {/* Results */}
+        <ScrollArea className="flex-1 px-4 py-3">
+          {!query.trim() && (
+            <p className="text-sm text-muted-foreground text-center py-6">Start typing to search…</p>
           )}
 
-          {/* Title Matches */}
-          {results.conversations.length > 0 && (
-            <div>
-              <h4 style={{
-                margin: '0 0 6px 0',
-                fontSize: 12,
-                color: '#ffffff',
-                textTransform: 'uppercase'
-              }}>Conversations</h4>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                {results.conversations.map((c) => (
-                  <div
-                    key={c.id}
-                    onClick={() => { onSelectResult(c.id, undefined, query); onClose() }}
-                    style={{
-                      backgroundColor: 'rgba(0,0,0,0.5)',
-                      padding: '8px 12px',
-                      borderRadius: 6,
-                      cursor: 'pointer',
-                      fontSize: 14
-                    }}
-                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#fafafa'}
-                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#000000'}
-                  >
-                    📁 {highlightText(c.title, query)}
-                  </div>
-                ))}
+          {query.trim() && !loading && !hasResults && (
+            <p className="text-sm text-muted-foreground text-center py-6">No results found for {query}</p>
+          )}
+
+          <div className="flex flex-col gap-4">
+            {/* Conversation title matches */}
+            {results.conversations.length > 0 && (
+              <div>
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">Conversations</p>
+                <div className="flex flex-col gap-1">
+                  {results.conversations.map((c) => (
+                    <button
+                      key={c.id}
+                      onClick={() => { onSelectResult(c.id, undefined, query); onClose() }}
+                      className="flex items-center gap-2 px-3 py-2 rounded-md text-sm text-left hover:bg-muted/70 transition-colors w-full"
+                    >
+                      <FolderOpen className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+                      <span>{highlightText(c.title, query)}</span>
+                    </button>
+                  ))}
+                </div>
               </div>
-            </div>
-          )}
+            )}
 
-          {/* Grouped Message Content Matches */}
-          {Object.keys(groupedMessages).length > 0 && (
-            <div>
-              <h4 style={{
-                margin: '0 0 6px 0',
-                fontSize: 12,
-                color: '#ffffff',
-                textTransform: 'uppercase'
-              }}>Message Matches</h4>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                {Object.entries(groupedMessages).map(([convId, group]) => (
-                  <div key={convId} style={{ border: '1px solid #eee', borderRadius: 8, overflow: 'hidden' }}>
-                    <div style={{
-                      backgroundColor: '#000000',
-                      padding: '6px 12px',
-                      fontSize: 12,
-                      fontWeight: 600,
-                      color: '#555',
-                    }}>
-                      📁 {group.title}
+            {/* Message matches */}
+            {Object.keys(groupedMessages).length > 0 && (
+              <div>
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">Messages</p>
+                <div className="flex flex-col gap-3">
+                  {Object.entries(groupedMessages).map(([convId, group]) => (
+                    <div key={convId} className="rounded-lg border border-border overflow-hidden">
+                      <div className="flex items-center gap-1.5 px-3 py-1.5 bg-muted/40 text-xs font-medium text-muted-foreground">
+                        <FolderOpen className="w-3.5 h-3.5" />
+                        {group.title}
+                      </div>
+                      {group.messages.map((m, i) => (
+                        <React.Fragment key={m.id}>
+                          {i > 0 && <Separator />}
+                          <button
+                            onClick={() => { onSelectResult(convId, m.id, query); onClose() }}
+                            className="flex items-start gap-2 px-3 py-2 text-sm text-left hover:bg-muted/50 transition-colors w-full"
+                          >
+                            <MessageSquare className="w-3.5 h-3.5 mt-0.5 text-muted-foreground flex-shrink-0" />
+                            <div className="min-w-0">
+                              <span className="text-xs text-muted-foreground capitalize block mb-0.5">{m.role}</span>
+                              <span className="text-sm leading-snug line-clamp-2">
+                                {highlightText(getSnippet(m.content, query), query)}
+                              </span>
+                            </div>
+                          </button>
+                        </React.Fragment>
+                      ))}
                     </div>
-
-                    {group.messages.map((m) => {
-                      const snippets = getSnippets(m.content, query)
-                      return (
-                        <div
-                          key={m.id}
-                          onClick={() => { onSelectResult(convId, m.id, query); onClose() }}
-                          style={{
-                            padding: '8px 12px',
-                            cursor: 'pointer',
-                            backgroundColor: '#000000',
-                            fontSize: 14,
-                            transition: 'background 0.2s'
-                          }}
-                          onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#fafafa'}
-                          onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#000000'}
-                        >
-                          <div style={{ fontSize: 11, color: '#888', marginBottom: 4, textTransform: 'capitalize' }}>
-                            {m.role}
-                          </div>
-                          
-                          <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                            {snippets.map((snippet, idx) => (
-                              <div key={idx} style={{ lineHeight: '1.4' }}>
-                                💬 {highlightText(snippet, query)}
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      )
-                    })}
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
-            </div>
-          )}
-        </div>
-      </div>
-    </div>
+            )}
+          </div>
+        </ScrollArea>
+      </DialogContent>
+    </Dialog>
   )
 }
