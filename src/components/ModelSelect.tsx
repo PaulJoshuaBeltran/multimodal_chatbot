@@ -66,14 +66,14 @@ export default function ModelSelect({ token, value, onChange, onManage, refreshT
           }}
           disabled={loading || models.length === 0}
         >
-          <SelectTrigger className="flex-1 h-8 text-xs">
+          <SelectTrigger className="flex-1 h-8 text-xs border-0 focus-visible:ring-0 focus-visible:ring-offset-0">
             <SelectValue placeholder={loading ? 'Loading…' : 'No models available'} />
           </SelectTrigger>
           <SelectContent>
             {models.map((m) => (
               <SelectItem key={m.id} value={m.id} className="text-xs">
                 <span className="font-medium">{m.name}</span>
-                <span className="text-muted-foreground ml-1">({m.modelId})</span>
+                {/* <span className="font-medium">({m.modelId})</span> */}
               </SelectItem>
             ))}
           </SelectContent>

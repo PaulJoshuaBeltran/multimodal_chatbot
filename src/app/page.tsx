@@ -12,6 +12,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Separator } from '../components/ui/separator'
 import { Textarea } from '../components/ui/textarea'
 import { ScrollArea } from '../components/ui/scroll-area'
+// Imported table and checkbox primitives for the tools list layout
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../components/ui/table'
+import { Checkbox } from '../components/ui/checkbox'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -32,8 +35,18 @@ import {
 import { toast } from 'sonner'
 import { Label } from '../components/ui/label'
 import { Input } from '../components/ui/input'
-import { MessageSquarePlus, Search, Settings, Bot, Plus, Image, FileText, LogOut, UserX, MoreVertical } from 'lucide-react'
+import { Square, MessageSquarePlus, Search, Settings, Bot, Plus, Image, FileText, LogOut, UserX, MoreVertical, Wrench, ChevronLeft, ChevronRight } from 'lucide-react'
 import type { Conversation, Message as ChatMessage, AiModel } from '@/src/types/msg_conversation_model'
+
+// ── Mock Tools Data for Table Rendering ───────────────────────────────────────
+const MOCK_TOOLS = [
+  { id: 'tool-1', name: 'Web Search', description: 'Queries search engines for live web information.', version: 'v1.0.2', category: 'Information' },
+  { id: 'tool-2', name: 'Python Sandbox', description: 'Executes untrusted mathematical and algorithmic scripts securely.', version: 'v2.1.0', category: 'Runtime' },
+  { id: 'tool-3', name: 'Document Parser', description: 'Extracts structural semantics from text, PDF, and CSV payloads.', version: 'v1.4.0', category: 'Data' },
+  { id: 'tool-4', name: 'Image Vectorizer', description: 'Translates pixel layouts into relational coordinate systems.', version: 'v0.9.1', category: 'Vision' },
+  { id: 'tool-5', name: 'Time-Zone Engine', description: 'Normalizes chronological structures across spatial zones.', version: 'v1.1.1', category: 'Utility' },
+  { id: 'tool-6', name: 'Currency Evaluator', description: 'Fetches real-time financial conversions and spot prices.', version: 'v2.0.4', category: 'Finance' },
+]
 
 // ── helpers ───────────────────────────────────────────────────────────────────
 function getUserNameFromToken(token: string | null): string {
@@ -89,18 +102,14 @@ function AuthDialog({
         if (data?.token) {
           onLogin(data.token)
           onOpenChange(false)
-          // toast({ title: mode === 'login' ? 'Welcome back!' : 'Account created!', description: 'You are now logged in.' })
           toast.success(mode === 'login' ? 'Welcome back!' : 'Account created! You are now logged in.')
         } else {
-          // toast({ title: 'Authentication failed', description: 'Missing token in response.', variant: 'destructive' })
           toast.error('Authentication failed: Missing token in response.')
         }
       } else {
-        // toast({ title: 'Authentication failed', description: 'Please check your credentials.', variant: 'destructive' })
         toast.error('Authentication failed: Please check your credentials.')
       }
     } catch (err) {
-      // toast({ title: 'Error', description: String(err), variant: 'destructive' })
       toast.error('An error occurred while processing your request: ' + String(err))
     } finally {
       setLoading(false)
@@ -158,7 +167,6 @@ function NewConversationDialog({
   async function create() {
     if (!title.trim()) return
     if (!token) {
-      // toast({ title: 'Not logged in', description: 'Please sign in to create a conversation.', variant: 'destructive' })
       toast.error('Not logged in: Please sign in to create a conversation.')
       return
     }
@@ -173,7 +181,6 @@ function NewConversationDialog({
         setTitle('')
         onCreated()
         onOpenChange(false)
-        // toast({ title: 'Conversation created' })
         toast.success('Conversation created')
       }
     } finally {
@@ -274,14 +281,23 @@ export default function Page() {
   const [showModelManager, setShowModelManager] = useState(false)
   const [isSearchOpen, setIsSearchOpen] = useState(false)
 
+  // Layout View Control State
+  const [currentView, setCurrentView] = useState<'chat' | 'tools'>('chat')
+
+  // Tools View Table State
+  const [selectedTools, setSelectedTools] = useState<Record<string, boolean>>({
+    'tool-1': true,
+    'tool-3': true,
+  })
+  const [toolPage, setToolPage] = useState(1)
+  const toolsPerPage = 4
+
   // Dialog states
   const [authDialogOpen, setAuthDialogOpen] = useState(false)
   const [authDialogMode, setAuthDialogMode] = useState<'login' | 'signup'>('login')
   const [newConvOpen, setNewConvOpen] = useState(false)
   const [systemPromptOpen, setSystemPromptOpen] = useState(false)
   const [deactivateAlertOpen, setDeactivateAlertOpen] = useState(false)
-
-  // const { toast } = useToast()
 
   const fetchConversations = useCallback(
     async (q?: string) => {
@@ -307,6 +323,7 @@ export default function Page() {
   }, [auth.token])
 
   async function loadMessages(convId: string) {
+    setCurrentView('chat') // Resetting to message list layout on conversation selection
     setSelectedConv(convId)
     const res = await fetch(`/api/messages?conversationId=${convId}`, {
       headers: auth.token ? { Authorization: `Bearer ${auth.token}` } : undefined,
@@ -315,6 +332,7 @@ export default function Page() {
   }
 
   async function handleSelectSearchResult(conversationId: string, messageId?: string) {
+    setCurrentView('chat') // Resetting to message list layout on search choice interaction
     setSelectedConv(conversationId)
     const res = await fetch(`/api/messages?conversationId=${conversationId}`, {
       headers: auth.token ? { Authorization: `Bearer ${auth.token}` } : undefined,
@@ -337,13 +355,12 @@ export default function Page() {
   async function send() {
     if (!input.trim() || streaming) return
     if (!selectedConv) {
-      // toast({ title: 'No conversation selected', description: 'Select or create a conversation first.', variant: 'destructive' })
       toast.error('No conversation selected: Please select or create a conversation first.')
       return
     }
     if (!selectedModel?.modelId) {
-      // toast({ title: 'No model selected', description: 'Please add or select an AI model first.', variant: 'destructive' })
       toast.error('No model selected: Please add or select an AI model first.')  
+      setCurrentView('chat')
       setShowModelManager(true)
       return
     }
@@ -456,7 +473,7 @@ export default function Page() {
     dispatch({ token: null, ready: true })
     setConversations([])
     setMessages([])
-    // toast({ title: 'Signed out successfully' })
+    setCurrentView('chat')
     toast.success('Signed out successfully')
   }
 
@@ -464,11 +481,9 @@ export default function Page() {
     const headers: Record<string, string> = { Authorization: `Bearer ${auth.token}` }
     const res = await fetch('/api/auth/deactivate', { method: 'DELETE', headers })
     if (res.ok) {
-      // toast({ title: 'Account deactivated', description: 'Your account and all data have been removed.' })
       toast.success('Account deactivated: Your account and all data have been removed.')
       handleLogout()
     } else {
-      // toast({ title: 'Deactivation failed', description: 'Please try again.', variant: 'destructive' })
       toast.error('Deactivation failed: Please try again.')
     }
     setDeactivateAlertOpen(false)
@@ -476,8 +491,8 @@ export default function Page() {
 
   async function handleEditMessage(id: string, content: string) {
     if (!selectedModel?.modelId) {
-      // toast({ title: 'No model selected', description: 'Please add or select an AI model first.', variant: 'destructive' })
       toast.error('No model selected: Please add or select an AI model first.')
+      setCurrentView('chat')
       setShowModelManager(true)
       return
     }
@@ -571,6 +586,14 @@ export default function Page() {
     }
   }
 
+  const toggleTool = (toolId: string) => {
+    setSelectedTools((prev) => ({ ...prev, [toolId]: !prev[toolId] }))
+  }
+
+  // Calculate paginated tools array slicing boundaries
+  const totalPages = Math.ceil(MOCK_TOOLS.length / toolsPerPage)
+  const paginatedTools = MOCK_TOOLS.slice((toolPage - 1) * toolsPerPage, toolPage * toolsPerPage)
+
   const userName = getUserNameFromToken(auth.token)
 
   // ── Not-logged-in state: no sidebar ──────────────────────────────────────────
@@ -629,17 +652,26 @@ export default function Page() {
 
         {/* Actions */}
         <div className="flex flex-col gap-1 p-2">
-          <Button variant="ghost" className="justify-start gap-2 text-sm font-normal" onClick={() => setNewConvOpen(true)}>
+          <Button variant="ghost" className="justify-start gap-2 text-sm font-normal" onClick={() => { setNewConvOpen(true); setCurrentView('chat') }}>
             <MessageSquarePlus className="w-4 h-4" />
             New conversation
           </Button>
-          <Button variant="ghost" className="justify-start gap-2 text-sm font-normal" onClick={() => setIsSearchOpen(true)}>
+          <Button variant="ghost" className="justify-start gap-2 text-sm font-normal" onClick={() => { setIsSearchOpen(true); setCurrentView('chat') }}>
             <Search className="w-4 h-4" />
             Search messages
           </Button>
-          <Button variant="ghost" className="justify-start gap-2 text-sm font-normal" onClick={() => setShowModelManager(true)}>
+          <Button variant="ghost" className="justify-start gap-2 text-sm font-normal" onClick={() => { setShowModelManager(true); setCurrentView('chat') }}>
             <Bot className="w-4 h-4" />
             Models
+          </Button>
+          {/* Tools button inside the sidebar action layout */}
+          <Button 
+            variant={currentView === 'tools' ? 'secondary' : 'ghost'} 
+            className="justify-start gap-2 text-sm font-normal" 
+            onClick={() => setCurrentView('tools')}
+          >
+            <Wrench className="w-4 h-4" />
+            Tools
           </Button>
         </div>
 
@@ -651,7 +683,7 @@ export default function Page() {
             token={auth.token}
             value={selectedModel?.id ?? null}
             onChange={(m) => setSelectedModel(m)}
-            onManage={() => setShowModelManager(true)}
+            onManage={() => { setShowModelManager(true); setCurrentView('chat') }}
             refreshToken={modelsRefresh}
           />
         </div>
@@ -680,7 +712,6 @@ export default function Page() {
                 <div className="w-6 h-6 border-white rounded-full bg-muted flex items-center justify-center text-xs font-bold flex-shrink-0">
                   {getInitials(userName)}
                 </div>
-                {/* min-w-0 ensures truncation works perfectly alongside ml-auto */}
                 <span className="truncate min-w-0">{userName}</span>
                 
                 <MoreVertical className="w-4 h-4 ml-auto flex-shrink-0" />
@@ -704,79 +735,170 @@ export default function Page() {
         </div>
       </aside>
 
-      {/* ── Main chat area ── */}
+      {/* ── Main content area conditional renderer ── */}
       <main className="flex-1 flex flex-col min-w-0 bg-background relative">
-        <ScrollArea className="flex-1">
-          <MessageList
-            messages={messages}
-            streaming={streaming}
-            onEdit={handleEditMessage}
-            onDelete={async (id: string) => {
-              const headers: Record<string, string> = {}
-              if (auth.token) headers.Authorization = `Bearer ${auth.token}`
-              await fetch(`/api/messages/${id}`, { method: 'DELETE', headers })
-              setMessages((prev) => prev.filter((m) => m.id !== id))
-              // toast({ title: 'Message deleted' })
-              toast.success('Message deleted')
-            }}
-          />
-        </ScrollArea>
+        {currentView === 'chat' ? (
+          <>
+            {/* Standard Conversation View */}
+            <ScrollArea className="flex-1">
+              <MessageList
+                messages={messages}
+                streaming={streaming}
+                onEdit={handleEditMessage}
+                onDelete={async (id: string) => {
+                  const headers: Record<string, string> = {}
+                  if (auth.token) headers.Authorization = `Bearer ${auth.token}`
+                  await fetch(`/api/messages/${id}`, { method: 'DELETE', headers })
+                  setMessages((prev) => prev.filter((m) => m.id !== id))
+                  toast.success('Message deleted')
+                }}
+              />
+            </ScrollArea>
 
-      {/* Chat Input Container */}
-      <div className="p-4 bg-background border-t">
-        <div className="flex items-end gap-2 max-w-4xl mx-auto">
-          
-          {/* TODO 6: The compilation of Document, Image, and Settings behind a '+' button */}
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="icon" className="shrink-0 rounded-full h-10 w-10">
-                <Plus className="w-5 h-5" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent side="top" align="start" className="w-48 mb-2">
-              <DropdownMenuItem onClick={() => {/* Handle Image */}} className="cursor-pointer">
-                <Image className="w-4 h-4 mr-2" />
-                Upload Image
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => {/* Handle Document */}} className="cursor-pointer">
-                <FileText className="w-4 h-4 mr-2" />
-                Upload Document
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setSystemPromptOpen(true)} className="cursor-pointer">
-                <Settings className="w-4 h-4 mr-2" />
-                System Prompt
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+            {/* Chat Input Container */}
+            <div className="p-4 bg-background border-t w-full">
+              <div className="flex items-end gap-2 mx-auto">
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="outline" size="icon" className="shrink-0 rounded-full h-10 w-10">
+                      <Plus className="w-5 h-5" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent side="top" align="start" className="w-48 mb-2">
+                    <DropdownMenuItem onClick={() => {/* Handle Image */}} className="cursor-pointer">
+                      <Image className="w-4 h-4 mr-2" />
+                      Upload Image
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => {/* Handle Document */}} className="cursor-pointer">
+                      <FileText className="w-4 h-4 mr-2" />
+                      Upload Document
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setSystemPromptOpen(true)} className="cursor-pointer">
+                      <Settings className="w-4 h-4 mr-2" />
+                      System Prompt
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
 
-          <div className="flex-1 relative">
-            <Textarea
-              placeholder="Message AI..."
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' && !e.shiftKey) {
-                  e.preventDefault()
-                  send()
-                }
-              }}
-              className="min-h-[44px] max-h-32 resize-none rounded-2xl py-3 px-4 pr-12"
-              rows={1}
-            />
-            {/* Send Button overlapping textarea */}
-            <Button 
-              size="icon" 
-              disabled={!input.trim() || streaming}
-              onClick={send} 
-              className="absolute bottom-1.5 right-1.5 h-8 w-8 rounded-xl"
-            >
-              <MessageSquarePlus className="w-4 h-4" />
-            </Button>
+                <div className="flex-1 relative">
+                  <Textarea
+                    placeholder="Message AI..."
+                    value={input}
+                    onChange={(e) => setInput(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault()
+                        send()
+                      }
+                    }}
+                    className="min-h-[44px] max-h-32 resize-none rounded-2xl py-3 px-4 pr-12"
+                    rows={1}
+                  />
+                  
+                  {streaming ? (
+                    <Button 
+                      size="icon" 
+                      variant="destructive"
+                      onClick={stop} 
+                      className="absolute bottom-1.5 right-1.5 h-8 w-8 rounded-xl animate-pulse"
+                    >
+                      <Square className="w-4 h-4 fill-current" />
+                    </Button>
+                  ) : (
+                    <Button 
+                      size="icon" 
+                      disabled={!input.trim()}
+                      onClick={send} 
+                      className="absolute bottom-1.5 right-1.5 h-8 w-8 rounded-xl"
+                    >
+                      <MessageSquarePlus className="w-4 h-4" />
+                    </Button>
+                  )}
+                </div>
+              </div>
+            </div>
+          </>
+        ) : (
+          /* Tools Table List Layout Workspace View */
+          <div className="flex-1 flex flex-col p-8 overflow-hidden max-w-5xl w-full mx-auto justify-start">
+            <div className="mb-6">
+              <h1 className="text-2xl font-semibold tracking-tight flex items-center gap-2">
+                <Wrench className="w-5 h-5 text-primary" />
+                Available Capabilities & Tools
+              </h1>
+              <p className="text-sm text-muted-foreground mt-1">
+                Enable or disable specialized modular execution plug-ins contextually accessible by active models.
+              </p>
+            </div>
+
+            <ScrollArea className="flex-1 border border-border rounded-xl bg-card">
+              <Table>
+                <TableHeader className="bg-muted/50 sticky top-0 z-10">
+                  <TableRow>
+                    <TableHead className="w-[100px]">Active Status</TableHead>
+                    <TableHead className="w-[200px] font-medium">Tool Name</TableHead>
+                    <TableHead>Functional Description</TableHead>
+                    <TableHead className="w-[120px]">Category</TableHead>
+                    <TableHead className="w-[100px] text-right">Build Release</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {paginatedTools.map((tool) => (
+                    <TableRow key={tool.id} className="hover:bg-muted/40 transition-colors">
+                      <TableCell className="align-middle py-4">
+                        <Checkbox 
+                          id={tool.id}
+                          checked={!!selectedTools[tool.id]} 
+                          onCheckedChange={() => toggleTool(tool.id)}
+                        />
+                      </TableCell>
+                      <TableCell className="font-semibold text-foreground align-middle py-4">
+                        <label htmlFor={tool.id} className="cursor-pointer block">
+                          {tool.name}
+                        </label>
+                      </TableCell>
+                      <TableCell className="text-muted-foreground align-middle py-4">{tool.description}</TableCell>
+                      <TableCell className="align-middle py-4">
+                        <span className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium bg-secondary text-secondary-foreground border border-border">
+                          {tool.category}
+                        </span>
+                      </TableCell>
+                      <TableCell className="text-right text-xs text-muted-foreground font-mono align-middle py-4">{tool.version}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </ScrollArea>
+
+            {/* Pagination Controls Footer section */}
+            <div className="flex items-center justify-between border-t border-border pt-4 mt-4 bg-background">
+              <span className="text-sm text-muted-foreground">
+                Showing Page <strong>{toolPage}</strong> of {totalPages} ({MOCK_TOOLS.length} elements total)
+              </span>
+              <div className="flex items-center space-x-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setToolPage((p) => Math.max(p - 1, 1))}
+                  disabled={toolPage === 1}
+                >
+                  <ChevronLeft className="h-4 w-4 mr-1" />
+                  Previous
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setToolPage((p) => Math.min(p + 1, totalPages))}
+                  disabled={toolPage === totalPages}
+                >
+                  Next
+                  <ChevronRight className="h-4 w-4 ml-1" />
+                </Button>
+              </div>
+            </div>
           </div>
-
-        </div>
-      </div>
-    </main>
+        )}
+      </main>
 
       {/* ── Models ── */}
       {showModelManager && (

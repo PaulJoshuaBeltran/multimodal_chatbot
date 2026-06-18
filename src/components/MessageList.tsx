@@ -48,6 +48,7 @@ export default function MessageList({
   const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null)
 
   const lastAssistantIndex = messages.reduce((last, m, i) => (m.role === 'assistant' ? i : last), -1)
+  const lastUserIndex = messages.reduce((last, m, i) => (m.role === 'user' ? i : last), -1)
 
   function openEdit(id: string, content: string) {
     setEditTarget({ id, content })
@@ -91,15 +92,12 @@ export default function MessageList({
       <div className="flex flex-col gap-2 p-4 min-h-full">
         {messages.map((m: Message, index: number) => {
           const isUser = m.role === 'user'
-          const isLastAssistant = streaming && index === lastAssistantIndex
-
           return (
             <MessageBubble
               key={m.id ?? m.createdAt ?? index}
               id={m.id}
               role={m.role as 'user' | 'assistant'}
               content={m.content}
-              streaming={isLastAssistant}
               highlightQuery={highlightQuery}
               onEdit={
                 isUser && m.id && onEdit

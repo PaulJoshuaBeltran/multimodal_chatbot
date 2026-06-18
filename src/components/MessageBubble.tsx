@@ -98,7 +98,6 @@ export default function MessageBubble({
   role,
   id,
   content,
-  streaming,
   onEdit,
   onDelete,
   highlightQuery,
@@ -106,7 +105,6 @@ export default function MessageBubble({
   role: 'user' | 'assistant'
   id?: string
   content: string
-  streaming?: boolean
   onEdit?: () => void
   onDelete?: () => void
   highlightQuery?: string
@@ -115,88 +113,95 @@ export default function MessageBubble({
   const isUser = role === 'user'
 
   return (
-    <div
-      id={id ? `msg-${id}` : undefined}
-      className={cn('flex flex-col mb-2', isUser ? 'items-end self-end' : 'items-start self-start', 'max-w-[80%]')}
-      style={{ alignSelf: isUser ? 'flex-end' : 'flex-start' }}
-    >
-      <style dangerouslySetInnerHTML={{ __html: `
-        .markdown-content p { margin: 0 0 0.6em 0; }
-        .markdown-content p:last-child { margin-bottom: 0; }
-        .markdown-content ul, .markdown-content ol { margin: 0 0 0.6em 0; padding-left: 1.25em; }
-        .markdown-content li { margin-bottom: 0.25em; }
-        .markdown-content h1 { font-size: 1.35rem; font-weight: 700; margin: 1em 0 0.4em; }
-        .markdown-content h2 { font-size: 1.15rem; font-weight: 600; margin: 0.9em 0 0.35em; }
-        .markdown-content h3 { font-size: 1rem; font-weight: 600; margin: 0.8em 0 0.3em; }
-        .markdown-content code { background: rgba(0,0,0,0.08); padding: 1px 4px; border-radius: 3px; font-family: monospace; font-size: 0.875em; }
-        .markdown-content pre { background: #1e1e1e; color: #d4d4d4; padding: 12px 14px; border-radius: 8px; overflow-x: auto; margin: 0.6em 0; }
-        .markdown-content pre code { background: none; padding: 0; color: inherit; font-size: 0.8125rem; }
-        .markdown-content table { border-collapse: collapse; width: 100%; margin: 0.8em 0; font-size: 0.875rem; }
-        .markdown-content th, .markdown-content td { border: 1px solid rgba(0,0,0,0.15); padding: 6px 10px; text-align: left; }
-        .markdown-content th { background: rgba(0,0,0,0.05); font-weight: 600; }
-        .markdown-content blockquote { border-left: 3px solid rgba(0,0,0,0.2); margin: 0.5em 0; padding: 0.25em 0.75em; color: rgba(0,0,0,0.65); }
-        .message-actions { opacity: 0; transition: opacity 0.15s; }
-        .message-row:hover .message-actions { opacity: 1; }
-      ` }} />
+    <>
+      <div
+        id={id ? `msg-${id}` : undefined}
+        className={cn('flex flex-col mb-2', isUser ? 'items-end self-end' : 'items-start self-start', 'max-w-[80%]')}
+        style={{ alignSelf: isUser ? 'flex-end' : 'flex-start' }}
+      >
+        <style dangerouslySetInnerHTML={{ __html: `
+          .markdown-content p { margin: 0 0 0.6em 0; }
+          .markdown-content p:last-child { margin-bottom: 0; }
+          .markdown-content ul, .markdown-content ol { margin: 0 0 0.6em 0; padding-left: 1.25em; }
+          .markdown-content li { margin-bottom: 0.25em; }
+          .markdown-content h1 { font-size: 1.35rem; font-weight: 700; margin: 1em 0 0.4em; }
+          .markdown-content h2 { font-size: 1.15rem; font-weight: 600; margin: 0.9em 0 0.35em; }
+          .markdown-content h3 { font-size: 1rem; font-weight: 600; margin: 0.8em 0 0.3em; }
+          .markdown-content code { background: rgba(0,0,0,0.08); padding: 1px 4px; border-radius: 3px; font-family: monospace; font-size: 0.875em; }
+          .markdown-content pre { background: #1e1e1e; color: #d4d4d4; padding: 12px 14px; border-radius: 8px; overflow-x: auto; margin: 0.6em 0; }
+          .markdown-content pre code { background: none; padding: 0; color: inherit; font-size: 0.8125rem; }
+          .markdown-content table { border-collapse: collapse; width: 100%; margin: 0.8em 0; font-size: 0.875rem; }
+          .markdown-content th, .markdown-content td { border: 1px solid rgba(0,0,0,0.15); padding: 6px 10px; text-align: left; }
+          .markdown-content th { background: rgba(0,0,0,0.05); font-weight: 600; }
+          .markdown-content blockquote { border-left: 3px solid rgba(0,0,0,0.2); margin: 0.5em 0; padding: 0.25em 0.75em; color: rgba(0,0,0,0.65); }
+          .message-actions { opacity: 0; transition: opacity 0.15s; }
+          .message-row:hover .message-actions { opacity: 1; }
+        ` }} />
 
-      <div className="message-row relative flex items-center gap-1">
-        {/* Action menu — positioned to the left for user messages */}
-        {isUser && (onEdit || onDelete) && (
-          <div className="message-actions flex-shrink-0">
-            <DropdownMenu open={menuOpen} onOpenChange={setMenuOpen}>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="h-6 w-6 rounded-full">
-                  <MoreHorizontal className="w-3.5 h-3.5" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-28">
-                {onEdit && (
-                  <DropdownMenuItem onClick={() => { setMenuOpen(false); onEdit() }}>
-                    <Pencil className="w-3.5 h-3.5 mr-2" />
-                    Edit
-                  </DropdownMenuItem>
-                )}
-                {onDelete && (
-                  <DropdownMenuItem
-                    className="text-destructive focus:text-destructive"
-                    onClick={() => { setMenuOpen(false); onDelete() }}
-                  >
-                    <Trash2 className="w-3.5 h-3.5 mr-2" />
-                    Delete
-                  </DropdownMenuItem>
-                )}
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
-        )}
-
-        {/* Bubble */}
-        <div
-          className={cn(
-            'px-4 py-2.5 rounded-2xl text-sm leading-relaxed overflow-x-auto',
-            isUser
-              ? 'bg-primary text-primary-foreground rounded-br-sm'
-              : 'bg-white text-foreground border rounded-bl-sm'
-          )}
-        >
-          {isUser ? (
-            <div className="whitespace-pre-wrap">{highlightLiveText(content, highlightQuery)}</div>
-          ) : (
-            <div className="markdown-content">
-              <ReactMarkdown
-                remarkPlugins={[remarkGfm, remarkMath]}
-                rehypePlugins={[rehypeKatex, [rehypeHighlightQuery, { query: highlightQuery }]]}
-              >
-                {content}
-              </ReactMarkdown>
+        <div className="message-row relative flex items-center gap-1">
+          {/* Action menu — positioned to the left for user messages */}
+          {isUser && (onEdit || onDelete) && (
+            <div className="message-actions flex-shrink-0">
+              <DropdownMenu open={menuOpen} onOpenChange={setMenuOpen}>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon" className="h-6 w-6 rounded-full">
+                    <MoreHorizontal className="w-3.5 h-3.5" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-28">
+                  {onEdit && (
+                    <DropdownMenuItem onClick={() => { setMenuOpen(false); onEdit() }}>
+                      <Pencil className="w-3.5 h-3.5 mr-2" />
+                      Edit
+                    </DropdownMenuItem>
+                  )}
+                  {onDelete && (
+                    <DropdownMenuItem
+                      className="text-destructive focus:text-destructive"
+                      onClick={() => { setMenuOpen(false); onDelete() }}
+                    >
+                      <Trash2 className="w-3.5 h-3.5 mr-2" />
+                      Delete
+                    </DropdownMenuItem>
+                  )}
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
           )}
+
+          {/* Bubble */}
+          <div
+            className={cn(
+              'px-4 py-2.5 rounded-2xl text-sm leading-relaxed overflow-x-auto min-h-[38px] flex items-center',
+              isUser
+                ? 'bg-primary text-primary-foreground rounded-br-sm border border-white'
+                : 'bg-white text-black border rounded-bl-sm'
+            )}
+          >
+            {isUser ? (
+              <div className="whitespace-pre-wrap">{highlightLiveText(content, highlightQuery)}</div>
+            ) : (
+              <div className="markdown-content w-full">
+                {content.trim() ? (
+                  <ReactMarkdown
+                    remarkPlugins={[remarkGfm, remarkMath]}
+                    rehypePlugins={[rehypeKatex, [rehypeHighlightQuery, { query: highlightQuery }]]}
+                  >
+                    {content}
+                  </ReactMarkdown>
+                ) : (
+                  /* Instant visual placeholder matching line height while thinking */
+                  <div className="flex items-center gap-1 py-0.5">
+                    <span className="w-1.5 h-1.5 bg-black/40 rounded-full animate-bounce [animation-delay:-0.3s]" />
+                    <span className="w-1.5 h-1.5 bg-black/40 rounded-full animate-bounce [animation-delay:-0.15s]" />
+                    <span className="w-1.5 h-1.5 bg-black/40 rounded-full animate-bounce" />
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
         </div>
       </div>
-
-      {streaming && !isUser && (
-        <span className="mt-1 ml-1 text-xs text-muted-foreground animate-pulse">thinking…</span>
-      )}
-    </div>
+    </>
   )
 }
