@@ -176,7 +176,7 @@ export default function MessageBubble({
             'px-4 py-2.5 rounded-2xl text-sm leading-relaxed overflow-x-auto',
             isUser
               ? 'bg-primary text-primary-foreground rounded-br-sm'
-              : 'bg-muted text-foreground rounded-bl-sm'
+              : 'bg-white text-foreground border rounded-bl-sm'
           )}
         >
           {isUser ? (

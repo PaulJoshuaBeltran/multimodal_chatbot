@@ -677,7 +677,7 @@ export default function Page() {
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="w-full justify-start gap-2 text-sm font-normal">
-                <div className="w-6 h-6 rounded-full bg-muted flex items-center justify-center text-xs font-bold flex-shrink-0">
+                <div className="w-6 h-6 border-white rounded-full bg-muted flex items-center justify-center text-xs font-bold flex-shrink-0">
                   {getInitials(userName)}
                 </div>
                 {/* min-w-0 ensures truncation works perfectly alongside ml-auto */}
@@ -778,7 +778,7 @@ export default function Page() {
       </div>
     </main>
 
-      {/* ── Modals ── */}
+      {/* ── Models ── */}
       {showModelManager && (
         <ModelManager
           token={auth.token}

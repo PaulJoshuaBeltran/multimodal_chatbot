@@ -88,7 +88,7 @@ export default function MessageList({
 
   return (
     <>
-      <div className="flex flex-col gap-2 p-4">
+      <div className="flex flex-col gap-2 p-4 min-h-full">
         {messages.map((m: Message, index: number) => {
           const isUser = m.role === 'user'
           const isLastAssistant = streaming && index === lastAssistantIndex
