@@ -170,7 +170,7 @@ export default function SearchDialog({ isOpen, onClose, token, onSelectResult }:
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="sm:max-w-lg max-h-[80vh] flex flex-col gap-0 p-0">
+      <DialogContent className="sm:max-w-lg max-h-[80vh] grid grid-rows-[auto_auto_auto_minmax(0,1fr)] gap-0 p-0 overflow-hidden">
         <DialogHeader className="px-4 pt-4 pb-0">
           <DialogTitle>Search</DialogTitle>
           <DialogDescription>Search across all conversations and messages.</DialogDescription>
@@ -197,7 +197,7 @@ export default function SearchDialog({ isOpen, onClose, token, onSelectResult }:
         <Separator />
 
         {/* Results */}
-        <ScrollArea className="flex-1 px-4 py-3">
+        <ScrollArea type="auto" className="min-h-0 px-4 py-3">
           {!query.trim() && (
             <p className="text-sm text-muted-foreground text-center py-6">Start typing to search…</p>
           )}

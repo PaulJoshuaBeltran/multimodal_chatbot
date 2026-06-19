@@ -183,7 +183,7 @@ export default function ModelManager({
   return (
     <>
       <Dialog open onOpenChange={(open) => !open && onClose()}>
-        <DialogContent className="sm:max-w-xl max-h-[85vh] flex flex-col">
+        <DialogContent className="sm:max-w-xl max-h-[85vh] flex flex-col overflow-hidden">
           <DialogHeader>
             <DialogTitle>Manage models</DialogTitle>
             <DialogDescription>Add, search, edit, or remove AI models.</DialogDescription>
@@ -242,7 +242,7 @@ export default function ModelManager({
           </div>
 
           {/* Model list */}
-          <ScrollArea className="flex-1 pr-1">
+          <ScrollArea type="auto" className="flex-1 min-h-0 pr-1">
             {models.length === 0 ? (
               <p className="text-sm text-muted-foreground py-4 text-center">No models yet.</p>
             ) : (

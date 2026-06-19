@@ -691,7 +691,7 @@ export default function Page() {
         <Separator />
 
         {/* Conversation list */}
-        <ScrollArea className="flex-1 px-2 min-h-0">
+        <ScrollArea type="auto" className="flex-1 px-2 min-h-0">
           <p className="text-xs font-medium text-muted-foreground px-2 py-2 uppercase tracking-wide">Conversations</p>
           <ConversationList
             selectedConvId={selectedConv}
@@ -736,11 +736,11 @@ export default function Page() {
       </aside>
 
       {/* ── Main content area conditional renderer ── */}
-      <main className="flex-1 flex flex-col min-w-0 bg-background relative">
+      <main className="flex-1 flex flex-col min-w-0 min-h-0 bg-background relative">
         {currentView === 'chat' ? (
           <>
             {/* Standard Conversation View */}
-            <ScrollArea className="flex-1">
+            <ScrollArea type="auto" className="flex-1 min-h-0">
               <MessageList
                 messages={messages}
                 streaming={streaming}
@@ -820,7 +820,7 @@ export default function Page() {
           </>
         ) : (
           /* Tools Table List Layout Workspace View */
-          <div className="flex-1 flex flex-col p-8 overflow-hidden max-w-5xl w-full mx-auto justify-start">
+          <div className="flex-1 flex flex-col min-h-0 p-8 overflow-hidden max-w-5xl w-full mx-auto justify-start">
             <div className="mb-6">
               <h1 className="text-2xl font-semibold tracking-tight flex items-center gap-2">
                 <Wrench className="w-5 h-5 text-primary" />
@@ -831,7 +831,7 @@ export default function Page() {
               </p>
             </div>
 
-            <ScrollArea className="flex-1 border border-border rounded-xl bg-card">
+            <ScrollArea type="auto" className="flex-1 min-h-0 border border-border rounded-xl bg-card">
               <Table>
                 <TableHeader className="bg-muted/50 sticky top-0 z-10">
                   <TableRow>
