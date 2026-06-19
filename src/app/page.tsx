@@ -704,8 +704,16 @@ export default function Page() {
         </ScrollArea>
         <Separator />
 
-        {/* Account management */}
         <div className="p-2">
+          {/* Settings */}
+          <Button variant="ghost" className="w-full justify-start gap-2 text-sm font-normal">
+            <div className="w-6 h-6 border-white rounded-full bg-muted flex items-center justify-center text-xs font-bold flex-shrink-0">
+              <Settings className="w-4 h-6 mr-2" />
+            </div>
+            <span className="truncate min-w-0">Settings</span>
+          </Button>
+
+          {/* Account management */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="w-full justify-start gap-2 text-sm font-normal">

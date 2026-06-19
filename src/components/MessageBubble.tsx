@@ -14,8 +14,9 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from './ui/dropdown-menu'
-import { MoreHorizontal, Pencil, Trash2 } from 'lucide-react'
+import { MoreHorizontal, Pencil, Trash2, Copy } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { toast } from 'sonner'
 
 // HAST node type for the custom rehype plugin
 interface HastNode {
@@ -94,6 +95,15 @@ function highlightLiveText(text: string, keyword?: string): React.JSX.Element {
   )
 }
 
+function escapePercentInMath(text: string): string {
+  // Escape unescaped % inside $...$ and $$...$$ blocks
+  return text.replace(/\$\$([\s\S]*?)\$\$|\$([^\$\n]*?)\$/g, (match, block, inline) => {
+    const inner = block ?? inline
+    const escaped = inner.replace(/(?<!\\)%/g, '\\%')
+    return block !== undefined ? `$$${escaped}$$` : `$${escaped}$`
+  })
+}
+
 export default function MessageBubble({
   role,
   id,
@@ -111,6 +121,15 @@ export default function MessageBubble({
 }) {
   const [menuOpen, setMenuOpen] = useState(false)
   const isUser = role === 'user'
+
+  async function handleCopy() {
+    try {
+      await navigator.clipboard.writeText(content)
+      toast.info('Copied to clipboard')
+    } catch {
+      toast.error('Failed to copy')
+    }
+  }
 
   return (
     <>
@@ -140,7 +159,7 @@ export default function MessageBubble({
 
         <div className="message-row relative flex items-center gap-1">
           {/* Action menu — positioned to the left for user messages */}
-          {isUser && (onEdit || onDelete) && (
+          {isUser && (
             <div className="message-actions flex-shrink-0">
               <DropdownMenu open={menuOpen} onOpenChange={setMenuOpen}>
                 <DropdownMenuTrigger asChild>
@@ -149,6 +168,10 @@ export default function MessageBubble({
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-28">
+                  <DropdownMenuItem onClick={() => { setMenuOpen(false); handleCopy() }}>
+                    <Copy className="w-3.5 h-3.5 mr-2" />
+                    Copy
+                  </DropdownMenuItem>
                   {onEdit && (
                     <DropdownMenuItem onClick={() => { setMenuOpen(false); onEdit() }}>
                       <Pencil className="w-3.5 h-3.5 mr-2" />
@@ -187,7 +210,7 @@ export default function MessageBubble({
                     remarkPlugins={[remarkGfm, remarkMath]}
                     rehypePlugins={[rehypeKatex, [rehypeHighlightQuery, { query: highlightQuery }]]}
                   >
-                    {content}
+                    {escapePercentInMath(content)}
                   </ReactMarkdown>
                 ) : (
                   /* Instant visual placeholder matching line height while thinking */
@@ -200,6 +223,21 @@ export default function MessageBubble({
               </div>
             )}
           </div>
+
+          {/* Copy button — positioned to the right for assistant messages */}
+          {!isUser && (
+            <div className="message-actions flex-shrink-0">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-6 w-6 rounded-full"
+                onClick={handleCopy}
+                aria-label="Copy message"
+              >
+                <Copy className="w-3.5 h-3.5" />
+              </Button>
+            </div>
+          )}
         </div>
       </div>
     </>
