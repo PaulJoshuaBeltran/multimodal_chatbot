@@ -33,12 +33,14 @@ export default function MessageList({
   onEdit,
   onDelete,
   highlightQuery,
+  onRegenerate
 }: {
   messages: Message[]
   streaming?: boolean
   onEdit?: (id: string, content: string) => void
   onDelete?: (id: string) => void
   highlightQuery?: string
+  onRegenerate?: (index: number) => void
 }) {
   const [editDialogOpen, setEditDialogOpen] = useState(false)
   const [editTarget, setEditTarget] = useState<{ id: string; content: string } | null>(null)
@@ -107,6 +109,11 @@ export default function MessageList({
               onDelete={
                 isUser && m.id && onDelete
                   ? () => openDelete(m.id!)
+                  : undefined
+              }
+              onRegenerate={
+                m.role === 'assistant' && onRegenerate
+                  ? () => onRegenerate(index)
                   : undefined
               }
             />

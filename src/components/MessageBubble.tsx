@@ -14,7 +14,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from './ui/dropdown-menu'
-import { MoreHorizontal, Pencil, Trash2, Copy } from 'lucide-react'
+import { MoreHorizontal, Pencil, Trash2, Copy, RotateCcw } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { toast } from 'sonner'
 
@@ -111,6 +111,7 @@ export default function MessageBubble({
   onEdit,
   onDelete,
   highlightQuery,
+  onRegenerate
 }: {
   role: 'user' | 'assistant'
   id?: string
@@ -118,6 +119,7 @@ export default function MessageBubble({
   onEdit?: () => void
   onDelete?: () => void
   highlightQuery?: string
+  onRegenerate?: () => void
 }) {
   const [menuOpen, setMenuOpen] = useState(false)
   const isUser = role === 'user'
@@ -236,21 +238,32 @@ export default function MessageBubble({
               </div>
             )}
           </div>
-
-          {/* Copy button — positioned to the right for assistant messages */}
-          {!isUser && (
-            <div className="message-actions flex-shrink-0">
+        {!isUser && (
+          <div className="message-actions flex-shrink-0 flex gap-1">
+            
+            {onRegenerate && (
               <Button
                 variant="ghost"
                 size="icon"
                 className="h-6 w-6 rounded-full"
-                onClick={handleCopy}
-                aria-label="Copy message"
+                onClick={onRegenerate}
+                aria-label="Regenerate response"
               >
-                <Copy className="w-3.5 h-3.5" />
+                <RotateCcw className="w-3.5 h-3.5" />
               </Button>
-            </div>
-          )}
+            )}
+
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-6 w-6 rounded-full"
+              onClick={handleCopy}
+              aria-label="Copy message"
+            >
+              <Copy className="w-3.5 h-3.5" />
+            </Button>
+          </div>
+        )}
         </div>
       </div>
     </>

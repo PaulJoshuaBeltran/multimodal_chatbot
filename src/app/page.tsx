@@ -35,7 +35,19 @@ import { toast } from 'sonner'
 import { Label } from '../components/ui/label'
 import { Input } from '../components/ui/input'
 import { Square, MessageSquarePlus, Search, Settings, Bot, Plus, Image, FileText, LogOut, UserX, MoreVertical, Wrench, ChevronLeft, ChevronRight } from 'lucide-react'
-import type { Conversation, Message as ChatMessage, AiModel } from '@/src/types/msg_conversation_model'
+import type { Conversation, Message as ChatMessage, AiModel, ChatMessagePayload, OllamaPayload, RetryContext } from '@/src/types/msg_conversation_model'
+
+class HttpError extends Error {
+  status: number
+  body?: string
+
+  constructor(message: string, status: number, body?: string) {
+    super(message)
+    this.name = 'HttpError'
+    this.status = status
+    this.body = body
+  }
+}
 
 const MOCK_TOOLS = [
   { id: 'tool-1', name: 'Web Search', description: 'Queries search engines for live web information.', version: 'v1.0.2', category: 'Information' },
@@ -275,13 +287,135 @@ export default function Page() {
     }
   }
 
-  async function send() {
-    if (!input.trim() || streaming) return
-    if (!selectedConv) { toast.error('No conversation selected: Please select or create a conversation first.'); return }
-    if (!selectedModel?.modelId) { toast.error('No model selected: Please add or select an AI model first.'); setCurrentView('chat'); setShowModelManager(true); return }
+  async function generateAssistantReply(
+    params: {
+      messages: ChatMessagePayload[]
+      conversationId: string | null
+      systemPrompt?: string
+      onToken: (text: string) => void
+      signal: AbortSignal
+    }
+  ): Promise<string> {
+    if (!selectedModel?.modelId) {
+      toast.error('No model selected')
+      setShowModelManager(true)
+      throw new Error('No model selected')
+    }
+    const payload: OllamaPayload & { system?: string } = {
+      messages: params.messages,
+      model: selectedModel.modelId,
+    }
 
-    const userMsg = { role: 'user' as const, content: input }
-    setMessages((prev) => [...prev, userMsg])
+    if (params.systemPrompt?.trim()) {
+      payload.system = params.systemPrompt.trim()
+    }
+
+    const res = await fetch('/api/chat/ollama', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+      signal: params.signal,
+    })
+
+    if (!res.ok) {
+      const errText = await res.text()
+
+      throw new HttpError(
+        errText || `HTTP ${res.status}`,
+        res.status,
+        errText
+      )
+    }
+
+    const reader = res.body!.getReader()
+    const dec = new TextDecoder()
+
+    let full = ''
+
+    while (true) {
+      const { done, value } = await reader.read()
+      if (done) break
+      const chunk = dec.decode(value)
+      full += chunk
+      params.onToken(chunk)
+    }
+
+    return full
+  }
+  async function handleRegenerateFromIndex(index: number) {
+    const controller = new AbortController()
+    abortRef.current = controller
+    
+    if (!selectedConv) return
+
+    const context = messages.slice(0, index).map(m => ({
+      role: m.role,
+      content: m.content,
+    }))
+
+    setStreaming(true)
+
+    let assistantIndex = index + 1
+
+    setMessages((prev) => {
+      const copy = prev.slice(0, index + 1)
+      copy.push({ role: 'assistant', content: '' })
+      assistantIndex = copy.length - 1
+      return copy
+    })
+
+    // let reply = '';
+
+    try {
+      await generateAssistantReply({
+        messages: context,
+        conversationId: selectedConv,
+        systemPrompt,
+        signal: controller.signal,
+        onToken: (text) => {
+          setMessages((prev) => {
+            const copy = [...prev]
+            copy[assistantIndex] = { role: 'assistant', content: text }
+            return copy
+          })
+        },
+      })
+    } catch (err) {
+      setMessages((prev) => {
+        const copy = [...prev]
+        copy[assistantIndex] = {
+          role: 'assistant',
+          content: `⚠️ Ollama failed to regenerate:\n${String(err)}`,
+        }
+        return copy
+      })
+    } finally {
+      setStreaming(false)
+    }
+  }
+
+  async function send() {
+    const controller = new AbortController()
+    abortRef.current = controller
+    if (!input.trim() || streaming) return
+
+    if (!selectedConv) {
+      toast.error('No conversation selected')
+      return
+    }
+
+    if (!selectedModel?.modelId) {
+      toast.error('No model selected')
+      setShowModelManager(true)
+      return
+    }
+
+    const userMsg: ChatMessagePayload = {
+      role: 'user',
+      content: input,
+    }
+
+    setMessages(prev => [...prev, userMsg])
     setInput('')
 
     const saveHeaders: Record<string, string> = { 'Content-Type': 'application/json' }
@@ -290,30 +424,71 @@ export default function Page() {
     if (saveRes.ok) { const savedMsg = await saveRes.json(); setMessages((prev) => prev.map((m) => (m === userMsg ? savedMsg : m))) }
 
     setStreaming(true)
-    abortRef.current = new AbortController()
-    const contextMessages = [...messages, userMsg].map((m) => ({ role: m.role, content: m.content }))
-    const payload: { messages: { role: 'user' | 'assistant'; content: string }[]; model?: string; system?: string } = { messages: contextMessages, model: selectedModel.modelId }
-    if (systemPrompt.trim()) payload.system = systemPrompt
-    let reply = ''
+
+    const contextMessages: ChatMessagePayload[] = [...messages, userMsg].map(m => ({
+      role: m.role,
+      content: m.content,
+    }))
+
+    // build payload safely (no invalid typing tricks)
+    const payload: OllamaPayload & { system?: string } = {
+      messages: contextMessages,
+      model: selectedModel.modelId,
+    }
+
+    if (systemPrompt.trim()) {
+      payload.system = systemPrompt.trim()
+    }
+
+    setMessages((prev) => [...prev, { role: 'assistant', content: '' }])
+
+    let reply = '';
 
     try {
-      const res = await fetch('/api/chat/ollama', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload), signal: abortRef.current.signal })
-      if (!res.ok) { const errText = await res.text(); throw new Error(errText || `HTTP status ${res.status}`) }
-      const reader = res.body!.getReader()
-      const dec = new TextDecoder()
-      setMessages((prev) => [...prev, { role: 'assistant', content: '' }])
-      while (true) {
-        const { done, value } = await reader.read()
-        if (done) break
-        reply += dec.decode(value)
-        setMessages((prev) => { const copy = [...prev]; copy[copy.length - 1] = { role: 'assistant', content: reply }; return copy })
+     reply = await generateAssistantReply({
+      messages: [...messages, userMsg].map(m => ({
+        role: m.role,
+        content: m.content,
+      })),
+      conversationId: selectedConv,
+      systemPrompt,
+      signal: controller.signal,
+      onToken: (chunk) => {
+        setMessages((prev) => {
+          const copy = [...prev]
+          const idx = copy.length - 1
+          copy[idx] = {
+            role: 'assistant',
+            content: (copy[idx].content || '') + chunk,
+          }
+          return copy
+        })
       }
-    } catch (e: unknown) {
-      const err = e as Error
-      if (err.name !== 'AbortError') {
-        reply = `Error connecting to model: ${err.message}`
-        setMessages((prev) => { const copy = [...prev]; if (copy.length > 0 && copy[copy.length - 1].role === 'assistant' && copy[copy.length - 1].content === '') { copy[copy.length - 1] = { role: 'assistant', content: reply } } else { copy.push({ role: 'assistant', content: reply }) }; return copy })
-      }
+    })
+    } catch (err) {
+      const errorText =
+        err instanceof Error ? `⚠️ Ollama ${err.message}` : '⚠️ Ollama Unknown error'
+
+      setMessages((prev) => {
+        const copy = [...prev]
+
+        // if assistant placeholder exists, replace it
+        if (copy.length && copy[copy.length - 1].role === 'assistant') {
+          copy[copy.length - 1] = {
+            role: 'assistant',
+            content: errorText,
+          }
+        } else {
+          copy.push({
+            role: 'assistant',
+            content: errorText,
+          })
+        }
+
+        return copy
+      })
+
+      toast.error(errorText)
     } finally {
       setStreaming(false)
       if (reply) {
@@ -520,6 +695,7 @@ export default function Page() {
                   setMessages((prev) => prev.filter((m) => m.id !== id))
                   toast.success('Message deleted')
                 }}
+                onRegenerate={handleRegenerateFromIndex}
               />
             </ScrollArea>
 

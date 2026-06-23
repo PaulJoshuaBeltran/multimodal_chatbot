@@ -24,3 +24,22 @@ export type AiModel = {
   createdAt?: string
   updatedAt?: string | null
 }
+
+// TEMPORARY
+export type ChatRole = 'user' | 'assistant'
+
+export type ChatMessagePayload = {
+  role: ChatRole
+  content: string
+}
+
+export type OllamaPayload = {
+  messages: ChatMessagePayload[]
+  model?: string
+  system?: string
+}
+
+export type RetryContext = {
+  payload: OllamaPayload
+  conversationId: string
+}
