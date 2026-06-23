@@ -84,7 +84,7 @@ function highlightLiveText(text: string, keyword?: string): React.JSX.Element {
     <>
       {parts.map((part, i) =>
         part.toLowerCase() === keyword.toLowerCase() ? (
-          <mark key={i} style={{ backgroundColor: '#ffeb3b', padding: '0 2px', borderRadius: 2, color: '#000' }}>
+          <mark key={i} style={{ backgroundColor: 'var(--yellow2)', padding: '0 2px', borderRadius: 2, color: '#000' }}>
             {part}
           </mark>
         ) : (

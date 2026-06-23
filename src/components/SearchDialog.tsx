@@ -145,7 +145,9 @@ export default function SearchDialog({ isOpen, onClose, token, onSelectResult }:
       <span>
         {parts.map((part, i) =>
           part.toLowerCase() === keyword.toLowerCase() ? (
-            <mark key={i} className="bg-yellow-200 text-black px-0.5 rounded-[2px]">{part}</mark>
+            <mark key={i} className="bg-[var(--yellow2)] text-black px-0.5 rounded-[2px]">
+              {part}
+            </mark>
           ) : (
             part
           )
@@ -170,7 +172,10 @@ export default function SearchDialog({ isOpen, onClose, token, onSelectResult }:
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="sm:max-w-lg max-h-[80vh] grid grid-rows-[auto_auto_auto_minmax(0,1fr)] gap-0 p-0 overflow-hidden">
+      <DialogContent
+        className="sm:max-w-lg max-h-[80vh] grid grid-rows-[auto_auto_auto_minmax(0,1fr)] gap-0 p-0 overflow-hidden"
+        style={{ backgroundColor: 'var(--gray3)' }}
+      >
         <DialogHeader className="px-4 pt-4 pb-0">
           <DialogTitle>Search</DialogTitle>
           <DialogDescription>Search across all conversations and messages.</DialogDescription>
@@ -190,6 +195,8 @@ export default function SearchDialog({ isOpen, onClose, token, onSelectResult }:
               onChange={(e) => dispatch({ type: 'SET_QUERY', payload: e.target.value })}
               className="pl-9"
               autoFocus
+              onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray2)')}
+              onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}
             />
           </div>
         </div>
@@ -217,6 +224,8 @@ export default function SearchDialog({ isOpen, onClose, token, onSelectResult }:
                       key={c.id}
                       onClick={() => { onSelectResult(c.id, undefined, query); onClose() }}
                       className="flex items-center gap-2 px-3 py-2 rounded-md text-sm text-left hover:bg-muted/70 transition-colors w-full"
+                      onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray2)')}
+                      onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}
                     >
                       <FolderOpen className="w-4 h-4 text-muted-foreground flex-shrink-0" />
                       <span>{highlightText(c.title, query)}</span>
@@ -243,6 +252,8 @@ export default function SearchDialog({ isOpen, onClose, token, onSelectResult }:
                           <button
                             onClick={() => { onSelectResult(convId, m.id, query); onClose() }}
                             className="flex items-start gap-2 px-3 py-2 text-sm text-left hover:bg-muted/50 transition-colors w-full"
+                            onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray2)')}
+                            onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}
                           >
                             <MessageSquare className="w-3.5 h-3.5 mt-0.5 text-muted-foreground flex-shrink-0" />
                             <div className="min-w-0">

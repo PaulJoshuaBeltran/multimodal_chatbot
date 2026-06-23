@@ -57,7 +57,7 @@ export default function ModelSelect({ token, value, onChange, onManage, refreshT
   return (
     <div className="flex flex-col gap-1.5">
       <Label className="text-xs text-muted-foreground font-medium">AI Model</Label>
-      <div className="flex gap-1.5 items-center">
+      <div className="flex gap-1.5 items-center" >
         <Select
           value={value || ''}
           onValueChange={(val) => {
@@ -65,15 +65,21 @@ export default function ModelSelect({ token, value, onChange, onManage, refreshT
             onChange(selected)
           }}
           disabled={loading || models.length === 0}
+          
         >
-          <SelectTrigger className="flex-1 h-8 text-xs border-0 focus-visible:ring-0 focus-visible:ring-offset-0">
+          <SelectTrigger
+            className="flex-1 h-8 text-xs"
+            style={{ backgroundColor: 'var(--gray1)', borderColor: 'var(--gray1)'}}
+          >
             <SelectValue placeholder={loading ? 'Loading…' : 'No models available'} />
           </SelectTrigger>
           <SelectContent>
             {models.map((m) => (
-              <SelectItem key={m.id} value={m.id} className="text-xs">
+              <SelectItem
+                key={m.id} value={m.id} className="text-xs"
+                style={{ backgroundColor: 'var(--gray1)', borderColor: 'var(--gray1)'}}
+              >
                 <span className="font-medium">{m.name}</span>
-                {/* <span className="font-medium">({m.modelId})</span> */}
               </SelectItem>
             ))}
           </SelectContent>

@@ -183,7 +183,10 @@ export default function ModelManager({
   return (
     <>
       <Dialog open onOpenChange={(open) => !open && onClose()}>
-        <DialogContent className="sm:max-w-xl max-h-[85vh] flex flex-col overflow-hidden">
+        <DialogContent
+          className="sm:max-w-xl max-h-[85vh] flex flex-col overflow-hidden"
+          style={{ backgroundColor: 'var(--gray3)', borderColor: 'var(--gray3)' }}
+        >
           <DialogHeader>
             <DialogTitle>Manage models</DialogTitle>
             <DialogDescription>Add, search, edit, or remove AI models.</DialogDescription>
@@ -192,16 +195,29 @@ export default function ModelManager({
           {/* Search */}
           <div className="flex gap-2">
             <div className="relative flex-1">
-              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+              <Search
+                className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground"
+                style={{ transform: 'translateY(-3px)' }}
+              />
               <Input
+                className="pl-8"
                 placeholder="Search models…"
                 value={q}
                 onChange={(e) => setQ(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-                className="pl-8"
+                style={{ backgroundColor: 'var(--gray3)' }}
+                onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray2)')}
+                onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray3)')}
               />
             </div>
-            <Button variant="outline" onClick={handleSearch}>Search</Button>
+            <Button
+              variant="outline" onClick={handleSearch}
+              style={{ backgroundColor: 'var(--gray3)' }}
+              onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray2)')}
+              onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray3)')}
+            >
+              Search
+            </Button>
           </div>
 
           {/* Add new model form */}
@@ -215,6 +231,8 @@ export default function ModelManager({
                   placeholder="e.g. Gemma 4"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
+                  onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray2)')}
+                  onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}
                 />
               </div>
               <div className="flex flex-col gap-1">
@@ -224,17 +242,28 @@ export default function ModelManager({
                   placeholder="e.g. gemma4:e4b"
                   value={modelId}
                   onChange={(e) => setModelId(e.target.value)}
+                  onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray2)')}
+                  onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}
                 />
               </div>
             </div>
             <div className="flex gap-2">
               <Input
+                className="flex-1"
                 placeholder="Description (optional)"
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                className="flex-1"
+                onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray2)')}
+                onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}
               />
-              <Button onClick={createModel} disabled={loading} className="flex-shrink-0">
+              <Button
+                onClick={createModel}
+                disabled={loading}
+                className="flex-shrink-0"
+                style={{ backgroundColor: 'var(--gray3)' }}
+                onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray2)')}
+                onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}
+              >
                 <Plus className="w-4 h-4 mr-1" />
                 {loading ? 'Adding…' : 'Add'}
               </Button>
@@ -290,14 +319,23 @@ export default function ModelManager({
                             )}
                           </div>
                           <div className="flex gap-1 flex-shrink-0">
-                            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => startEdit(m)}>
-                              <Pencil className="w-3.5 h-3.5" />
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-7 w-7"
+                              onClick={() => startEdit(m)}
+                              onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray2)')}
+                              onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}
+                            >
+                              <Pencil className="w-3.5 h-3.5"/>
                             </Button>
                             <Button
                               variant="ghost"
                               size="icon"
                               className={cn('h-7 w-7 text-destructive hover:text-destructive')}
                               onClick={() => setDeleteTargetId(m.id)}
+                              onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray2)')}
+                              onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}
                             >
                               <Trash2 className="w-3.5 h-3.5" />
                             </Button>

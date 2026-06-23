@@ -100,6 +100,8 @@ export default function ConversationList({
                 ? 'bg-accent text-accent-foreground'
                 : 'hover:bg-muted/60 text-foreground/80'
             )}
+            onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray1)')}
+            onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}
           >
             {isEditing ? (
               <div className="flex items-center gap-1 flex-1 min-w-0">

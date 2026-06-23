@@ -1,8 +1,17 @@
+/* src/app/globals.css */
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #171717;
+  --foreground: #ffffff;
+
+  /* Custom palette */
+  --yellow1: #f6cf68;
+  --yellow2: #fac53f;
+  --yellow3: #fda920;
+  --gray1: #a8a8a8;
+  --gray2: #505050;
+  --gray3: #242424;
 }
 
 @theme inline {
@@ -10,6 +19,14 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+
+  /* Expose custom palette to Tailwind */
+  --color-yellow1: var(--yellow1);
+  --color-yellow2: var(--yellow2);
+  --color-yellow3: var(--yellow3);
+  --color-gray1: var(--gray1);
+  --color-gray2: var(--gray2);
+  --color-gray3: var(--gray3);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -23,4 +40,24 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+}
+
+/* ── Scrollbar styling ─────────────────────────────────────────────────────── */
+/* Targets WebKit-based browsers (Chrome, Edge, Safari) */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--gray2); /* Scroll area: gray2 */
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--gray1); /* Scrollbar handle: gray1 */
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--yellow3);
 }
