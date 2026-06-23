@@ -36,6 +36,10 @@ import { Label } from '../components/ui/label'
 import { Input } from '../components/ui/input'
 import { Square, MessageSquarePlus, Search, Settings, Bot, Plus, Image, FileText, LogOut, UserX, MoreVertical, Wrench, ChevronLeft, ChevronRight } from 'lucide-react'
 import type { Conversation, Message as ChatMessage, AiModel, ChatMessagePayload, OllamaPayload, RetryContext } from '@/src/types/msg_conversation_model'
+import { Slider } from '../components/ui/slider'
+import { NumericUpDown } from '../components/ui/numeric-updown'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select'
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '../components/ui/accordion'
 
 class HttpError extends Error {
   status: number
@@ -174,10 +178,26 @@ function NewConversationDialog({ open, onOpenChange, token, onCreated }: {
   )
 }
 
+function getThinkingQuality(temp: number, topP: number, topK: number) {
+  const score =
+    temp * 0.5 +
+    (1 - topP) * 0.3 +
+    Math.min(topK / 100, 1) * 0.2
+
+  if (score < 0.33) return "Low"
+  if (score < 0.66) return "Medium"
+  return "High"
+}
+
 function SystemPromptDialog({ open, onOpenChange, value, onChange }: {
   open: boolean; onOpenChange: (open: boolean) => void; value: string; onChange: (v: string) => void
 }) {
   const [draft, setDraft] = useState(value)
+  const [temperature, setTemperature] = useState([0.3])
+  const [topP, setTopP] = useState([0.5])
+  const [topK, setTopK] = useState(5)
+  const thinkingQuality = getThinkingQuality(temperature[0], topP[0], topK)
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
@@ -193,8 +213,70 @@ function SystemPromptDialog({ open, onOpenChange, value, onChange }: {
           </DialogDescription>
         </DialogHeader>
         <div className="flex flex-col gap-3 py-2">
+          {/* System Settings Prompt */}
           <Label htmlFor="system-prompt">System settings</Label>
-          <Textarea id="system-prompt" rows={6} placeholder="You are a helpful assistant…" value={draft} onChange={(e) => setDraft(e.target.value)} />
+          <Textarea
+            id="system-prompt"
+            rows={6}
+            placeholder="You are a helpful assistant…"
+            value={draft}
+            onChange={(e) => setDraft(e.target.value)}
+            onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray2)')}
+            onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}
+          />
+          <Accordion type="single" collapsible className="w-full">
+            <AccordionItem value="generation-settings">
+              <AccordionTrigger>
+                More Settings (Think {thinkingQuality})
+              </AccordionTrigger>
+              <AccordionContent>
+                <div className="flex flex-col gap-2">
+                  {/* Temperature */}
+                  <div className="flex items-center">
+                    <Label className="w-32 shrink-0">
+                      Temperature ({temperature}):
+                    </Label>
+                    <Slider
+                      className="flex-1"
+                      value={temperature}
+                      min={0}
+                      max={2}
+                      step={0.1}
+                      onValueChange={setTemperature}
+                    />
+                  </div>
+                  {/* Top-P */}
+                  <div className="flex items-center">
+                    <Label className="w-32 shrink-0">
+                      Top-P ({topP}):
+                    </Label>
+                    <Slider
+                      className="flex-1"
+                      value={topP}
+                      min={0}
+                      max={1}
+                      step={0.1}
+                      onValueChange={setTopP}
+                    />
+                  </div>
+                  {/* Top-K */}
+                  <div className="flex items-center">
+                    <Label className="w-32 shrink-0">Top-K:</Label>
+                    <NumericUpDown
+                      className="flex-1 bg-[var(--gray3)] border-white hover:bg-[var(--gray2)]"
+                      value={topK}
+                      min={0}
+                      step={1}
+                      onValueChange={setTopK}
+                    />
+                  </div>
+                </div>
+              </AccordionContent>
+
+            </AccordionItem>
+          </Accordion>
+
+          {/* Save & Cancel */}
           <div className="flex justify-end gap-2">
             <Button
               onClick={() => { onChange(draft); onOpenChange(false) }}
