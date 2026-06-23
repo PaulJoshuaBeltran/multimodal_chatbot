@@ -153,15 +153,17 @@ export default function ConversationList({
                       <MoreVertical className="w-4 h-4" />
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-32">
+                  <DropdownMenuContent align="end" className="w-32" style={{ backgroundColor: 'var(--gray3)' }}>
                     <DropdownMenuItem
+                      className="cursor-pointer"
                       onClick={(e) => {
                         e.stopPropagation()
                         setEditingId(c.id)
                         setEditTitle(c.title)
                       }}
-                      className="cursor-pointer"
-                    >
+                      onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray2)')}
+                      onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}
+                      >
                       <Edit2 className="w-4 h-4 mr-2" /> Rename
                     </DropdownMenuItem>
                     <DropdownMenuItem
@@ -170,7 +172,9 @@ export default function ConversationList({
                         e.stopPropagation()
                         setDeleteTargetId(c.id)
                       }}
-                    >
+                      onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray2)')}
+                      onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}
+                      >
                       <Trash2 className="w-4 h-4 mr-2" /> Delete
                     </DropdownMenuItem>
                   </DropdownMenuContent>

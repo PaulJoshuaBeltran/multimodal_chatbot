@@ -441,7 +441,13 @@ export default function Page() {
         <Separator />
         <div className="p-2">
           <Button variant="ghost" className="w-full justify-start gap-2 text-sm font-normal text-white hover:text-white" onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray1)')} onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}>
-            <div className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0"><Settings className="w-4 h-6 mr-2" /></div>
+            <div
+              className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0">
+              <Settings
+                className="w-4 h-6 mr-2"
+                style={{ transform: 'translateX(5px)' }}
+              />
+            </div>
             <span className="truncate min-w-0">Settings</span>
           </Button>
           <DropdownMenu>
