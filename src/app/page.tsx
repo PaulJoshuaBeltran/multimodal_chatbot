@@ -168,7 +168,10 @@ function SystemPromptDialog({ open, onOpenChange, value, onChange }: {
   const [draft, setDraft] = useState(value)
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-lg">
+      <DialogContent
+        className="sm:max-w-lg"
+        style={{ backgroundColor: 'var(--gray3)' }}
+      >
         <DialogHeader>
           <DialogTitle>
             AI Settings
@@ -181,8 +184,20 @@ function SystemPromptDialog({ open, onOpenChange, value, onChange }: {
           <Label htmlFor="system-prompt">System settings</Label>
           <Textarea id="system-prompt" rows={6} placeholder="You are a helpful assistant…" value={draft} onChange={(e) => setDraft(e.target.value)} />
           <div className="flex justify-end gap-2">
-            <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
-            <Button onClick={() => { onChange(draft); onOpenChange(false) }}>Save</Button>
+            <Button
+              onClick={() => { onChange(draft); onOpenChange(false) }}
+              onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray2)')}
+              onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}
+            >
+            Save
+            </Button>
+            <Button
+              onClick={() => onOpenChange(false)}
+              onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray2)')}
+              onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}
+            >
+            Cancel
+            </Button>
           </div>
         </div>
       </DialogContent>

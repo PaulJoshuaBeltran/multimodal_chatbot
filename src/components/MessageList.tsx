@@ -138,11 +138,13 @@ export default function MessageList({
           <div className="flex flex-col gap-3 py-2">
             <Label htmlFor="edit-message">Message</Label>
             <Textarea
+              className="resize-none"
               id="edit-message"
               rows={4}
               value={editDraft}
               onChange={(e) => setEditDraft(e.target.value)}
-              className="resize-none"
+              onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray2)')}
+              onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}
             />
             <div className="flex justify-end gap-2">
               <Button
