@@ -125,7 +125,10 @@ export default function MessageList({
 
       {/* Edit message dialog */}
       <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
-        <DialogContent className="sm:max-w-lg">
+        <DialogContent
+          className="sm:max-w-lg"
+          style={{ backgroundColor: 'var(--gray3)' }}
+        >
           <DialogHeader>
             <DialogTitle>Edit message</DialogTitle>
             <DialogDescription>
@@ -142,8 +145,22 @@ export default function MessageList({
               className="resize-none"
             />
             <div className="flex justify-end gap-2">
-              <Button variant="outline" onClick={() => setEditDialogOpen(false)}>Cancel</Button>
-              <Button onClick={confirmEdit}>Save &amp; regenerate</Button>
+              <Button
+                onClick={confirmEdit}
+                style={{ backgroundColor: 'var(--gray3)' }}
+                onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray2)')}
+                onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}
+                >
+                  Save &amp; regenerate
+              </Button>
+              <Button
+                onClick={() => setEditDialogOpen(false)}
+                style={{ backgroundColor: 'var(--gray3)' }}
+                onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray2)')}
+                onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}
+              >
+                Cancel
+              </Button>
             </div>
           </div>
         </DialogContent>

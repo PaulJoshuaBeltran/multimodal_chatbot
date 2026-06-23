@@ -211,7 +211,7 @@ export default function ModelManager({
               />
             </div>
             <Button
-              variant="outline" onClick={handleSearch}
+              onClick={handleSearch}
               style={{ backgroundColor: 'var(--gray3)' }}
               onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray2)')}
               onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray3)')}

@@ -90,6 +90,8 @@ export default function ModelSelect({ token, value, onChange, onManage, refreshT
           size="icon"
           className="h-8 w-8 flex-shrink-0"
           onClick={onManage}
+          onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray1)')}
+          onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}
           title="Manage models"
         >
           <Settings2 className="w-4 h-4" />

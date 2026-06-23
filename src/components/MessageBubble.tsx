@@ -167,13 +167,24 @@ export default function MessageBubble({
                     <MoreHorizontal className="w-3.5 h-3.5" />
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-28">
-                  <DropdownMenuItem onClick={() => { setMenuOpen(false); handleCopy() }}>
+                <DropdownMenuContent
+                  align="end" className="w-28"
+                  style={{ backgroundColor: 'var(--gray3)' }}
+                >
+                  <DropdownMenuItem
+                    onClick={() => { setMenuOpen(false); handleCopy() }}
+                    onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray2)')}
+                    onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}
+                  >
                     <Copy className="w-3.5 h-3.5 mr-2" />
                     Copy
                   </DropdownMenuItem>
                   {onEdit && (
-                    <DropdownMenuItem onClick={() => { setMenuOpen(false); onEdit() }}>
+                    <DropdownMenuItem
+                      onClick={() => { setMenuOpen(false); onEdit() }}
+                      onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray2)')}
+                      onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}
+                    >
                       <Pencil className="w-3.5 h-3.5 mr-2" />
                       Edit
                     </DropdownMenuItem>
@@ -182,6 +193,8 @@ export default function MessageBubble({
                     <DropdownMenuItem
                       className="text-destructive focus:text-destructive"
                       onClick={() => { setMenuOpen(false); onDelete() }}
+                      onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray2)')}
+                      onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}
                     >
                       <Trash2 className="w-3.5 h-3.5 mr-2" />
                       Delete

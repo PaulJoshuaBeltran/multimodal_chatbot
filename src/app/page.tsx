@@ -169,9 +169,16 @@ function SystemPromptDialog({ open, onOpenChange, value, onChange }: {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-lg">
-        <DialogHeader><DialogTitle>AI system prompt</DialogTitle><DialogDescription>Set a custom system prompt to guide the assistant behaviour.</DialogDescription></DialogHeader>
+        <DialogHeader>
+          <DialogTitle>
+            AI Settings
+          </DialogTitle>
+          <DialogDescription>
+            Set a custom system prompt & settings to guide the assistant behaviour.
+          </DialogDescription>
+        </DialogHeader>
         <div className="flex flex-col gap-3 py-2">
-          <Label htmlFor="system-prompt">System prompt</Label>
+          <Label htmlFor="system-prompt">System settings</Label>
           <Textarea id="system-prompt" rows={6} placeholder="You are a helpful assistant…" value={draft} onChange={(e) => setDraft(e.target.value)} />
           <div className="flex justify-end gap-2">
             <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
@@ -540,7 +547,7 @@ export default function Page() {
                       onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray2)')}
                       onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}
                     >
-                      <Settings className="w-4 h-4 mr-2" />System Prompt
+                      <Settings className="w-4 h-4 mr-2" />System Settings
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
