@@ -30,6 +30,7 @@ import { Label } from './ui/label'
 export default function MessageList({
   messages,
   streaming,
+  isThinking,
   onEdit,
   onDelete,
   highlightQuery,
@@ -37,6 +38,8 @@ export default function MessageList({
 }: {
   messages: Message[]
   streaming?: boolean
+  // Fires immediately when the user sends — before any streamed content arrives
+  isThinking?: boolean
   onEdit?: (id: string, content: string) => void
   onDelete?: (id: string) => void
   highlightQuery?: string
@@ -50,7 +53,6 @@ export default function MessageList({
   const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null)
 
   const lastAssistantIndex = messages.reduce((last, m, i) => (m.role === 'assistant' ? i : last), -1)
-  const lastUserIndex = messages.reduce((last, m, i) => (m.role === 'user' ? i : last), -1)
 
   function openEdit(id: string, content: string) {
     setEditTarget({ id, content })
@@ -81,7 +83,7 @@ export default function MessageList({
     setDeleteTargetId(null)
   }
 
-  if (messages.length === 0 && !streaming) {
+  if (messages.length === 0 && !streaming && !isThinking) {
     return (
       <div className="flex flex-col items-center justify-center h-full text-center py-24 px-8 gap-3">
         <p className="text-muted-foreground text-sm">No messages yet. Send one to get started.</p>
@@ -120,8 +122,13 @@ export default function MessageList({
           )
         })}
 
-        {/* Skeleton while streaming but no assistant message yet */}
-        {streaming && lastAssistantIndex === -1 && (
+        {/*
+          Show skeleton when:
+          - isThinking: user just sent, waiting for the first token (shows immediately)
+          - streaming but no assistant bubble yet (fallback)
+          In both cases only when there's no assistant message already rendering.
+        */}
+        {(isThinking || streaming) && lastAssistantIndex === -1 && (
           <div className="flex flex-col gap-2 max-w-[70%] self-start">
             <Skeleton className="h-4 w-48 rounded" />
             <Skeleton className="h-4 w-64 rounded" />

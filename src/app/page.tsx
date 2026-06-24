@@ -34,11 +34,10 @@ import {
 import { toast } from 'sonner'
 import { Label } from '../components/ui/label'
 import { Input } from '../components/ui/input'
-import { Square, MessageSquarePlus, Search, Settings, Bot, Plus, Image, FileText, LogOut, UserX, MoreVertical, Wrench, ChevronLeft, ChevronRight } from 'lucide-react'
-import type { Conversation, Message as ChatMessage, AiModel, ChatMessagePayload, OllamaPayload, RetryContext } from '@/src/types/msg_conversation_model'
+import { Square, MessageSquarePlus, Search, Settings, Bot, Plus, ImageIcon, FileText, LogOut, UserX, MoreVertical, Wrench, ChevronLeft, ChevronRight } from 'lucide-react'
+import type { Conversation, Message as ChatMessage, AiModel, ChatMessagePayload, OllamaPayload } from '@/src/types/msg_conversation_model'
 import { Slider } from '../components/ui/slider'
 import { NumericUpDown } from '../components/ui/numeric-updown'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select'
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '../components/ui/accordion'
 
 class HttpError extends Error {
@@ -189,13 +188,31 @@ function getThinkingQuality(temp: number, topP: number, topK: number) {
   return "High"
 }
 
-function SystemPromptDialog({ open, onOpenChange, value, onChange }: {
-  open: boolean; onOpenChange: (open: boolean) => void; value: string; onChange: (v: string) => void
+// ── SystemPromptDialog receives AI params from Page (lifted state) ──
+function SystemPromptDialog({
+  open,
+  onOpenChange,
+  value,
+  onChange,
+  temperature,
+  setTemperature,
+  topP,
+  setTopP,
+  topK,
+  setTopK,
+}: {
+  open: boolean
+  onOpenChange: (open: boolean) => void
+  value: string
+  onChange: (v: string) => void
+  temperature: number[]
+  setTemperature: (v: number[]) => void
+  topP: number[]
+  setTopP: (v: number[]) => void
+  topK: number
+  setTopK: (v: number) => void
 }) {
   const [draft, setDraft] = useState(value)
-  const [temperature, setTemperature] = useState([0.3])
-  const [topP, setTopP] = useState([0.5])
-  const [topK, setTopK] = useState(5)
   const thinkingQuality = getThinkingQuality(temperature[0], topP[0], topK)
 
   return (
@@ -209,7 +226,7 @@ function SystemPromptDialog({ open, onOpenChange, value, onChange }: {
             AI Settings
           </DialogTitle>
           <DialogDescription>
-            Set a custom system prompt & settings to guide the assistant behaviour.
+            Set a custom system prompt &amp; settings to guide the assistant behaviour.
           </DialogDescription>
         </DialogHeader>
         <div className="flex flex-col gap-3 py-2">
@@ -315,8 +332,16 @@ export default function Page() {
   const [messages, setMessages] = useState<ChatMessage[]>([])
   const [input, setInput] = useState('')
   const [streaming, setStreaming] = useState(false)
+  // ── NEW: isThinking fires immediately on send, before stream starts ──
+  const [isThinking, setIsThinking] = useState(false)
   const abortRef = useRef<AbortController | null>(null)
   const [systemPrompt, setSystemPrompt] = useState('')
+
+  // ── AI generation params — lifted from SystemPromptDialog ──
+  const [temperature, setTemperature] = useState([0.3])
+  const [topP, setTopP] = useState([0.5])
+  const [topK, setTopK] = useState(5)
+
   const [selectedModel, setSelectedModel] = useState<AiModel | null>(null)
   const [modelsRefresh, setModelsRefresh] = useState(0)
   const [showModelManager, setShowModelManager] = useState(false)
@@ -374,6 +399,9 @@ export default function Page() {
       messages: ChatMessagePayload[]
       conversationId: string | null
       systemPrompt?: string
+      temperature?: number
+      topP?: number
+      topK?: number
       onToken: (text: string) => void
       signal: AbortSignal
     }
@@ -383,13 +411,29 @@ export default function Page() {
       setShowModelManager(true)
       throw new Error('No model selected')
     }
-    const payload: OllamaPayload & { system?: string } = {
+
+    // Build payload with optional generation params
+    const payload: OllamaPayload & {
+      system?: string
+      temperature?: number
+      top_p?: number
+      top_k?: number
+    } = {
       messages: params.messages,
       model: selectedModel.modelId,
     }
 
     if (params.systemPrompt?.trim()) {
       payload.system = params.systemPrompt.trim()
+    }
+    if (params.temperature !== undefined) {
+      payload.temperature = params.temperature
+    }
+    if (params.topP !== undefined) {
+      payload.top_p = params.topP
+    }
+    if (params.topK !== undefined) {
+      payload.top_k = params.topK
     }
 
     const res = await fetch('/api/chat/ollama', {
@@ -401,7 +445,6 @@ export default function Page() {
 
     if (!res.ok) {
       const errText = await res.text()
-
       throw new HttpError(
         errText || `HTTP ${res.status}`,
         res.status,
@@ -411,7 +454,6 @@ export default function Page() {
 
     const reader = res.body!.getReader()
     const dec = new TextDecoder()
-
     let full = ''
 
     while (true) {
@@ -424,6 +466,7 @@ export default function Page() {
 
     return full
   }
+
   async function handleRegenerateFromIndex(index: number) {
     const controller = new AbortController()
     abortRef.current = controller
@@ -435,6 +478,7 @@ export default function Page() {
       content: m.content,
     }))
 
+    setIsThinking(true)
     setStreaming(true)
 
     let assistantIndex = index + 1
@@ -446,15 +490,17 @@ export default function Page() {
       return copy
     })
 
-    // let reply = '';
-
     try {
       await generateAssistantReply({
         messages: context,
         conversationId: selectedConv,
         systemPrompt,
+        temperature: temperature[0],
+        topP: topP[0],
+        topK,
         signal: controller.signal,
         onToken: (text) => {
+          setIsThinking(false)
           setMessages((prev) => {
             const copy = [...prev]
             copy[assistantIndex] = { role: 'assistant', content: text }
@@ -467,11 +513,12 @@ export default function Page() {
         const copy = [...prev]
         copy[assistantIndex] = {
           role: 'assistant',
-          content: `⚠️ Ollama failed to regenerate:\n${String(err)}`,
+          content: `⚠️ Ollama failed to regenerate:\n\n${String(err)}`,
         }
         return copy
       })
     } finally {
+      setIsThinking(false)
       setStreaming(false)
     }
   }
@@ -500,6 +547,9 @@ export default function Page() {
     setMessages(prev => [...prev, userMsg])
     setInput('')
 
+    // ── Show thinking dots immediately ──
+    setIsThinking(true)
+
     const saveHeaders: Record<string, string> = { 'Content-Type': 'application/json' }
     if (auth.token) saveHeaders.Authorization = `Bearer ${auth.token}`
     const saveRes = await fetch('/api/messages', { method: 'POST', headers: saveHeaders, body: JSON.stringify({ conversationId: selectedConv, role: 'user', content: userMsg.content }) })
@@ -512,66 +562,57 @@ export default function Page() {
       content: m.content,
     }))
 
-    // build payload safely (no invalid typing tricks)
-    const payload: OllamaPayload & { system?: string } = {
-      messages: contextMessages,
-      model: selectedModel.modelId,
-    }
-
-    if (systemPrompt.trim()) {
-      payload.system = systemPrompt.trim()
-    }
-
-    setMessages((prev) => [...prev, { role: 'assistant', content: '' }])
+    // No assistant placeholder yet — MessageList will show the thinking skeleton
+    // until the first token arrives
 
     let reply = '';
 
     try {
-     reply = await generateAssistantReply({
-      messages: [...messages, userMsg].map(m => ({
-        role: m.role,
-        content: m.content,
-      })),
-      conversationId: selectedConv,
-      systemPrompt,
-      signal: controller.signal,
-      onToken: (chunk) => {
-        setMessages((prev) => {
-          const copy = [...prev]
-          const idx = copy.length - 1
-          copy[idx] = {
-            role: 'assistant',
-            content: (copy[idx].content || '') + chunk,
-          }
-          return copy
-        })
-      }
-    })
+      reply = await generateAssistantReply({
+        messages: contextMessages,
+        conversationId: selectedConv,
+        systemPrompt,
+        temperature: temperature[0],
+        topP: topP[0],
+        topK,
+        signal: controller.signal,
+        onToken: (chunk) => {
+          // First token: hide thinking indicator, show real assistant bubble
+          setIsThinking(false)
+          setMessages((prev) => {
+            const copy = [...prev]
+            const last = copy[copy.length - 1]
+            if (last?.role === 'assistant') {
+              // Accumulate into existing assistant bubble
+              copy[copy.length - 1] = {
+                role: 'assistant',
+                content: last.content + chunk,
+              }
+            } else {
+              // First chunk — push the assistant bubble
+              copy.push({ role: 'assistant', content: chunk })
+            }
+            return copy
+          })
+        },
+      })
     } catch (err) {
       const errorText =
         err instanceof Error ? `⚠️ Ollama ${err.message}` : '⚠️ Ollama Unknown error'
 
       setMessages((prev) => {
         const copy = [...prev]
-
-        // if assistant placeholder exists, replace it
         if (copy.length && copy[copy.length - 1].role === 'assistant') {
-          copy[copy.length - 1] = {
-            role: 'assistant',
-            content: errorText,
-          }
+          copy[copy.length - 1] = { role: 'assistant', content: errorText }
         } else {
-          copy.push({
-            role: 'assistant',
-            content: errorText,
-          })
+          copy.push({ role: 'assistant', content: errorText })
         }
-
         return copy
       })
 
       toast.error(errorText)
     } finally {
+      setIsThinking(false)
       setStreaming(false)
       if (reply) {
         const h: Record<string, string> = { 'Content-Type': 'application/json' }
@@ -582,7 +623,7 @@ export default function Page() {
     }
   }
 
-  function stop() { abortRef.current?.abort(); setStreaming(false) }
+  function stop() { abortRef.current?.abort(); setIsThinking(false); setStreaming(false) }
 
   function handleLogin(tokenValue: string) { localStorage.setItem('token', tokenValue); dispatch({ token: tokenValue, ready: true }) }
 
@@ -607,31 +648,51 @@ export default function Page() {
     const toDelete = messages.slice(editedIndex + 1).filter((m) => m.id)
     await Promise.all(toDelete.map((m) => fetch(`/api/messages/${m.id}`, { method: 'DELETE', headers: auth.token ? { Authorization: `Bearer ${auth.token}` } : undefined })))
     if (!selectedConv) return
+    setIsThinking(true)
     setStreaming(true)
     abortRef.current = new AbortController()
     const context = updatedMessages.map((m) => ({ role: m.role, content: m.content }))
-    const payload: { messages: { role: 'user' | 'assistant'; content: string }[]; model?: string; system?: string } = { messages: context, model: selectedModel.modelId }
-    if (systemPrompt.trim()) payload.system = systemPrompt
+
     let reply = ''
     try {
-      const res = await fetch('/api/chat/ollama', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload), signal: abortRef.current.signal })
-      if (!res.ok) { const errText = await res.text(); throw new Error(errText || `HTTP status ${res.status}`) }
-      const reader = res.body!.getReader()
-      const dec = new TextDecoder()
-      setMessages((prev) => [...prev, { role: 'assistant', content: '' }])
-      while (true) {
-        const { done, value } = await reader.read()
-        if (done) break
-        reply += dec.decode(value)
-        setMessages((prev) => { const copy = [...prev]; copy[copy.length - 1] = { role: 'assistant', content: reply }; return copy })
-      }
+      reply = await generateAssistantReply({
+        messages: context,
+        conversationId: selectedConv,
+        systemPrompt,
+        temperature: temperature[0],
+        topP: topP[0],
+        topK,
+        signal: abortRef.current.signal,
+        onToken: (chunk) => {
+          setIsThinking(false)
+          setMessages((prev) => {
+            const copy = [...prev]
+            const last = copy[copy.length - 1]
+            if (last?.role === 'assistant') {
+              copy[copy.length - 1] = { role: 'assistant', content: last.content + chunk }
+            } else {
+              copy.push({ role: 'assistant', content: chunk })
+            }
+            return copy
+          })
+        },
+      })
     } catch (e: unknown) {
       const err = e as Error
       if (err.name !== 'AbortError') {
         reply = `Error connecting to model: ${err.message}`
-        setMessages((prev) => { const copy = [...prev]; if (copy.length > 0 && copy[copy.length - 1].role === 'assistant' && copy[copy.length - 1].content === '') { copy[copy.length - 1] = { role: 'assistant', content: reply } } else { copy.push({ role: 'assistant', content: reply }) }; return copy })
+        setMessages((prev) => {
+          const copy = [...prev]
+          if (copy.length > 0 && copy[copy.length - 1].role === 'assistant' && copy[copy.length - 1].content === '') {
+            copy[copy.length - 1] = { role: 'assistant', content: reply }
+          } else {
+            copy.push({ role: 'assistant', content: reply })
+          }
+          return copy
+        })
       }
     } finally {
+      setIsThinking(false)
       setStreaming(false)
       if (reply) {
         const h: Record<string, string> = { 'Content-Type': 'application/json' }
@@ -769,6 +830,7 @@ export default function Page() {
               <MessageList
                 messages={messages}
                 streaming={streaming}
+                isThinking={isThinking}
                 onEdit={handleEditMessage}
                 onDelete={async (id: string) => {
                   const headers: Record<string, string> = {}
@@ -804,7 +866,7 @@ export default function Page() {
                       onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray2)')}
                       onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}
                     >
-                      <Image className="w-4 h-4 mr-2" />Upload Image
+                      <ImageIcon className="w-4 h-4 mr-2" />Upload Image
                     </DropdownMenuItem>
                     <DropdownMenuItem
                       className="cursor-pointer"
@@ -861,7 +923,7 @@ export default function Page() {
           /* Tools view */
           <div className="flex-1 flex flex-col min-h-0 p-8 overflow-hidden max-w-5xl w-full mx-auto justify-start">
             <div className="mb-6">
-              <h1 className="text-2xl font-semibold tracking-tight flex items-center gap-2"><Wrench className="w-5 h-5 text-primary" />Available Capabilities & Tools</h1>
+              <h1 className="text-2xl font-semibold tracking-tight flex items-center gap-2"><Wrench className="w-5 h-5 text-primary" />Available Capabilities &amp; Tools</h1>
               <p className="text-sm text-muted-foreground mt-1">Enable or disable specialized modular execution plug-ins contextually accessible by active models.</p>
             </div>
             <ScrollArea type="auto" className="flex-1 min-h-0 border border-border rounded-xl bg-card">
@@ -918,10 +980,17 @@ export default function Page() {
         onCreated={fetchConversations}
       />
       <SystemPromptDialog
+        key={systemPromptOpen ? 'open' : 'closed'}
         open={systemPromptOpen}
         onOpenChange={setSystemPromptOpen}
         value={systemPrompt}
         onChange={setSystemPrompt}
+        temperature={temperature}
+        setTemperature={setTemperature}
+        topP={topP}
+        setTopP={setTopP}
+        topK={topK}
+        setTopK={setTopK}
       />
       <AuthDialog
         open={authDialogOpen}

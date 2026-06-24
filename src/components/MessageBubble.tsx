@@ -247,6 +247,8 @@ export default function MessageBubble({
                 size="icon"
                 className="h-6 w-6 rounded-full"
                 onClick={onRegenerate}
+                onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray2)')}
+                onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}
                 aria-label="Regenerate response"
               >
                 <RotateCcw className="w-3.5 h-3.5" />
@@ -258,6 +260,8 @@ export default function MessageBubble({
               size="icon"
               className="h-6 w-6 rounded-full"
               onClick={handleCopy}
+              onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray2)')}
+              onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}
               aria-label="Copy message"
             >
               <Copy className="w-3.5 h-3.5" />

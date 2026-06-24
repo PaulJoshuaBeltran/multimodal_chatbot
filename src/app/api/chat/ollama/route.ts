@@ -3,13 +3,25 @@ import { ollama } from '@/lib/ollama'
 
 export async function POST(req: Request) {
   try {
-    const { messages, model } = await req.json()
+    const { messages, model, system, temperature, top_p, top_k } = await req.json()
     const modelToUse = model ?? process.env.DEFAULT_MODEL ?? 'gemma4:e4b'
+
+    // Prepend system message if provided
+    const fullMessages = system
+      ? [{ role: 'system', content: system }, ...messages]
+      : messages
+
+    // Build Ollama options — only include params that were explicitly sent
+    const options: Record<string, number> = {}
+    if (temperature !== undefined) options.temperature = temperature
+    if (top_p !== undefined) options.top_p = top_p
+    if (top_k !== undefined) options.top_k = top_k
 
     const stream = await ollama.chat({
       model: modelToUse,
-      messages,
+      messages: fullMessages,
       stream: true,
+      ...(Object.keys(options).length > 0 && { options }),
     })
 
     const readable = new ReadableStream({
