@@ -4,7 +4,6 @@
 import React, { useState } from 'react'
 import MessageBubble from './MessageBubble'
 import type { Message } from '@/src/types/msg_conversation_model'
-import { Skeleton } from './ui/skeleton'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -121,19 +120,12 @@ export default function MessageList({
             />
           )
         })}
-
-        {/*
-          Show skeleton when:
-          - isThinking: user just sent, waiting for the first token (shows immediately)
-          - streaming but no assistant bubble yet (fallback)
-          In both cases only when there's no assistant message already rendering.
-        */}
-        {(isThinking || streaming) && lastAssistantIndex === -1 && (
-          <div className="flex flex-col gap-2 max-w-[70%] self-start">
-            <Skeleton className="h-4 w-48 rounded" />
-            <Skeleton className="h-4 w-64 rounded" />
-            <Skeleton className="h-4 w-40 rounded" />
-          </div>
+        
+        {isThinking && streaming && lastAssistantIndex === -1 && (
+          <MessageBubble
+            role="assistant"
+            content=""
+          />
         )}
       </div>
 
