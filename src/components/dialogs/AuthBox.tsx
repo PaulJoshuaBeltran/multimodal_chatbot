@@ -1,11 +1,8 @@
-// src/components/AuthBox.tsx
+// src/components/dialogs/AuthBox.tsx
 'use client'
 
+import { AuthBoxProps } from '@/src/types/props'
 import React, { useState } from 'react'
-
-interface AuthBoxProps {
-  onLogin: (token: string) => void
-}
 
 export default function AuthBox({ onLogin }: AuthBoxProps) {
   const [email, setEmail] = useState('')

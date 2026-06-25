@@ -1,4 +1,4 @@
-// src/components/MessageBubble.tsx
+// src/components/main/MessageBubble.tsx
 'use client'
 
 import React, { useState } from 'react'
@@ -7,29 +7,17 @@ import remarkGfm from 'remark-gfm'
 import remarkMath from 'remark-math'
 import rehypeKatex from 'rehype-katex'
 import 'katex/dist/katex.min.css'
-import { Button } from './ui/button'
+import { Button } from '../ui/button'
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from './ui/dropdown-menu'
+} from '../ui/dropdown-menu'
 import { MoreHorizontal, Pencil, Trash2, Copy, RotateCcw } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { toast } from 'sonner'
-
-// HAST node type for the custom rehype plugin
-interface HastNode {
-  type: string
-  tagName?: string
-  value?: string
-  properties?: {
-    style?: string
-    className?: string[] | string
-    [key: string]: unknown
-  }
-  children?: HastNode[]
-}
+import { HastNode } from '@/src/types/hast_nodes'
 
 function rehypeHighlightQuery({ query }: { query?: string }) {
   return (tree: HastNode): void => {

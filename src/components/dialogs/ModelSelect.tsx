@@ -1,4 +1,4 @@
-// src/components/ModelSelect.tsx
+// src/components/dialogs/ModelSelect.tsx
 'use client'
 
 import React, { useEffect, useState } from 'react'
@@ -9,18 +9,11 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from './ui/select'
-import { Button } from './ui/button'
-import { Label } from './ui/label'
+} from '../ui/select'
+import { Button } from '../ui/button'
+import { Label } from '../ui/label'
 import { Settings2 } from 'lucide-react'
-
-interface ModelSelectProps {
-  token: string | null
-  value: string | null
-  onChange: (model: AiModel | null) => void
-  onManage: () => void
-  refreshToken: number
-}
+import { ModelSelectProps } from '@/src/types/props'
 
 export default function ModelSelect({ token, value, onChange, onManage, refreshToken }: ModelSelectProps) {
   const [models, setModels] = useState<AiModel[]>([])

@@ -1,10 +1,10 @@
-// src/components/ConversationList.tsx
+// src/components/sidebar/ConversationList.tsx
 'use client'
 
 import React, { useState } from 'react'
 import type { Conversation } from '@/src/types/msg_conversation_model'
-import { Button } from './ui/button'
-import { Input } from './ui/input'
+import { Button } from '../ui/button'
+import { Input } from '../ui/input'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -14,7 +14,7 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from './ui/alert-dialog'
+} from '../ui/alert-dialog'
 import { toast } from 'sonner'
 import { MoreVertical, Edit2, Trash2, Check, X, MessageSquare } from 'lucide-react'
 import { cn } from '@/lib/utils'
@@ -25,19 +25,18 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/src/components/ui/dropdown-menu'
+import { DeleteConversationDialog } from '../dialogs/OtherDialogs'
 
 export default function ConversationList({
   conversations,
   selectedConvId,
   onSelect,
-  onCreate,
   onUpdate,
   token,
 }: {
   conversations: Conversation[]
   selectedConvId: string | null
   onSelect: (id: string) => void
-  onCreate: () => void
   onUpdate: () => void
   token?: string | null
 }) {
@@ -186,25 +185,12 @@ export default function ConversationList({
       })}
 
       {/* Delete confirmation */}
-      <AlertDialog open={!!deleteTargetId} onOpenChange={(open) => !open && setDeleteTargetId(null)}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Delete conversation?</AlertDialogTitle>
-            <AlertDialogDescription>
-              {deleteTarget?.title} and all its messages will be permanently deleted. This cannot be undone.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-              onClick={() => deleteTargetId && deleteConversation(deleteTargetId)}
-            >
-              Delete
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <DeleteConversationDialog
+        open={!!deleteTargetId}
+        title={deleteTarget?.title}
+        onOpenChange={(open) => !open && setDeleteTargetId(null)}
+        onConfirm={() => deleteTargetId && deleteConversation(deleteTargetId)}
+      />
     </div>
   )
 }

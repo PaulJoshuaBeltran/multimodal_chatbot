@@ -1,4 +1,4 @@
-// src/components/SearchDialog.tsx
+// src/components/dialogs/SearchDialog.tsx
 'use client'
 
 import React, { useEffect, useMemo, useReducer } from 'react'
@@ -8,49 +8,13 @@ import {
   DialogHeader,
   DialogTitle,
   DialogDescription,
-} from './ui/dialog'
-import { Input } from './ui/input'
-import { ScrollArea } from './ui/scroll-area'
-import { Separator } from './ui/separator'
+} from '../ui/dialog'
+import { Input } from '../ui/input'
+import { ScrollArea } from '../ui/scroll-area'
+import { Separator } from '../ui/separator'
 import { Search, FolderOpen, MessageSquare, Loader2 } from 'lucide-react'
-
-interface SearchDialogProps {
-  isOpen: boolean
-  onClose: () => void
-  token: string | null
-  onSelectResult: (conversationId: string, messageId?: string, query?: string) => void
-}
-
-interface SearchConversation {
-  id: string
-  title: string
-}
-
-interface SearchMessage {
-  id: string
-  conversationId: string
-  content: string
-  role: string
-  conversation?: { title: string }
-}
-
-// 1. Define the State Structure
-interface SearchState {
-  query: string
-  results: {
-    conversations: SearchConversation[]
-    messages: SearchMessage[]
-  }
-  loading: boolean
-}
-
-// 2. Define Action Types
-type SearchAction =
-  | { type: 'SET_QUERY'; payload: string }
-  | { type: 'START_SEARCH' }
-  | { type: 'SEARCH_SUCCESS'; payload: { conversations: SearchConversation[]; messages: SearchMessage[] } }
-  | { type: 'SEARCH_FAILURE' }
-  | { type: 'RESET' }
+import { SearchAction, SearchMessage, SearchState } from '@/src/types/search_message'
+import { SearchDialogProps } from '@/src/types/props'
 
 const initialState: SearchState = {
   query: '',
@@ -58,7 +22,6 @@ const initialState: SearchState = {
   loading: false,
 }
 
-// 3. Define the Reducer Logic
 function searchReducer(state: SearchState, action: SearchAction): SearchState {
   switch (action.type) {
     case 'SET_QUERY':

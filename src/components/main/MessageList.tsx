@@ -1,4 +1,4 @@
-// src/components/MessageList.tsx
+// src/components/main/MessageList.tsx
 'use client'
 
 import React, { useState } from 'react'
@@ -13,18 +13,19 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from './ui/alert-dialog'
+} from '../ui/alert-dialog'
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogDescription,
-} from './ui/dialog'
-import { Button } from './ui/button'
-import { Textarea } from './ui/textarea'
+} from '../ui/dialog'
+import { Button } from '../ui/button'
+import { Textarea } from '../ui/textarea'
 import { toast } from 'sonner'
-import { Label } from './ui/label'
+import { Label } from '../ui/label'
+import { DeleteMessageDialog, EditMessageDialog } from '../dialogs/OtherDialogs'
 
 export default function MessageList({
   messages,
@@ -129,71 +130,23 @@ export default function MessageList({
         )}
       </div>
 
-      {/* Edit message dialog */}
-      <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
-        <DialogContent
-          className="sm:max-w-lg"
-          style={{ backgroundColor: 'var(--gray3)' }}
-        >
-          <DialogHeader>
-            <DialogTitle>Edit message</DialogTitle>
-            <DialogDescription>
-              Editing will regenerate the assistant reply from this point.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="flex flex-col gap-3 py-2">
-            <Label htmlFor="edit-message">Message</Label>
-            <Textarea
-              className="resize-none"
-              id="edit-message"
-              rows={4}
-              value={editDraft}
-              onChange={(e) => setEditDraft(e.target.value)}
-              onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray2)')}
-              onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}
-            />
-            <div className="flex justify-end gap-2">
-              <Button
-                onClick={confirmEdit}
-                style={{ backgroundColor: 'var(--gray3)' }}
-                onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray2)')}
-                onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}
-                >
-                  Save &amp; regenerate
-              </Button>
-              <Button
-                onClick={() => setEditDialogOpen(false)}
-                style={{ backgroundColor: 'var(--gray3)' }}
-                onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray2)')}
-                onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}
-              >
-                Cancel
-              </Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
+      {editDialogOpen && (
+        <EditMessageDialog
+          open={editDialogOpen}
+          onOpenChange={setEditDialogOpen}
+          editDraft={editDraft}
+          setEditDraft={setEditDraft}
+          confirmEdit={confirmEdit}
+        />
+      )}
 
-      {/* Delete message alert */}
-      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Delete message?</AlertDialogTitle>
-            <AlertDialogDescription>
-              This message will be permanently removed from the conversation.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-              onClick={confirmDelete}
-            >
-              Delete
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      {deleteDialogOpen && (
+        <DeleteMessageDialog
+          open={deleteDialogOpen}
+          onOpenChange={setDeleteDialogOpen}
+          confirmDelete={confirmDelete}
+        />
+      )}
     </>
   )
 }
