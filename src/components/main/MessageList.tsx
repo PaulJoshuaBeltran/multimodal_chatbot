@@ -4,27 +4,8 @@
 import React, { useState } from 'react'
 import MessageBubble from './MessageBubble'
 import type { Message } from '@/src/types/msg_conversation_model'
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '../ui/alert-dialog'
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-} from '../ui/dialog'
-import { Button } from '../ui/button'
-import { Textarea } from '../ui/textarea'
 import { toast } from 'sonner'
-import { Label } from '../ui/label'
+import { groupByDate } from '@/lib/dateGroups'
 import { DeleteMessageDialog, EditMessageDialog } from '../dialogs/OtherDialogs'
 
 export default function MessageList({
@@ -34,11 +15,10 @@ export default function MessageList({
   onEdit,
   onDelete,
   highlightQuery,
-  onRegenerate
+  onRegenerate,
 }: {
   messages: Message[]
   streaming?: boolean
-  // Fires immediately when the user sends — before any streamed content arrives
   isThinking?: boolean
   onEdit?: (id: string, content: string) => void
   onDelete?: (id: string) => void
@@ -52,7 +32,10 @@ export default function MessageList({
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null)
 
-  const lastAssistantIndex = messages.reduce((last, m, i) => (m.role === 'assistant' ? i : last), -1)
+  const lastAssistantIndex = messages.reduce(
+    (last, m, i) => (m.role === 'assistant' ? i : last),
+    -1
+  )
 
   function openEdit(id: string, content: string) {
     setEditTarget({ id, content })
@@ -91,14 +74,67 @@ export default function MessageList({
     )
   }
 
+  // Only group messages that have an updatedAt; streaming/thinking bubble is appended after
+  const datedMessages = messages.filter((m) => m.updatedAt)
+  const undatedMessages = messages.filter((m) => !m.updatedAt)
+  const groups = groupByDate(datedMessages, true)
+
+  // Track a flat index across groups so onRegenerate receives the correct index
+  let flatIndex = -1
+
   return (
     <>
       <div className="flex flex-col gap-2 p-4 min-h-full">
-        {messages.map((m: Message, index: number) => {
+        {groups.map(({ label, items }) => (
+          <div key={label}>
+            {/* Date separator */}
+            <div className="flex items-center gap-2 my-3">
+              <div className="flex-1 h-px bg-border/50" />
+              <span className="text-xs text-muted-foreground/60 font-medium select-none px-1">
+                {label}
+              </span>
+              <div className="flex-1 h-px bg-border/50" />
+            </div>
+
+            {items.map((m: Message) => {
+              flatIndex++
+              const currentIndex = flatIndex
+              const isUser = m.role === 'user'
+              return (
+                <MessageBubble
+                  key={m.id ?? m.createdAt ?? currentIndex}
+                  id={m.id}
+                  role={m.role as 'user' | 'assistant'}
+                  content={m.content}
+                  highlightQuery={highlightQuery}
+                  onEdit={
+                    isUser && m.id && onEdit
+                      ? () => openEdit(m.id!, m.content)
+                      : undefined
+                  }
+                  onDelete={
+                    isUser && m.id && onDelete
+                      ? () => openDelete(m.id!)
+                      : undefined
+                  }
+                  onRegenerate={
+                    m.role === 'assistant' && onRegenerate
+                      ? () => onRegenerate(currentIndex)
+                      : undefined
+                  }
+                />
+              )
+            })}
+          </div>
+        ))}
+
+        {undatedMessages.map((m: Message, i: number) => {
+          flatIndex++
+          const currentIndex = flatIndex
           const isUser = m.role === 'user'
           return (
             <MessageBubble
-              key={m.id ?? m.createdAt ?? index}
+              key={m.id ?? m.createdAt ?? `undated-${i}`}
               id={m.id}
               role={m.role as 'user' | 'assistant'}
               content={m.content}
@@ -115,18 +151,15 @@ export default function MessageList({
               }
               onRegenerate={
                 m.role === 'assistant' && onRegenerate
-                  ? () => onRegenerate(index)
+                  ? () => onRegenerate(currentIndex)
                   : undefined
               }
             />
           )
         })}
-        
+
         {isThinking && streaming && lastAssistantIndex === -1 && (
-          <MessageBubble
-            role="assistant"
-            content=""
-          />
+          <MessageBubble role="assistant" content="" />
         )}
       </div>
 

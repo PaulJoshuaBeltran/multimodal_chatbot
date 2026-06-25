@@ -2,7 +2,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '../ui/dialog'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '../ui/dialog'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -190,26 +190,41 @@ export function DeactivateAlertDialog({
   onConfirm,
 }: DeactivateAlertDialogProps) {
   return (
-    <AlertDialog open={open} onOpenChange={onOpenChange}>
-      <AlertDialogContent>
-        <AlertDialogHeader>
-          <AlertDialogTitle>Deactivate account?</AlertDialogTitle>
-          <AlertDialogDescription>
-            This will permanently delete your profile, conversations, models, and messages. This
-            action cannot be undone.
-          </AlertDialogDescription>
-        </AlertDialogHeader>
-        <AlertDialogFooter>
-          <AlertDialogCancel>Cancel</AlertDialogCancel>
-          <AlertDialogAction
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent
+        className="sm:max-w-xl max-h-[85vh] flex flex-col overflow-hidden"
+        style={{ backgroundColor: 'var(--gray3)', borderColor: 'var(--gray3)' }}
+      >
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <AlertTriangle className="w-5 h-5 text-destructive" />
+            Deactivate account?
+          </DialogTitle>
+          <DialogDescription>
+            This will permanently delete your profile, conversations, models, and messages.
+            This action cannot be undone.
+          </DialogDescription>
+        </DialogHeader>
+        <div className="flex justify-end gap-2 pt-2">
+          <Button
             className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             onClick={onConfirm}
+            onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray2)')}
+            onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}
           >
-            Deactivate
-          </AlertDialogAction>
-        </AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialog>
+            Delete
+          </Button>
+          <Button
+            variant="ghost"
+            onClick={() => onOpenChange(false)}
+            onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray2)')}
+            onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}
+          >
+            Cancel
+          </Button>
+        </div>
+      </DialogContent>
+    </Dialog>
   )
 }
 
@@ -314,40 +329,6 @@ export function EditMessageDialog({
 }
 
 // ── DeleteMessageDialog ───────────────────────────────────────────────────────
-// export function DeleteMessageDialog({
-//   open,
-//   onOpenChange,
-//   confirmDelete
-// }: DeleteMessageDialogProps) {
-//   return (
-//     <AlertDialog open={open} onOpenChange={onOpenChange}>
-//       <AlertDialogContent style={{ backgroundColor: 'var(--gray3)' }}>
-//         <AlertDialogHeader>
-//           <AlertDialogTitle>Delete message?</AlertDialogTitle>
-//           <AlertDialogDescription>
-//             This message will be permanently removed from the conversation.
-//           </AlertDialogDescription>
-//         </AlertDialogHeader>
-//         <AlertDialogFooter>
-//           <AlertDialogCancel
-//             onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray2)')}
-//             onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}
-//           >
-//             Cancel
-//           </AlertDialogCancel>
-//           <AlertDialogAction
-//             className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-//             onClick={confirmDelete}
-//             onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray2)')}
-//             onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}
-//           >
-//             Delete
-//           </AlertDialogAction>
-//         </AlertDialogFooter>
-//       </AlertDialogContent>
-//     </AlertDialog>
-//   )
-// }
 export function DeleteMessageDialog({
   open,
   onOpenChange,
