@@ -195,11 +195,11 @@ export default function Page() {
     setIsThinking(true)
     setStreaming(true)
 
-    let assistantIndex = index + 1
+    let assistantIndex = index
 
     setMessages((prev) => {
-      const copy = prev.slice(0, index + 1)
-      copy.push({ role: 'assistant', content: '' })
+      const copy = prev.slice(0, index) // drop the old (possibly errored) assistant message
+      copy.push({ role: 'assistant', content: '', createdAt: new Date().toISOString() })
       assistantIndex = copy.length - 1
       return copy
     })
@@ -217,7 +217,12 @@ export default function Page() {
           setIsThinking(false)
           setMessages((prev) => {
             const copy = [...prev]
-            copy[assistantIndex] = { role: 'assistant', content: text }
+            const existing = copy[assistantIndex]
+            copy[assistantIndex] = {
+              role: 'assistant',
+              content: (existing?.content ?? '') + text, // accumulate, don't overwrite
+              createdAt: existing?.createdAt ?? new Date().toISOString(),
+            }
             return copy
           })
         },
@@ -228,6 +233,7 @@ export default function Page() {
         copy[assistantIndex] = {
           role: 'assistant',
           content: `⚠️ Ollama failed to regenerate:\n\n${String(err)}`,
+          createdAt: copy[assistantIndex]?.createdAt ?? new Date().toISOString(),
         }
         return copy
       })
@@ -246,7 +252,13 @@ export default function Page() {
     if (!selectedConv) { toast.error('No conversation selected'); return }
     if (!selectedModel?.modelId) { toast.error('No model selected'); setShowModelManager(true); return }
 
-    const userMsg: ChatMessagePayload = { role: 'user', content: input }
+    const nowIso = new Date().toISOString()
+    const userMsg: ChatMessagePayload & { createdAt?: string } = {
+      role: 'user',
+      content: input,
+      createdAt: nowIso,
+    }
+
     setMessages((prev) => [...prev, userMsg])
     setInput('')
     setIsThinking(true)
@@ -287,9 +299,9 @@ export default function Page() {
             const copy = [...prev]
             const last = copy[copy.length - 1]
             if (last?.role === 'assistant') {
-              copy[copy.length - 1] = { role: 'assistant', content: last.content + chunk }
+              copy[copy.length - 1] = { role: 'assistant', content: last.content + chunk, createdAt: last.createdAt }
             } else {
-              copy.push({ role: 'assistant', content: chunk })
+              copy.push({ role: 'assistant', content: chunk, createdAt: new Date().toISOString() })
             }
             return copy
           })

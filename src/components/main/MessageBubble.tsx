@@ -125,7 +125,10 @@ export default function MessageBubble({
     <>
       <div
         id={id ? `msg-${id}` : undefined}
-        className={cn('flex flex-col mb-2', isUser ? 'items-end self-end' : 'items-start self-start', 'max-w-[80%]')}
+        className={cn(
+          'flex flex-col mb-2 max-w-[80%]',
+          isUser ? 'items-end ml-auto' : 'items-start mr-auto'
+        )}
         style={{ alignSelf: isUser ? 'flex-end' : 'flex-start' }}
       >
         <style dangerouslySetInnerHTML={{ __html: `

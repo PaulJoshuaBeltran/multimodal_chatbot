@@ -5,8 +5,39 @@ import React, { useState } from 'react'
 import MessageBubble from './MessageBubble'
 import type { Message } from '@/src/types/msg_conversation_model'
 import { toast } from 'sonner'
-import { groupByDate } from '@/lib/dateGroups'
 import { DeleteMessageDialog, EditMessageDialog } from '../dialogs/OtherDialogs'
+
+function formatDateLabel(date: Date): string {
+  const today = new Date()
+  const yesterday = new Date()
+  yesterday.setDate(today.getDate() - 1)
+  const isSameDay = (a: Date, b: Date) =>
+    a.getFullYear() === b.getFullYear() &&
+    a.getMonth() === b.getMonth() &&
+    a.getDate() === b.getDate()
+
+  if (isSameDay(date, today)) return 'Today'
+  if (isSameDay(date, yesterday)) return 'Yesterday'
+  return date.toLocaleDateString(undefined, { month: 'long', day: 'numeric', year: 'numeric' })
+}
+
+// Groups messages by createdAt (send time), preserving array order.
+// Deliberately does NOT use updatedAt — editing a message must not
+// relocate it in the timeline.
+function groupMessagesByDate(messages: Message[]) {
+  const groups: { label: string; items: Message[] }[] = []
+  for (const m of messages) {
+    const ts = m.createdAt ?? new Date().toISOString()
+    const label = formatDateLabel(new Date(ts))
+    const last = groups[groups.length - 1]
+    if (last && last.label === label) {
+      last.items.push(m)
+    } else {
+      groups.push({ label, items: [m] })
+    }
+  }
+  return groups
+}
 
 export default function MessageList({
   messages,
@@ -31,11 +62,6 @@ export default function MessageList({
 
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null)
-
-  const lastAssistantIndex = messages.reduce(
-    (last, m, i) => (m.role === 'assistant' ? i : last),
-    -1
-  )
 
   function openEdit(id: string, content: string) {
     setEditTarget({ id, content })
@@ -74,20 +100,15 @@ export default function MessageList({
     )
   }
 
-  // Only group messages that have an updatedAt; streaming/thinking bubble is appended after
-  const datedMessages = messages.filter((m) => m.updatedAt)
-  const undatedMessages = messages.filter((m) => !m.updatedAt)
-  const groups = groupByDate(datedMessages, true)
-
-  // Track a flat index across groups so onRegenerate receives the correct index
+  const groups = groupMessagesByDate(messages)
+  const lastMessage = messages[messages.length - 1]
   let flatIndex = -1
 
   return (
     <>
       <div className="flex flex-col gap-2 p-4 min-h-full">
-        {groups.map(({ label, items }) => (
-          <div key={label}>
-            {/* Date separator */}
+        {groups.map(({ label, items }, groupIdx) => (
+          <div key={`${label}-${groupIdx}`}>
             <div className="flex items-center gap-2 my-3">
               <div className="flex-1 h-px bg-border/50" />
               <span className="text-xs text-muted-foreground/60 font-medium select-none px-1">
@@ -102,25 +123,15 @@ export default function MessageList({
               const isUser = m.role === 'user'
               return (
                 <MessageBubble
-                  key={m.id ?? m.createdAt ?? currentIndex}
+                  key={m.id ?? `msg-${currentIndex}`}
                   id={m.id}
                   role={m.role as 'user' | 'assistant'}
                   content={m.content}
                   highlightQuery={highlightQuery}
-                  onEdit={
-                    isUser && m.id && onEdit
-                      ? () => openEdit(m.id!, m.content)
-                      : undefined
-                  }
-                  onDelete={
-                    isUser && m.id && onDelete
-                      ? () => openDelete(m.id!)
-                      : undefined
-                  }
+                  onEdit={isUser && m.id && onEdit ? () => openEdit(m.id!, m.content) : undefined}
+                  onDelete={isUser && m.id && onDelete ? () => openDelete(m.id!) : undefined}
                   onRegenerate={
-                    m.role === 'assistant' && onRegenerate
-                      ? () => onRegenerate(currentIndex)
-                      : undefined
+                    m.role === 'assistant' && onRegenerate ? () => onRegenerate(currentIndex) : undefined
                   }
                 />
               )
@@ -128,37 +139,10 @@ export default function MessageList({
           </div>
         ))}
 
-        {undatedMessages.map((m: Message, i: number) => {
-          flatIndex++
-          const currentIndex = flatIndex
-          const isUser = m.role === 'user'
-          return (
-            <MessageBubble
-              key={m.id ?? m.createdAt ?? `undated-${i}`}
-              id={m.id}
-              role={m.role as 'user' | 'assistant'}
-              content={m.content}
-              highlightQuery={highlightQuery}
-              onEdit={
-                isUser && m.id && onEdit
-                  ? () => openEdit(m.id!, m.content)
-                  : undefined
-              }
-              onDelete={
-                isUser && m.id && onDelete
-                  ? () => openDelete(m.id!)
-                  : undefined
-              }
-              onRegenerate={
-                m.role === 'assistant' && onRegenerate
-                  ? () => onRegenerate(currentIndex)
-                  : undefined
-              }
-            />
-          )
-        })}
-
-        {isThinking && streaming && lastAssistantIndex === -1 && (
+        {/* Only show the "thinking" placeholder while waiting on a reply
+            for the *current* turn — i.e. the last message is the user's,
+            not just "no assistant message anywhere in this conversation". */}
+        {isThinking && streaming && lastMessage?.role === 'user' && (
           <MessageBubble role="assistant" content="" />
         )}
       </div>
