@@ -1,7 +1,7 @@
 // src/components/main/MessageList.tsx
 'use client'
 
-import React, { useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import MessageBubble from './MessageBubble'
 import type { Message } from '@/src/types/msg_conversation_model'
 import { toast } from 'sonner'
@@ -63,6 +63,66 @@ export default function MessageList({
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null)
 
+  // The element that actually scrolls (e.g. a Radix ScrollArea viewport)
+  // is an ancestor owned by the parent component, not this one — so we
+  // find it at runtime by walking up from our own container, rather than
+  // assuming a ref shape from outside.
+  const containerRef = useRef<HTMLDivElement | null>(null)
+  const [scrollEl, setScrollEl] = useState<HTMLElement | null>(null)
+  const [isAtBottom, setIsAtBottom] = useState(true)
+  // Bottom-center coords for the floating button, recomputed from the
+  // scroll container's actual on-screen box so the button tracks the
+  // pane's position/size but never the content's scroll offset.
+  const [buttonPos, setButtonPos] = useState<{ left: number; bottom: number } | null>(null)
+
+  useEffect(() => {
+    const el = containerRef.current
+    if (!el) return
+    let node: HTMLElement | null = el.parentElement
+    while (node && node !== document.body) {
+      const style = getComputedStyle(node)
+      if (/(auto|scroll)/.test(style.overflowY)) break
+      node = node.parentElement
+    }
+    setScrollEl(node ?? document.documentElement)
+  }, [])
+
+  useEffect(() => {
+    if (!scrollEl) return
+    const BOTTOM_THRESHOLD = 48
+
+    function update() {
+      if (!scrollEl) return
+      const atBottom =
+        scrollEl.scrollHeight - scrollEl.scrollTop - scrollEl.clientHeight < BOTTOM_THRESHOLD
+      setIsAtBottom(atBottom)
+
+      const rect = scrollEl.getBoundingClientRect()
+      setButtonPos({
+        left: rect.left + rect.width / 2,
+        bottom: window.innerHeight - rect.bottom + 16,
+      })
+    }
+
+    update()
+    scrollEl.addEventListener('scroll', update, { passive: true })
+    window.addEventListener('resize', update)
+    const resizeObserver = new ResizeObserver(update)
+    resizeObserver.observe(scrollEl)
+
+    return () => {
+      scrollEl.removeEventListener('scroll', update)
+      window.removeEventListener('resize', update)
+      resizeObserver.disconnect()
+    }
+    // Re-check whenever the list grows/streams so a still-scrolled-up
+    // button doesn't get stuck showing/hiding incorrectly.
+  }, [scrollEl, messages.length, streaming])
+
+  function scrollToBottom() {
+    scrollEl?.scrollTo({ top: scrollEl.scrollHeight, behavior: 'smooth' })
+  }
+
   function openEdit(id: string, content: string) {
     setEditTarget({ id, content })
     setEditDraft(content)
@@ -106,7 +166,7 @@ export default function MessageList({
 
   return (
     <>
-      <div className="flex flex-col gap-2 p-4 min-h-full">
+      <div ref={containerRef} className="flex flex-col gap-2 p-4 min-h-full">
         {groups.map(({ label, items }, groupIdx) => (
           <div key={`${label}-${groupIdx}`}>
             <div className="flex items-center gap-2 my-3">
@@ -146,6 +206,33 @@ export default function MessageList({
           <MessageBubble role="assistant" content="" />
         )}
       </div>
+
+      {!isAtBottom && buttonPos && (
+        <button
+          type="button"
+          onClick={scrollToBottom}
+          aria-label="Scroll to bottom"
+          style={{ position: 'fixed', left: buttonPos.left, bottom: buttonPos.bottom, transform: 'translateX(-50%)' }}
+          className="z-50 flex h-9 w-9 items-center justify-center rounded-full border border-border/50 bg-background/90 text-foreground shadow-md backdrop-blur transition hover:bg-accent"
+          onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray2)')}
+          onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray3)')}
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M12 5v14" />
+            <path d="m19 12-7 7-7-7" />
+          </svg>
+        </button>
+      )}
 
       {editDialogOpen && (
         <EditMessageDialog
