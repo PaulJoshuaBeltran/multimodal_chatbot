@@ -11,6 +11,8 @@ generator client {
 datasource db {
   provider = "mongodb"
   url      = env("MONGODB_URI")
+  // url was kept despite error since it works and MongoDB isnt compatible with Prisma v7
+  // so v6 is used, for some reason the code checker only validates v7 configuration
 }
 
 model User {
@@ -33,12 +35,21 @@ model Conversation {
   updatedAt DateTime? @updatedAt
 }
 
+type Attachment {
+  url      String
+  fileName String
+  fileType String
+  mimeType String
+  size     Int
+}
+
 model Message {
   id             String       @id @default(auto()) @map("_id") @db.ObjectId
   conversation   Conversation @relation(fields: [conversationId], references: [id])
   conversationId String       @db.ObjectId
   role           String
   content        String
+  attachment     Attachment?
   createdAt      DateTime     @default(now())
   updatedAt      DateTime?    @updatedAt
 }

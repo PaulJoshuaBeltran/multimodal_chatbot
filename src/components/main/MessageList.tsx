@@ -1,7 +1,7 @@
 // src/components/main/MessageList.tsx
 'use client'
 
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useEffect, useState, useCallback } from 'react'
 import MessageBubble from './MessageBubble'
 import type { Message } from '@/src/types/msg_conversation_model'
 import { toast } from 'sonner'
@@ -21,9 +21,6 @@ function formatDateLabel(date: Date): string {
   return date.toLocaleDateString(undefined, { month: 'long', day: 'numeric', year: 'numeric' })
 }
 
-// Groups messages by createdAt (send time), preserving array order.
-// Deliberately does NOT use updatedAt — editing a message must not
-// relocate it in the timeline.
 function groupMessagesByDate(messages: Message[]) {
   const groups: { label: string; items: Message[] }[] = []
   for (const m of messages) {
@@ -63,44 +60,60 @@ export default function MessageList({
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null)
 
-  // The element that actually scrolls (e.g. a Radix ScrollArea viewport)
-  // is an ancestor owned by the parent component, not this one — so we
-  // find it at runtime by walking up from our own container, rather than
-  // assuming a ref shape from outside.
-  const containerRef = useRef<HTMLDivElement | null>(null)
   const [scrollEl, setScrollEl] = useState<HTMLElement | null>(null)
   const [isAtBottom, setIsAtBottom] = useState(true)
-  // Bottom-center coords for the floating button, recomputed from the
-  // scroll container's actual on-screen box so the button tracks the
-  // pane's position/size but never the content's scroll offset.
   const [buttonPos, setButtonPos] = useState<{ left: number; bottom: number } | null>(null)
 
-  useEffect(() => {
-    const el = containerRef.current
-    if (!el) return
+  // Callback ref: Runs as soon as the container div is mounted in the DOM
+  const containerRef = useCallback((el: HTMLDivElement | null) => {
+    if (!el) {
+      setScrollEl(null)
+      return
+    }
+
+    // 1. Check for Radix ScrollArea or custom viewports
+    const radixViewport = el.closest<HTMLElement>('[data-radix-scroll-area-viewport]')
+    if (radixViewport) {
+      setScrollEl(radixViewport)
+      return
+    }
+
+    // 2. Walk up to find an element configured with scroll/auto overflow
     let node: HTMLElement | null = el.parentElement
     while (node && node !== document.body) {
       const style = getComputedStyle(node)
-      if (/(auto|scroll)/.test(style.overflowY)) break
+      const overflowY = style.overflowY || style.overflow
+      if (/(auto|scroll|overlay)/.test(overflowY)) {
+        break
+      }
       node = node.parentElement
     }
-    setScrollEl(node ?? document.documentElement)
+
+    setScrollEl(node && node !== document.body ? node : document.documentElement)
   }, [])
 
+  // Track scroll position and calculate button position
   useEffect(() => {
     if (!scrollEl) return
     const BOTTOM_THRESHOLD = 48
 
     function update() {
       if (!scrollEl) return
+
+      const canScroll = scrollEl.scrollHeight > scrollEl.clientHeight
       const atBottom =
+        !canScroll ||
         scrollEl.scrollHeight - scrollEl.scrollTop - scrollEl.clientHeight < BOTTOM_THRESHOLD
+
       setIsAtBottom(atBottom)
 
       const rect = scrollEl.getBoundingClientRect()
+      const calculatedBottom = window.innerHeight - rect.bottom + 16
+      const safeBottom = Math.max(16, calculatedBottom)
+
       setButtonPos({
         left: rect.left + rect.width / 2,
-        bottom: window.innerHeight - rect.bottom + 16,
+        bottom: safeBottom,
       })
     }
 
@@ -115,8 +128,6 @@ export default function MessageList({
       window.removeEventListener('resize', update)
       resizeObserver.disconnect()
     }
-    // Re-check whenever the list grows/streams so a still-scrolled-up
-    // button doesn't get stuck showing/hiding incorrectly.
   }, [scrollEl, messages.length, streaming])
 
   function scrollToBottom() {
@@ -181,12 +192,18 @@ export default function MessageList({
               flatIndex++
               const currentIndex = flatIndex
               const isUser = m.role === 'user'
+
+              type AttachmentItem = NonNullable<Message['attachments']>[number]
+              type LegacyMessage = Message & { attachment?: AttachmentItem }
+              const msg = m as LegacyMessage
+              const attachmentArray = msg.attachment ? [msg.attachment] : msg.attachments
               return (
                 <MessageBubble
                   key={m.id ?? `msg-${currentIndex}`}
                   id={m.id}
                   role={m.role as 'user' | 'assistant'}
                   content={m.content}
+                  attachments={attachmentArray}
                   highlightQuery={highlightQuery}
                   onEdit={isUser && m.id && onEdit ? () => openEdit(m.id!, m.content) : undefined}
                   onDelete={isUser && m.id && onDelete ? () => openDelete(m.id!) : undefined}
@@ -199,9 +216,6 @@ export default function MessageList({
           </div>
         ))}
 
-        {/* Only show the "thinking" placeholder while waiting on a reply
-            for the *current* turn — i.e. the last message is the user's,
-            not just "no assistant message anywhere in this conversation". */}
         {isThinking && streaming && lastMessage?.role === 'user' && (
           <MessageBubble role="assistant" content="" />
         )}
@@ -211,11 +225,11 @@ export default function MessageList({
         <button
           type="button"
           onClick={scrollToBottom}
+          onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray2)')}
+          onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray3)')}
           aria-label="Scroll to bottom"
           style={{ position: 'fixed', left: buttonPos.left, bottom: buttonPos.bottom, transform: 'translateX(-50%)' }}
           className="z-50 flex h-9 w-9 items-center justify-center rounded-full border border-border/50 bg-background/90 text-foreground shadow-md backdrop-blur transition hover:bg-accent"
-          onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray2)')}
-          onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray3)')}
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"

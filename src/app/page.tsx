@@ -13,6 +13,7 @@ import type {
   AiModel,
   ChatMessagePayload,
   OllamaPayload,
+  Attachment,
 } from '@/src/types/msg_conversation_model'
 
 import { ChatSidebar } from '../components/sidebar/ChatSidebar'
@@ -23,7 +24,7 @@ import { SystemPromptDialog } from '../components/dialogs/SystemPromptDialog'
 import { HttpError } from '../models/http_error'
 import { LoginSignup } from '../components/main/LoginSignup'
 
-// ── Page ──────────────────────────────────────────────────────────────────────
+// â”€â”€ Page â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 export default function Page() {
   const [auth, dispatch] = useReducer(
     (
@@ -41,6 +42,7 @@ export default function Page() {
   const [conversations, setConversations] = useState<Conversation[]>([])
   const [selectedConv, setSelectedConv] = useState<string | null>(null)
   const [messages, setMessages] = useState<ChatMessage[]>([])
+  const [pendingAttachment, setPendingAttachment] = useState<Attachment | null>(null)
   const [input, setInput] = useState('')
   const [streaming, setStreaming] = useState(false)
   const [isThinking, setIsThinking] = useState(false)
@@ -65,7 +67,7 @@ export default function Page() {
   const [systemPromptOpen, setSystemPromptOpen] = useState(false)
   const [deactivateAlertOpen, setDeactivateAlertOpen] = useState(false)
 
-  // ── Data fetching ──────────────────────────────────────────────────────────
+  // â”€â”€ Data fetching â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const fetchConversations = useCallback(
     async (q?: string) => {
       const url = q
@@ -93,7 +95,7 @@ export default function Page() {
     }
   }, [auth.token])
 
-  // ── Message loading ────────────────────────────────────────────────────────
+  // â”€â”€ Message loading â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   async function loadMessages(convId: string) {
     setCurrentView('chat')
     setSelectedConv(convId)
@@ -126,7 +128,7 @@ export default function Page() {
     }
   }
 
-  // ── AI generation ──────────────────────────────────────────────────────────
+  // â”€â”€ AI generation â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   async function generateAssistantReply(params: {
     messages: ChatMessagePayload[]
     conversationId: string | null
@@ -185,13 +187,17 @@ export default function Page() {
     return full
   }
 
-  // ── Regenerate ─────────────────────────────────────────────────────────────
+  // â”€â”€ Regenerate â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   async function handleRegenerateFromIndex(index: number) {
     const controller = new AbortController()
     abortRef.current = controller
     if (!selectedConv) return
 
-    const context = messages.slice(0, index).map((m) => ({ role: m.role, content: m.content }))
+    const context = messages.slice(0, index).map((m) => ({
+      role: m.role,
+      content: m.content,
+      attachments: m.attachments,
+    }))
     setIsThinking(true)
     setStreaming(true)
 
@@ -232,7 +238,7 @@ export default function Page() {
         const copy = [...prev]
         copy[assistantIndex] = {
           role: 'assistant',
-          content: `⚠️ Ollama failed to regenerate:\n\n${String(err)}`,
+          content: `âš ï¸ Ollama failed to regenerate:\n\n${String(err)}`,
           createdAt: copy[assistantIndex]?.createdAt ?? new Date().toISOString(),
         }
         return copy
@@ -243,7 +249,7 @@ export default function Page() {
     }
   }
 
-  // ── Send ───────────────────────────────────────────────────────────────────
+  // â”€â”€ Send â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   async function send() {
     const controller = new AbortController()
     abortRef.current = controller
@@ -253,14 +259,16 @@ export default function Page() {
     if (!selectedModel?.modelId) { toast.error('No model selected'); setShowModelManager(true); return }
 
     const nowIso = new Date().toISOString()
-    const userMsg: ChatMessagePayload & { createdAt?: string } = {
+    const userMsg: ChatMessagePayload & { createdAt?: string; attachments?: Attachment[] | null } = {
       role: 'user',
       content: input,
+      attachments: pendingAttachment ? [pendingAttachment] : undefined,
       createdAt: nowIso,
     }
 
     setMessages((prev) => [...prev, userMsg])
     setInput('')
+    setPendingAttachment(null)
     setIsThinking(true)
 
     const saveHeaders: Record<string, string> = { 'Content-Type': 'application/json' }
@@ -268,7 +276,12 @@ export default function Page() {
     const saveRes = await fetch('/api/messages', {
       method: 'POST',
       headers: saveHeaders,
-      body: JSON.stringify({ conversationId: selectedConv, role: 'user', content: userMsg.content }),
+      body: JSON.stringify({
+        conversationId: selectedConv,
+        role: 'user',
+        content: userMsg.content,
+        attachments: userMsg.attachments ?? [],
+      }),
     })
     if (saveRes.ok) {
       const savedMsg = await saveRes.json()
@@ -280,6 +293,7 @@ export default function Page() {
     const contextMessages: ChatMessagePayload[] = [...messages, userMsg].map((m) => ({
       role: m.role,
       content: m.content,
+      attachments: (m as any).attachment ? [(m as any).attachment] : m.attachments,
     }))
 
     let reply = ''
@@ -309,7 +323,7 @@ export default function Page() {
       })
     } catch (err) {
       const errorText =
-        err instanceof Error ? `⚠️ Ollama ${err.message}` : '⚠️ Ollama Unknown error'
+        err instanceof Error ? `âš ï¸ Ollama ${err.message}` : 'âš ï¸ Ollama Unknown error'
       setMessages((prev) => {
         const copy = [...prev]
         if (copy.length && copy[copy.length - 1].role === 'assistant') {
@@ -329,7 +343,7 @@ export default function Page() {
         const r = await fetch('/api/messages', {
           method: 'POST',
           headers: h,
-          body: JSON.stringify({ conversationId: selectedConv, role: 'assistant', content: reply }),
+          body: JSON.stringify({ conversationId: selectedConv, role: 'assistant', content: reply, attachments: [] }),
         })
         if (r.ok) {
           const saved = await r.json()
@@ -343,7 +357,7 @@ export default function Page() {
     }
   }
 
-  // ── Edit message ───────────────────────────────────────────────────────────
+  // â”€â”€ Edit message â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   async function handleEditMessage(id: string, content: string) {
     if (!selectedModel?.modelId) {
       toast.error('No model selected: Please add or select an AI model first.')
@@ -377,7 +391,11 @@ export default function Page() {
     setIsThinking(true)
     setStreaming(true)
     abortRef.current = new AbortController()
-    const context = updatedMessages.map((m) => ({ role: m.role, content: m.content }))
+    const context = updatedMessages.map((m) => ({
+      role: m.role,
+      content: m.content,
+      attachments: m.attachments,
+    }))
 
     let reply = ''
     try {
@@ -432,7 +450,7 @@ export default function Page() {
     }
   }
 
-  // ── Auth helpers ───────────────────────────────────────────────────────────
+  // â”€â”€ Auth helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   function stop() { abortRef.current?.abort(); setIsThinking(false); setStreaming(false) }
 
   function handleLogin(tokenValue: string) {
@@ -463,7 +481,7 @@ export default function Page() {
     setDeactivateAlertOpen(false)
   }
 
-  // ── Unauthenticated landing ────────────────────────────────────────────────
+  // â”€â”€ Unauthenticated landing â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   if (auth.ready && !auth.token) {
     return (
       <LoginSignup
@@ -477,7 +495,7 @@ export default function Page() {
     )
   }
 
-  // ── Authenticated layout ───────────────────────────────────────────────────
+  // â”€â”€ Authenticated layout â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   return (
     <div className="flex h-screen bg-background text-foreground overflow-hidden">
 
@@ -535,6 +553,9 @@ export default function Page() {
               onSend={send}
               onStop={stop}
               onOpenSystemPrompt={() => setSystemPromptOpen(true)}
+              attachment={pendingAttachment}
+              onAttachmentChange={setPendingAttachment}
+              token={auth.token}
             />
           </>
         ) : (

@@ -2,6 +2,7 @@
 'use client'
 
 import React, { useState } from 'react'
+import Image from 'next/image'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import remarkMath from 'remark-math'
@@ -14,10 +15,11 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '../ui/dropdown-menu'
-import { MoreHorizontal, Pencil, Trash2, Copy, RotateCcw } from 'lucide-react'
+import { MoreHorizontal, Pencil, Trash2, Copy, RotateCcw, FileText, Music, AlertCircle } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { toast } from 'sonner'
 import { HastNode } from '@/src/types/hast_nodes'
+import type { Attachment } from '@/src/types/msg_conversation_model'
 
 function rehypeHighlightQuery({ query }: { query?: string }) {
   return (tree: HastNode): void => {
@@ -92,6 +94,111 @@ function escapePercentInMath(text: string): string {
   })
 }
 
+function formatFileSize(bytes: number): string {
+  if (bytes < 1024) return `${bytes} B`
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
+}
+
+function AttachmentView({ att, isUserMessage }: { att: Attachment; isUserMessage?: boolean }) {
+  const [failed, setFailed] = useState(false)
+
+  if (failed) {
+    return (
+      <div className={cn(
+        "flex items-center gap-2 px-3 py-2 rounded-lg text-xs",
+        isUserMessage ? "bg-white/20 text-white" : "bg-red-500/10 text-red-600"
+      )}>
+        <AlertCircle className="w-4 h-4 shrink-0" />
+        <span className="truncate max-w-[200px]">Couldn&apos;t load {att.fileName}</span>
+      </div>
+    )
+  }
+
+  if (att.fileType === 'image') {
+    return (
+      <div className="relative w-48 rounded-lg overflow-hidden" style={{ height: 200 }}>
+        <Image
+          src={att.url}
+          alt={att.fileName}
+          fill
+          sizes="192px"
+          className="object-contain rounded-lg"
+          onError={() => setFailed(true)}
+        />
+      </div>
+    )
+  }
+
+  if (att.fileType === 'audio') {
+    return (
+      <div className={cn(
+        "flex flex-col gap-1 px-3 py-2 rounded-lg max-w-xs",
+        isUserMessage ? "bg-white/20" : "bg-black/5"
+      )}>
+        <div className={cn(
+          "flex items-center gap-2 text-xs",
+          isUserMessage ? "text-white/80" : "text-black/60"
+        )}>
+          <Music className="w-4 h-4 shrink-0" />
+          <span className="truncate">{att.fileName}</span>
+        </div>
+        <audio
+          controls
+          src={att.url}
+          className="w-full h-8"
+          onError={() => setFailed(true)}
+        >
+          Your browser doesn&apos;t support audio playback.
+        </audio>
+      </div>
+    )
+  }
+
+  // document - show filename, size, and format on separate lines
+  return (
+    <a
+      href={att.url}
+      download={att.fileName}
+      className={cn(
+        "flex flex-col gap-1 px-3 py-2 rounded-lg transition",
+        isUserMessage 
+          ? "bg-white/20 hover:bg-white/30 text-white" 
+          : "bg-black/5 hover:bg-black/10 text-black"
+      )}
+      onClick={async (e) => {
+        e.preventDefault()
+        try {
+          const res = await fetch(att.url, { method: 'HEAD' })
+          if (!res.ok) throw new Error()
+          window.location.href = att.url
+        } catch {
+          setFailed(true)
+        }
+      }}
+    >
+      <div className="flex items-center gap-2">
+        <FileText className="w-4 h-4 shrink-0" />
+        <span className={cn("text-xs truncate", isUserMessage ? "text-white" : "text-black")}>
+          {att.fileName}
+        </span>
+      </div>
+      <span className={cn(
+        "text-xs ml-6",
+        isUserMessage ? "text-white/80" : "text-black/60"
+      )}>
+        {formatFileSize(att.size)}
+      </span>
+      <span className={cn(
+        "text-xs ml-6",
+        isUserMessage ? "text-white/60" : "text-black/40"
+      )}>
+        {(att.mimeType.split('/')[1] || 'file').toUpperCase()}
+      </span>
+    </a>
+  )
+}
+
 export default function MessageBubble({
   role,
   id,
@@ -99,7 +206,8 @@ export default function MessageBubble({
   onEdit,
   onDelete,
   highlightQuery,
-  onRegenerate
+  onRegenerate,
+  attachments
 }: {
   role: 'user' | 'assistant'
   id?: string
@@ -108,9 +216,11 @@ export default function MessageBubble({
   onDelete?: () => void
   highlightQuery?: string
   onRegenerate?: () => void
+  attachments?: Attachment[] | null
 }) {
   const [menuOpen, setMenuOpen] = useState(false)
   const isUser = role === 'user'
+  const hasAttachments = attachments && attachments.length > 0
 
   async function handleCopy() {
     try {
@@ -198,10 +308,10 @@ export default function MessageBubble({
             </div>
           )}
 
-          {/* Bubble */}
+          {/* Message Bubble */}
           <div
             className={cn(
-              'px-4 py-2.5 rounded-2xl text-sm leading-relaxed overflow-x-auto min-h-[38px] flex items-center',
+              'px-4 py-2.5 rounded-2xl text-sm leading-relaxed overflow-x-auto min-h-[38px] flex flex-col',
               isUser
                 ? 'bg-primary text-primary-foreground rounded-br-sm border border-white'
                 : 'bg-white text-black border rounded-bl-sm'
@@ -228,38 +338,56 @@ export default function MessageBubble({
                 )}
               </div>
             )}
-          </div>
-        {!isUser && (
-          <div className="message-actions flex-shrink-0 flex gap-1">
             
-            {onRegenerate && (
+            {/* Attachments inside bubble for user messages */}
+            {isUser && hasAttachments && (
+              <div className="flex flex-col gap-2 mt-2">
+                {attachments!.map((att, i) => (
+                  <AttachmentView key={i} att={att} isUserMessage={isUser} />
+                ))}
+              </div>
+            )}
+          </div>
+
+          {!isUser && (
+            <div className="message-actions flex-shrink-0 flex gap-1">
+              {onRegenerate && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-6 w-6 rounded-full"
+                  onClick={onRegenerate}
+                  onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray2)')}
+                  onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}
+                  aria-label="Regenerate response"
+                >
+                  <RotateCcw className="w-3.5 h-3.5" />
+                </Button>
+              )}
+
               <Button
                 variant="ghost"
                 size="icon"
                 className="h-6 w-6 rounded-full"
-                onClick={onRegenerate}
+                onClick={handleCopy}
                 onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray2)')}
                 onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}
-                aria-label="Regenerate response"
+                aria-label="Copy message"
               >
-                <RotateCcw className="w-3.5 h-3.5" />
+                <Copy className="w-3.5 h-3.5" />
               </Button>
-            )}
+            </div>
+          )}
+        </div>
 
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-6 w-6 rounded-full"
-              onClick={handleCopy}
-              onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray2)')}
-              onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}
-              aria-label="Copy message"
-            >
-              <Copy className="w-3.5 h-3.5" />
-            </Button>
+        {/* Attachments displayed below message for assistant */}
+        {!isUser && hasAttachments && (
+          <div className="flex flex-col gap-2 mt-2 w-full">
+            {attachments!.map((att, i) => (
+              <AttachmentView key={i} att={att} isUserMessage={isUser} />
+            ))}
           </div>
         )}
-        </div>
       </div>
     </>
   )

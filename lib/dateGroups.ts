@@ -1,5 +1,6 @@
 // src/lib/dateGroups.ts
 import { DateGroup, DateGroupLabel } from "@/src/types/date_group"
+
 function getGroupLabel(date: Date, now: Date): DateGroupLabel {
   const startOfToday = new Date(now)
   startOfToday.setHours(0, 0, 0, 0)
@@ -22,16 +23,17 @@ function getGroupLabel(date: Date, now: Date): DateGroupLabel {
   return date.toLocaleString('default', { month: 'long', year: 'numeric' })
 }
 
+// Chronological priority from newest to oldest
 const GROUP_ORDER: DateGroupLabel[] = [
-  'Previous 30 days',
-  'Previous 7 days',
-  'Yesterday',
   'Today',
+  'Yesterday',
+  'Previous 7 days',
+  'Previous 30 days',
 ]
 
 export function groupByDate<T extends { updatedAt?: string | Date | null }>(
   items: T[],
-  ascendingSort: boolean
+  ascendingSort: boolean = false
 ): DateGroup<T>[] {
   const now = new Date()
   const buckets = new Map<DateGroupLabel, T[]>()
@@ -44,7 +46,7 @@ export function groupByDate<T extends { updatedAt?: string | Date | null }>(
     buckets.get(label)!.push(item)
   }
 
-  // Sort items within each bucket
+  // Sort items within each bucket (newest first for descending)
   for (const bucket of buckets.values()) {
     bucket.sort((a, b) => {
       const ta = new Date(a.updatedAt!).getTime()
@@ -56,16 +58,21 @@ export function groupByDate<T extends { updatedAt?: string | Date | null }>(
   const sortedKeys = [...buckets.keys()].sort((a, b) => {
     const ai = GROUP_ORDER.indexOf(a)
     const bi = GROUP_ORDER.indexOf(b)
-    if (ai !== -1 && bi !== -1) return ai - bi          // both named: Today is always last in GROUP_ORDER
-    if (ai !== -1) return -1
-    if (bi !== -1) return 1
-    // Month-year labels: newest month first (descending base)
-    return new Date(b).getTime() - new Date(a).getTime()
-  })
 
-  // GROUP_ORDER has Today at index 3 (last) → ascending already correct.
-  // Descending wants Today first, so reverse the whole key list.
-  if (!ascendingSort) sortedKeys.reverse()
+    // Case 1: Both keys are named relative groups (Today, Yesterday, etc.)
+    if (ai !== -1 && bi !== -1) {
+      return ascendingSort ? bi - ai : ai - bi
+    }
+
+    // Case 2: One key is a named group, the other is a Month-Year string
+    if (ai !== -1) return ascendingSort ? 1 : -1
+    if (bi !== -1) return ascendingSort ? -1 : 1
+
+    // Case 3: Both keys are Month-Year strings (compare most recent item timestamps)
+    const timeA = new Date(buckets.get(a)![0].updatedAt!).getTime()
+    const timeB = new Date(buckets.get(b)![0].updatedAt!).getTime()
+    return ascendingSort ? timeA - timeB : timeB - timeA
+  })
 
   return sortedKeys.map((label) => ({ label, items: buckets.get(label)! }))
 }

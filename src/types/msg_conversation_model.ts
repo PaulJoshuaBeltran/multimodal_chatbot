@@ -1,10 +1,25 @@
 // src/types/msg_conversation_model.ts
+export interface Attachment {
+  url: string
+  fileName: string
+  fileType: 'image' | 'document' | 'audio'
+  mimeType: string
+  size: number
+}
+
 export type Message = {
   id?: string
   role: 'user' | 'assistant'
   content: string
+  attachments?: Attachment[]
   createdAt?: string
   updatedAt?: string | null
+}
+
+export interface ProcessedMessage {
+  role: string
+  content: string
+  images?: string[]
 }
 
 export type Conversation = {
@@ -31,6 +46,7 @@ export type ChatRole = 'user' | 'assistant'
 export type ChatMessagePayload = {
   role: ChatRole
   content: string
+  attachments?: Attachment[]
 }
 
 export type OllamaPayload = {

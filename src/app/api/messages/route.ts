@@ -21,8 +21,12 @@ export async function POST(req: Request) {
   const auth = req.headers.get('authorization')?.split(' ')[1]
   const payload = verifyToken(auth)
   if (!payload) return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401, headers: { 'Content-Type': 'application/json' } })
-  const { conversationId, role, content } = await req.json()
-  if (!content || !role) return new Response(JSON.stringify({ error: 'Missing fields' }), { status: 400, headers: { 'Content-Type': 'application/json' } })
+
+  const { conversationId, role, content, attachments } = await req.json()
+  if ((!content && (!attachments || attachments.length === 0)) || !role) {
+    return new Response(JSON.stringify({ error: 'Missing fields' }), { status: 400, headers: { 'Content-Type': 'application/json' } })
+  }
+
   let convId = conversationId
   if (!convId) {
     const conv = await prisma.conversation.create({ data: { title: 'New conversation', userId: payload.userId } })
@@ -31,6 +35,16 @@ export async function POST(req: Request) {
     const conv = await prisma.conversation.findUnique({ where: { id: convId } })
     if (!conv || conv.userId !== payload.userId) return new Response(JSON.stringify({ error: 'Conversation not found' }), { status: 404, headers: { 'Content-Type': 'application/json' } })
   }
-  const message = await prisma.message.create({ data: { conversationId: convId, role, content } })
+
+  const attachment = attachments && attachments.length > 0 ? attachments[0] : undefined
+
+  const message = await prisma.message.create({
+    data: { 
+      conversationId: convId, 
+      role, 
+      content: content ?? '', 
+      ...(attachment ? { attachment } : {})
+    },
+  })
   return new Response(JSON.stringify(message), { status: 201, headers: { 'Content-Type': 'application/json' } })
 }

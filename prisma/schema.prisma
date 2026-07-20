@@ -41,8 +41,17 @@ model Message {
   conversationId String       @db.ObjectId
   role           String
   content        String
+  attachment     Attachment?
   createdAt      DateTime     @default(now())
   updatedAt      DateTime?    @updatedAt
+}
+
+type Attachment {
+  url      String
+  fileName String
+  fileType String
+  mimeType String
+  size     Int
 }
 
 model AiModel {

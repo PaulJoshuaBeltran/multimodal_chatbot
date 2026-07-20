@@ -3229,6 +3229,7 @@ export namespace Prisma {
     conversationId: number
     role: number
     content: number
+    attachments: number
     createdAt: number
     updatedAt: number
     _all: number
@@ -3258,6 +3259,7 @@ export namespace Prisma {
     conversationId?: true
     role?: true
     content?: true
+    attachments?: true
     createdAt?: true
     updatedAt?: true
     _all?: true
@@ -3340,6 +3342,7 @@ export namespace Prisma {
     conversationId: string
     role: string
     content: string
+    attachments: JsonValue[]
     createdAt: Date
     updatedAt: Date | null
     _count: MessageCountAggregateOutputType | null
@@ -3366,6 +3369,7 @@ export namespace Prisma {
     conversationId?: boolean
     role?: boolean
     content?: boolean
+    attachments?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     conversation?: boolean | ConversationDefaultArgs<ExtArgs>
@@ -3378,11 +3382,12 @@ export namespace Prisma {
     conversationId?: boolean
     role?: boolean
     content?: boolean
+    attachments?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }
 
-  export type MessageOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "conversationId" | "role" | "content" | "createdAt" | "updatedAt", ExtArgs["result"]["message"]>
+  export type MessageOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "conversationId" | "role" | "content" | "attachments" | "createdAt" | "updatedAt", ExtArgs["result"]["message"]>
   export type MessageInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     conversation?: boolean | ConversationDefaultArgs<ExtArgs>
   }
@@ -3397,6 +3402,7 @@ export namespace Prisma {
       conversationId: string
       role: string
       content: string
+      attachments: Prisma.JsonValue[]
       createdAt: Date
       updatedAt: Date | null
     }, ExtArgs["result"]["message"]>
@@ -3796,6 +3802,7 @@ export namespace Prisma {
     readonly conversationId: FieldRef<"Message", 'String'>
     readonly role: FieldRef<"Message", 'String'>
     readonly content: FieldRef<"Message", 'String'>
+    readonly attachments: FieldRef<"Message", 'Json[]'>
     readonly createdAt: FieldRef<"Message", 'DateTime'>
     readonly updatedAt: FieldRef<"Message", 'DateTime'>
   }
@@ -5229,6 +5236,7 @@ export namespace Prisma {
     conversationId: 'conversationId',
     role: 'role',
     content: 'content',
+    attachments: 'attachments',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt'
   };
@@ -5296,6 +5304,20 @@ export namespace Prisma {
    * Reference to a field of type 'DateTime[]'
    */
   export type ListDateTimeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DateTime[]'>
+    
+
+
+  /**
+   * Reference to a field of type 'Json[]'
+   */
+  export type ListJsonFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Json[]'>
+    
+
+
+  /**
+   * Reference to a field of type 'Json'
+   */
+  export type JsonFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Json'>
     
 
 
@@ -5447,6 +5469,7 @@ export namespace Prisma {
     conversationId?: StringFilter<"Message"> | string
     role?: StringFilter<"Message"> | string
     content?: StringFilter<"Message"> | string
+    attachments?: JsonNullableListFilter<"Message">
     createdAt?: DateTimeFilter<"Message"> | Date | string
     updatedAt?: DateTimeNullableFilter<"Message"> | Date | string | null
     conversation?: XOR<ConversationScalarRelationFilter, ConversationWhereInput>
@@ -5457,6 +5480,7 @@ export namespace Prisma {
     conversationId?: SortOrder
     role?: SortOrder
     content?: SortOrder
+    attachments?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     conversation?: ConversationOrderByWithRelationInput
@@ -5470,6 +5494,7 @@ export namespace Prisma {
     conversationId?: StringFilter<"Message"> | string
     role?: StringFilter<"Message"> | string
     content?: StringFilter<"Message"> | string
+    attachments?: JsonNullableListFilter<"Message">
     createdAt?: DateTimeFilter<"Message"> | Date | string
     updatedAt?: DateTimeNullableFilter<"Message"> | Date | string | null
     conversation?: XOR<ConversationScalarRelationFilter, ConversationWhereInput>
@@ -5480,6 +5505,7 @@ export namespace Prisma {
     conversationId?: SortOrder
     role?: SortOrder
     content?: SortOrder
+    attachments?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     _count?: MessageCountOrderByAggregateInput
@@ -5495,6 +5521,7 @@ export namespace Prisma {
     conversationId?: StringWithAggregatesFilter<"Message"> | string
     role?: StringWithAggregatesFilter<"Message"> | string
     content?: StringWithAggregatesFilter<"Message"> | string
+    attachments?: JsonNullableListFilter<"Message">
     createdAt?: DateTimeWithAggregatesFilter<"Message"> | Date | string
     updatedAt?: DateTimeNullableWithAggregatesFilter<"Message"> | Date | string | null
   }
@@ -5688,6 +5715,7 @@ export namespace Prisma {
     id?: string
     role: string
     content: string
+    attachments?: MessageCreateattachmentsInput | InputJsonValue[]
     createdAt?: Date | string
     updatedAt?: Date | string | null
     conversation: ConversationCreateNestedOneWithoutMessagesInput
@@ -5698,6 +5726,7 @@ export namespace Prisma {
     conversationId: string
     role: string
     content: string
+    attachments?: MessageCreateattachmentsInput | InputJsonValue[]
     createdAt?: Date | string
     updatedAt?: Date | string | null
   }
@@ -5705,6 +5734,7 @@ export namespace Prisma {
   export type MessageUpdateInput = {
     role?: StringFieldUpdateOperationsInput | string
     content?: StringFieldUpdateOperationsInput | string
+    attachments?: MessageUpdateattachmentsInput | InputJsonValue[]
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     conversation?: ConversationUpdateOneRequiredWithoutMessagesNestedInput
@@ -5714,6 +5744,7 @@ export namespace Prisma {
     conversationId?: StringFieldUpdateOperationsInput | string
     role?: StringFieldUpdateOperationsInput | string
     content?: StringFieldUpdateOperationsInput | string
+    attachments?: MessageUpdateattachmentsInput | InputJsonValue[]
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
@@ -5723,6 +5754,7 @@ export namespace Prisma {
     conversationId: string
     role: string
     content: string
+    attachments?: MessageCreateattachmentsInput | InputJsonValue[]
     createdAt?: Date | string
     updatedAt?: Date | string | null
   }
@@ -5730,6 +5762,7 @@ export namespace Prisma {
   export type MessageUpdateManyMutationInput = {
     role?: StringFieldUpdateOperationsInput | string
     content?: StringFieldUpdateOperationsInput | string
+    attachments?: MessageUpdateattachmentsInput | InputJsonValue[]
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
@@ -5738,6 +5771,7 @@ export namespace Prisma {
     conversationId?: StringFieldUpdateOperationsInput | string
     role?: StringFieldUpdateOperationsInput | string
     content?: StringFieldUpdateOperationsInput | string
+    attachments?: MessageUpdateattachmentsInput | InputJsonValue[]
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
@@ -6016,6 +6050,20 @@ export namespace Prisma {
     _max?: NestedDateTimeNullableFilter<$PrismaModel>
     isSet?: boolean
   }
+  export type JsonNullableListFilter<$PrismaModel = never> =
+    | PatchUndefined<
+        Either<Required<JsonNullableListFilterBase<$PrismaModel>>, Exclude<keyof Required<JsonNullableListFilterBase<$PrismaModel>>, 'path'>>,
+        Required<JsonNullableListFilterBase<$PrismaModel>>
+      >
+    | OptionalFlat<Omit<Required<JsonNullableListFilterBase<$PrismaModel>>, 'path'>>
+
+  export type JsonNullableListFilterBase<$PrismaModel = never> = {
+    equals?: InputJsonValue[] | ListJsonFieldRefInput<$PrismaModel> | null
+    has?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    hasEvery?: InputJsonValue[] | ListJsonFieldRefInput<$PrismaModel>
+    hasSome?: InputJsonValue[] | ListJsonFieldRefInput<$PrismaModel>
+    isEmpty?: boolean
+  }
 
   export type ConversationScalarRelationFilter = {
     is?: ConversationWhereInput
@@ -6027,6 +6075,7 @@ export namespace Prisma {
     conversationId?: SortOrder
     role?: SortOrder
     content?: SortOrder
+    attachments?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -6253,10 +6302,19 @@ export namespace Prisma {
     deleteMany?: MessageScalarWhereInput | MessageScalarWhereInput[]
   }
 
+  export type MessageCreateattachmentsInput = {
+    set: InputJsonValue[]
+  }
+
   export type ConversationCreateNestedOneWithoutMessagesInput = {
     create?: XOR<ConversationCreateWithoutMessagesInput, ConversationUncheckedCreateWithoutMessagesInput>
     connectOrCreate?: ConversationCreateOrConnectWithoutMessagesInput
     connect?: ConversationWhereUniqueInput
+  }
+
+  export type MessageUpdateattachmentsInput = {
+    set?: InputJsonValue[]
+    push?: InputJsonValue | InputJsonValue[]
   }
 
   export type ConversationUpdateOneRequiredWithoutMessagesNestedInput = {
@@ -6575,6 +6633,7 @@ export namespace Prisma {
     id?: string
     role: string
     content: string
+    attachments?: MessageCreateattachmentsInput | InputJsonValue[]
     createdAt?: Date | string
     updatedAt?: Date | string | null
   }
@@ -6583,6 +6642,7 @@ export namespace Prisma {
     id?: string
     role: string
     content: string
+    attachments?: MessageCreateattachmentsInput | InputJsonValue[]
     createdAt?: Date | string
     updatedAt?: Date | string | null
   }
@@ -6647,6 +6707,7 @@ export namespace Prisma {
     conversationId?: StringFilter<"Message"> | string
     role?: StringFilter<"Message"> | string
     content?: StringFilter<"Message"> | string
+    attachments?: JsonNullableListFilter<"Message">
     createdAt?: DateTimeFilter<"Message"> | Date | string
     updatedAt?: DateTimeNullableFilter<"Message"> | Date | string | null
   }
@@ -6815,6 +6876,7 @@ export namespace Prisma {
     id?: string
     role: string
     content: string
+    attachments?: MessageCreateattachmentsInput | InputJsonValue[]
     createdAt?: Date | string
     updatedAt?: Date | string | null
   }
@@ -6822,6 +6884,7 @@ export namespace Prisma {
   export type MessageUpdateWithoutConversationInput = {
     role?: StringFieldUpdateOperationsInput | string
     content?: StringFieldUpdateOperationsInput | string
+    attachments?: MessageUpdateattachmentsInput | InputJsonValue[]
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
@@ -6829,6 +6892,7 @@ export namespace Prisma {
   export type MessageUncheckedUpdateWithoutConversationInput = {
     role?: StringFieldUpdateOperationsInput | string
     content?: StringFieldUpdateOperationsInput | string
+    attachments?: MessageUpdateattachmentsInput | InputJsonValue[]
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
@@ -6836,6 +6900,7 @@ export namespace Prisma {
   export type MessageUncheckedUpdateManyWithoutConversationInput = {
     role?: StringFieldUpdateOperationsInput | string
     content?: StringFieldUpdateOperationsInput | string
+    attachments?: MessageUpdateattachmentsInput | InputJsonValue[]
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
