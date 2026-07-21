@@ -13,7 +13,7 @@ type IncomingMessage = {
 async function loadImageBase64(url: string): Promise<string | null> {
   try {
     const filePath = uploadPathFromUrl(url)
-    console.log('Loading image from:', filePath)
+    console.log('Loading image from:', filePath, '| raw url was:', url)
     const buf = await readFile(filePath)
     console.log('Image loaded successfully, size:', buf.length, 'bytes')
 

@@ -24,7 +24,7 @@ import { SystemPromptDialog } from '../components/dialogs/SystemPromptDialog'
 import { HttpError } from '../models/http_error'
 import { LoginSignup } from '../components/main/LoginSignup'
 
-// â”€â”€ Page â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// Page
 export default function Page() {
   const [auth, dispatch] = useReducer(
     (
@@ -67,7 +67,7 @@ export default function Page() {
   const [systemPromptOpen, setSystemPromptOpen] = useState(false)
   const [deactivateAlertOpen, setDeactivateAlertOpen] = useState(false)
 
-  // â”€â”€ Data fetching â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // Data fetching
   const fetchConversations = useCallback(
     async (q?: string) => {
       const url = q
@@ -95,7 +95,7 @@ export default function Page() {
     }
   }, [auth.token])
 
-  // â”€â”€ Message loading â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // Message loading
   async function loadMessages(convId: string) {
     setCurrentView('chat')
     setSelectedConv(convId)
@@ -128,7 +128,7 @@ export default function Page() {
     }
   }
 
-  // â”€â”€ AI generation â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // AI generation
   async function generateAssistantReply(params: {
     messages: ChatMessagePayload[]
     conversationId: string | null
@@ -187,7 +187,7 @@ export default function Page() {
     return full
   }
 
-  // â”€â”€ Regenerate â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // Regenerate
   async function handleRegenerateFromIndex(index: number) {
     const controller = new AbortController()
     abortRef.current = controller
@@ -249,7 +249,6 @@ export default function Page() {
     }
   }
 
-  // â”€â”€ Send â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   async function send() {
     const controller = new AbortController()
     abortRef.current = controller
@@ -299,6 +298,7 @@ export default function Page() {
     let reply = ''
 
     try {
+      alert(`contextMessages: ${JSON.stringify(contextMessages)}`)
       reply = await generateAssistantReply({
         messages: contextMessages,
         conversationId: selectedConv,
@@ -357,7 +357,7 @@ export default function Page() {
     }
   }
 
-  // â”€â”€ Edit message â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // Edit message
   async function handleEditMessage(id: string, content: string) {
     if (!selectedModel?.modelId) {
       toast.error('No model selected: Please add or select an AI model first.')
@@ -450,7 +450,7 @@ export default function Page() {
     }
   }
 
-  // â”€â”€ Auth helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // Auth helpers
   function stop() { abortRef.current?.abort(); setIsThinking(false); setStreaming(false) }
 
   function handleLogin(tokenValue: string) {
@@ -481,7 +481,7 @@ export default function Page() {
     setDeactivateAlertOpen(false)
   }
 
-  // â”€â”€ Unauthenticated landing â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // Unauthenticated landing
   if (auth.ready && !auth.token) {
     return (
       <LoginSignup
@@ -495,7 +495,7 @@ export default function Page() {
     )
   }
 
-  // â”€â”€ Authenticated layout â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // Authenticated layout
   return (
     <div className="flex h-screen bg-background text-foreground overflow-hidden">
 

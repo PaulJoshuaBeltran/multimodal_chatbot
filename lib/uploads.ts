@@ -1,5 +1,6 @@
 // src/lib/uploads.ts
 import path from 'path'
+import { URL } from 'url'
 
 export const UPLOAD_DIR = path.join(process.cwd(), 'data', 'uploads')
 
@@ -51,5 +52,7 @@ export function uploadErrorMessage(error: UploadValidationError): string {
 }
 
 export function uploadPathFromUrl(url: string): string {
-  return path.join(UPLOAD_DIR, path.basename(url))
+  const pathnameOnly = url.split(/[?#]/)[0]
+  const filename = decodeURIComponent(path.basename(pathnameOnly))
+  return path.join(UPLOAD_DIR, filename)
 }

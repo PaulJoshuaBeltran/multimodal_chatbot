@@ -135,7 +135,6 @@ exports.Prisma.MessageScalarFieldEnum = {
   conversationId: 'conversationId',
   role: 'role',
   content: 'content',
-  attachments: 'attachments',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };
