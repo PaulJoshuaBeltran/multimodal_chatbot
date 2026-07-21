@@ -66,7 +66,8 @@ export default function ModelSelect({ token, value, onChange, onManage, refreshT
           >
             <SelectValue placeholder={loading ? 'Loading…' : 'No models available'} />
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent
+            style={{ backgroundColor: 'var(--gray1)' }}>
             {models.map((m) => (
               <SelectItem
                 key={m.id} value={m.id} className="text-xs"
