@@ -221,6 +221,7 @@ export default function MessageList({
         )}
       </div>
 
+      {/* Button to autoscroll to last contents */}
       {!isAtBottom && buttonPos && (
         <button
           type="button"

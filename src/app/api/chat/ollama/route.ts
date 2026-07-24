@@ -35,9 +35,9 @@ export async function POST(req: Request) {
       top_p?: number
       top_k?: number
     }
-    const modelToUse = model ?? process.env.DEFAULT_MODEL ?? 'gemma4:e4b'
+    const modelToUse = model ?? process.env.DEFAULT_MODEL ?? 'gemma4:12b'
 
-    const messagesWithImages = await Promise.all(
+    const messagesWithAttachments = await Promise.all(
       messages.map(async (m) => {
         const imageAttachments = (m.attachments ?? []).filter((a) => a.fileType === 'image')
         const documentAttachments = (m.attachments ?? []).filter((a) => a.fileType === 'document')
@@ -81,8 +81,8 @@ export async function POST(req: Request) {
     )
 
     const fullMessages = system
-      ? [{ role: 'system', content: system }, ...messagesWithImages]
-      : messagesWithImages
+      ? [{ role: 'system', content: system }, ...messagesWithAttachments]
+      : messagesWithAttachments
 
     const options: Record<string, number> = {}
     if (temperature !== undefined) options.temperature = temperature
@@ -95,6 +95,7 @@ export async function POST(req: Request) {
       console.log('Request includes images')
     }
 
+    // Stream response with timeout
     const stream = await ollama.chat({
       model: modelToUse,
       messages: fullMessages,

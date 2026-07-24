@@ -1,6 +1,7 @@
 // src/lib/uploads.ts
+import { ALLOWED_DOCUMENT_MIME_TYPES, UploadValidationError } from '@/src/types/file_upload'
+import { fileType } from '@/src/types/msg_conversation_model'
 import path from 'path'
-import { URL } from 'url'
 
 export const UPLOAD_DIR = path.join(process.cwd(), 'data', 'uploads')
 
@@ -8,24 +9,11 @@ export const MAX_FILE_SIZE = 25 * 1024 * 1024 // 25MB
 export const MAX_AUDIO_SIZE = 50 * 1024 * 1024 // 50MB — audio files run bigger
 
 export const ALLOWED_MIME_PREFIXES = ['image/', 'audio/']
-export const ALLOWED_DOCUMENT_MIME_TYPES = [
-  'application/pdf',
-  'application/msword',
-  'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-  'text/plain',
-  'text/csv',
-  'application/zip',
-]
 
-export type UploadValidationError =
-  | 'NO_FILE'
-  | 'EMPTY_FILE'
-  | 'UNSUPPORTED_TYPE'
-  | 'TOO_LARGE'
 
 export function classifyAndValidate(
   file: { type: string; size: number; name: string }
-): { ok: true; fileType: 'image' | 'document' | 'audio' } | { ok: false; error: UploadValidationError } {
+): { ok: true; fileType: fileType } | { ok: false; error: UploadValidationError } {
   if (file.size === 0) return { ok: false, error: 'EMPTY_FILE' }
 
   const isImage = file.type.startsWith('image/')

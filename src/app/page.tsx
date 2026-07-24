@@ -238,7 +238,7 @@ export default function Page() {
         const copy = [...prev]
         copy[assistantIndex] = {
           role: 'assistant',
-          content: `âš ï¸ Ollama failed to regenerate:\n\n${String(err)}`,
+          content: `Ollama failed to regenerate:\n\n${String(err)}`,
           createdAt: copy[assistantIndex]?.createdAt ?? new Date().toISOString(),
         }
         return copy

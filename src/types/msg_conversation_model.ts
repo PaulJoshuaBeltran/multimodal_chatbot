@@ -1,13 +1,14 @@
 // src/types/msg_conversation_model.ts
+export type ChatRole = 'user' | 'assistant'
+export type fileType = 'image' | 'document' | 'audio'
+
 export interface Attachment {
   url: string
   fileName: string
-  fileType: 'image' | 'document' | 'audio'
+  fileType: fileType
   mimeType: string
   size: number
 }
-
-export type ChatRole = 'user' | 'assistant'
 
 export type Conversation = {
   id: string
