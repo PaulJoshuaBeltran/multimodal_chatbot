@@ -82,6 +82,13 @@ export interface ModelSelectProps {
   refreshToken: number
 }
 
+export interface AddModelDialogProps {
+  open: boolean
+  onOpenChange: (open: boolean) => void
+  token?: string | null
+  onAdded?: () => void
+}
+
 export interface NewConversationDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void

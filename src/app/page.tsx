@@ -19,7 +19,7 @@ import type {
 import { ChatSidebar } from '../components/sidebar/ChatSidebar'
 import { ChatInput } from '../components/main/ChatInput'
 import { ToolList } from '../components/main/ToolList'
-import { AuthDialog, NewConversationDialog, DeactivateAlertDialog } from '../components/dialogs/OtherDialogs'
+import { AuthDialog, NewConversationDialog, DeactivateAlertDialog, AddModelDialog } from '../components/dialogs/OtherDialogs'
 import { SystemPromptDialog } from '../components/dialogs/SystemPromptDialog'
 import { HttpError } from '../models/http_error'
 import { LoginSignup } from '../components/main/LoginSignup'
@@ -57,6 +57,7 @@ export default function Page() {
   const [selectedModel, setSelectedModel] = useState<AiModel | null>(null)
   const [modelsRefresh, setModelsRefresh] = useState(0)
   const [showModelManager, setShowModelManager] = useState(false)
+  const [showAddModelOpen, setShowAddModelOpen] = useState(false)
   const [isSearchOpen, setIsSearchOpen] = useState(false)
   const [currentView, setCurrentView] = useState<'chat' | 'tools'>('chat')
 
@@ -292,7 +293,7 @@ export default function Page() {
     const contextMessages: ChatMessagePayload[] = [...messages, userMsg].map((m) => ({
       role: m.role,
       content: m.content,
-      attachments: (m as any).attachment ? [(m as any).attachment] : m.attachments,
+      attachments: m.attachments,
     }))
 
     let reply = ''
@@ -564,26 +565,53 @@ export default function Page() {
       </main>
 
       {/* Modals & dialogs */}
+      <AddModelDialog
+        open={showAddModelOpen}
+        onOpenChange={(open) => {
+          setShowAddModelOpen(open)
+          if (!open) setShowModelManager(true)
+        }}
+        token={auth.token}
+        onAdded={() => setModelsRefresh((x) => x + 1)}
+      />
+
+      <AuthDialog
+        open={authDialogOpen}
+        mode={authDialogMode}
+        onOpenChange={setAuthDialogOpen}
+        onLogin={handleLogin}
+      />
+
+      <DeactivateAlertDialog
+        open={deactivateAlertOpen}
+        onOpenChange={setDeactivateAlertOpen}
+        onConfirm={handleDeactivate}
+      />
+
       {showModelManager && (
         <ModelManager
           token={auth.token}
           onClose={() => { setShowModelManager(false); setModelsRefresh((x) => x + 1) }}
           onUpdated={() => setModelsRefresh((x) => x + 1)}
+          onOpenAddModel={() => {
+            setShowModelManager(false)
+            setShowAddModelOpen(true)
+          }}
         />
       )}
-
-      <SearchDialog
-        isOpen={isSearchOpen}
-        onClose={() => setIsSearchOpen(false)}
-        token={auth.token}
-        onSelectResult={handleSelectSearchResult}
-      />
 
       <NewConversationDialog
         open={newConvOpen}
         onOpenChange={setNewConvOpen}
         token={auth.token}
         onCreated={fetchConversations}
+      />
+
+      <SearchDialog
+        isOpen={isSearchOpen}
+        onClose={() => setIsSearchOpen(false)}
+        token={auth.token}
+        onSelectResult={handleSelectSearchResult}
       />
 
       <SystemPromptDialog
@@ -598,19 +626,6 @@ export default function Page() {
         setTopP={setTopP}
         topK={topK}
         setTopK={setTopK}
-      />
-
-      <AuthDialog
-        open={authDialogOpen}
-        mode={authDialogMode}
-        onOpenChange={setAuthDialogOpen}
-        onLogin={handleLogin}
-      />
-
-      <DeactivateAlertDialog
-        open={deactivateAlertOpen}
-        onOpenChange={setDeactivateAlertOpen}
-        onConfirm={handleDeactivate}
       />
     </div>
   )

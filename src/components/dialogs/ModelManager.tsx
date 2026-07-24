@@ -12,33 +12,32 @@ import {
 } from '../ui/dialog'
 import { Input } from '../ui/input'
 import { Button } from '../ui/button'
-import { Label } from '../ui/label'
 import { ScrollArea } from '../ui/scroll-area'
 import { Separator } from '../ui/separator'
 import { toast } from 'sonner'
 import { Search, Pencil, Trash2, Check, X, Plus, AlertTriangle } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { Label } from '../ui/label'
 
 export default function ModelManager({
   token,
   onClose,
   onUpdated,
+  onOpenAddModel,
 }: {
   token?: string | null
   onClose: () => void
   onUpdated?: () => void
+  /** Parent should close this dialog and open AddModelDialog (OtherDialogs.tsx) */
+  onOpenAddModel: () => void
 }) {
   const [models, setModels] = useState<AiModel[]>([])
   const [q, setQ] = useState('')
-  const [name, setName] = useState('')
-  const [modelId, setModelId] = useState('')
-  const [description, setDescription] = useState('')
-  const [loading, setLoading] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [editFields, setEditFields] = useState({ name: '', modelId: '', description: '' })
   const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null)
 
-  // "view" = model list, "confirm-delete" = delete confirmation screen
+  // "list" = model list, "confirm-delete" = delete confirmation screen
   const [screen, setScreen] = useState<'list' | 'confirm-delete'>('list')
 
   const load = useCallback(
@@ -81,41 +80,6 @@ export default function ModelManager({
   async function handleSearch() {
     const data = await load(q)
     setModels(data)
-  }
-
-  async function createModel() {
-    if (!name.trim() || !modelId.trim()) {
-      toast.error('Display Name and Model ID are required.')
-      return
-    }
-    if (models.some((m) => m.modelId.toLowerCase() === modelId.trim().toLowerCase())) {
-      toast.error('A model with this Model ID already exists.')
-      return
-    }
-    setLoading(true)
-    try {
-      const headers: Record<string, string> = { 'Content-Type': 'application/json' }
-      if (token) headers.Authorization = `Bearer ${token}`
-      const res = await fetch('/api/models', {
-        method: 'POST',
-        headers,
-        body: JSON.stringify({ name, modelId, description }),
-      })
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({ error: 'Unknown' }))
-        toast.error(`Create failed: ${err?.error || 'Unknown error'}`)
-        return
-      }
-      setName('')
-      setModelId('')
-      setDescription('')
-      const newModels = await load()
-      setModels(newModels)
-      onUpdated?.()
-      toast.success('Model added')
-    } finally {
-      setLoading(false)
-    }
   }
 
   function startEdit(m: AiModel) {
@@ -220,12 +184,14 @@ export default function ModelManager({
         ) : (
           /* ── Main list screen ── */
           <>
-            <DialogHeader>
-              <DialogTitle>Manage models</DialogTitle>
-              <DialogDescription>Add, search, edit, or remove AI models.</DialogDescription>
+            <DialogHeader className="flex-row items-center justify-between gap-2 space-y-0">
+              <div>
+                <DialogTitle>Manage models</DialogTitle>
+                <DialogDescription>Search, edit, or remove activated models.</DialogDescription>
+              </div>
             </DialogHeader>
 
-            {/* Search */}
+            {/* Search + Add model trigger */}
             <div className="flex gap-2">
               <div className="relative flex-1">
                 <Search
@@ -234,7 +200,7 @@ export default function ModelManager({
                 />
                 <Input
                   className="pl-8"
-                  placeholder="Search models…"
+                  placeholder="Search activated models…"
                   value={q}
                   onChange={(e) => setQ(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
@@ -251,81 +217,53 @@ export default function ModelManager({
               >
                 Search
               </Button>
-            </div>
-
-            {/* Add new model form */}
-            <div className="rounded-lg border border-border p-4 flex flex-col gap-3">
-              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Add new model</p>
-              <div className="grid grid-cols-2 gap-2">
-                <div className="flex flex-col gap-1">
-                  <Label htmlFor="model-name" className="text-xs">Display name</Label>
-                  <Input
-                    id="model-name"
-                    placeholder="e.g. Gemma 4"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray2)')}
-                    onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}
-                  />
-                </div>
-                <div className="flex flex-col gap-1">
-                  <Label htmlFor="model-id" className="text-xs">Model ID</Label>
-                  <Input
-                    id="model-id"
-                    placeholder="e.g. gemma4:e4b"
-                    value={modelId}
-                    onChange={(e) => setModelId(e.target.value)}
-                    onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray2)')}
-                    onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}
-                  />
-                </div>
-              </div>
-              <div className="flex gap-2">
-                <Input
-                  className="flex-1"
-                  placeholder="Description (optional)"
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray2)')}
-                  onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}
-                />
-                <Button
-                  onClick={createModel}
-                  disabled={loading}
-                  className="flex-shrink-0"
-                  style={{ backgroundColor: 'var(--gray3)' }}
-                  onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray2)')}
-                  onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}
-                >
-                  <Plus className="w-4 h-4 mr-1" />
-                  {loading ? 'Adding…' : 'Add'}
-                </Button>
-              </div>
+              <Button
+                onClick={onOpenAddModel}
+                className="flex-shrink-0"
+                style={{ backgroundColor: 'var(--gray3)' }}
+                onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray2)')}
+                onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray3)')}
+              >
+                <Plus className="w-4 h-4 mr-1" />
+                Add model
+              </Button>
             </div>
 
             {/* Model list */}
-            <ScrollArea type="auto" className="flex-1 min-h-0 pr-1">
+            <ScrollArea type="auto" className="flex-1 px-2 min-h-0 pr-3">
               {models.length === 0 ? (
                 <p className="text-sm text-muted-foreground py-4 text-center">No models yet.</p>
               ) : (
-                <div className="flex flex-col">
+                <div className="flex flex-col max-h-[320px] pr-1">
+                  {/* 80px for each item */}
                   {models.map((m, i) => (
-                    <React.Fragment key={m.id}>
+                    <div key={m.id}>
                       {i > 0 && <Separator />}
                       <div className="py-3">
                         {editingId === m.id ? (
                           <div className="flex flex-col gap-2">
                             <div className="grid grid-cols-2 gap-2">
+                              <Label>Name</Label>
+                              <Label>Model ID</Label>
+                            </div>
+                            <div className="grid grid-cols-2 gap-2">
                               <Input
                                 value={editFields.name}
                                 onChange={(e) => setEditFields((f) => ({ ...f, name: e.target.value }))}
                                 placeholder="Display name"
+                                onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray2)')}
+                                onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}
                               />
                               <Input
                                 value={editFields.modelId}
                                 onChange={(e) => setEditFields((f) => ({ ...f, modelId: e.target.value }))}
                                 placeholder="Model ID"
+                                onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray2)')}
+                                onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}
                               />
+                            </div>
+                            <div className="flex gap-2 mt-3">
+                              <Label>Description</Label>
                             </div>
                             <div className="flex gap-2">
                               <Input
@@ -333,11 +271,27 @@ export default function ModelManager({
                                 onChange={(e) => setEditFields((f) => ({ ...f, description: e.target.value }))}
                                 placeholder="Description"
                                 className="flex-1"
+                                onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray2)')}
+                                onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}
                               />
-                              <Button size="icon" variant="ghost" onClick={() => saveEdit(m)} title="Save">
+                              <Button
+                                size="icon"
+                                variant="ghost"
+                                onClick={() => saveEdit(m)}
+                                title="Save"
+                                onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray2)')}
+                                onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}
+                              >
                                 <Check className="w-4 h-4" />
                               </Button>
-                              <Button size="icon" variant="ghost" onClick={() => setEditingId(null)} title="Cancel">
+                              <Button
+                                size="icon"
+                                variant="ghost"
+                                onClick={() => setEditingId(null)}
+                                title="Cancel"
+                                onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray2)')}
+                                onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}
+                              >
                                 <X className="w-4 h-4" />
                               </Button>
                             </div>
@@ -376,7 +330,7 @@ export default function ModelManager({
                           </div>
                         )}
                       </div>
-                    </React.Fragment>
+                    </div>
                   ))}
                 </div>
               )}

@@ -68,9 +68,9 @@ export default function ModelSelect({ token, value, onChange, onManage, refreshT
           </SelectTrigger>
           <SelectContent
             style={{ backgroundColor: 'var(--gray1)' }}>
-            {models.map((m) => (
+            {models.map((m, i) => (
               <SelectItem
-                key={m.id} value={m.id} className="text-xs"
+                key={m.id ?? `${m.name}-${i}`} value={m.id} className="text-xs"
                 style={{ backgroundColor: 'var(--gray1)', borderColor: 'var(--gray1)'}}
               >
                 <span className="font-medium">{m.name}</span>

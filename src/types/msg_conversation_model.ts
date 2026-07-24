@@ -40,6 +40,13 @@ export type AiModel = {
   updatedAt?: string | null
 }
 
+export interface OllamaInstalledModel {
+  name: string
+  modelId: string
+  parameterSize?: string
+  family?: string
+}
+
 // TEMPORARY
 export type ChatRole = 'user' | 'assistant'
 

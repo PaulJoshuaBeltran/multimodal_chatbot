@@ -2,21 +2,31 @@
 import { prisma } from '@/lib/prisma'
 import { verifyToken } from '@/lib/auth'
 import { ollama } from '@/lib/ollama'
-import type { Prisma } from '@/src/app/generated/prisma/client'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
 
 export async function GET(req: Request) {
   const url = new URL(req.url)
-  const q = url.searchParams.get('q') || undefined
+  const q = url.searchParams.get('q')?.trim() || undefined
   const auth = req.headers.get('authorization')?.split(' ')[1]
   const payload = verifyToken(auth)
   if (!payload) return new Response(JSON.stringify([]), { status: 200, headers: { 'Content-Type': 'application/json' } })
-  const where: Prisma.AiModelWhereInput = { userId: payload.userId }
-  if (q) where.OR = [{ name: { contains: q, mode: 'insensitive' } }, { modelId: { contains: q, mode: 'insensitive' } }]
-  const models = await prisma.aiModel.findMany({ where, orderBy: { updatedAt: 'desc' } })
-  return new Response(JSON.stringify(models), { status: 200, headers: { 'Content-Type': 'application/json' } })
+
+  const models = await prisma.aiModel.findMany({
+    where: { userId: payload.userId },
+    orderBy: { updatedAt: 'desc' },
+  })
+
+  const filtered = q
+    ? models.filter(
+        (m) =>
+          m.name.toLowerCase().includes(q.toLowerCase()) ||
+          m.modelId.toLowerCase().includes(q.toLowerCase())
+      )
+    : models
+
+  return new Response(JSON.stringify(filtered), { status: 200, headers: { 'Content-Type': 'application/json' } })
 }
 
 export async function POST(req: Request) {

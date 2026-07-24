@@ -1,6 +1,7 @@
 // src/components/main/ChatInput.tsx
 'use client'
 
+import Image from 'next/image'
 import { useRef, useState } from 'react'
 import { Button } from '../ui/button'
 import { Textarea } from '../ui/textarea'
@@ -116,10 +117,12 @@ export function ChatInput({
             <>
               {attachment!.fileType === 'image' ? (
                 <div className="rounded-lg overflow-hidden" style={{ height: 160, width: 280 }}>
-                  <img
-                    src={attachment!.url}
-                    alt={attachment!.fileName}
-                    className="w-full h-full object-contain"
+                  <Image
+                    src={attachment?.url || ''}
+                    alt={attachment?.fileName || ''}
+                    fill
+                    sizes="320px"
+                    className="object-contain rounded-lg"
                   />
                 </div>
               ) : (

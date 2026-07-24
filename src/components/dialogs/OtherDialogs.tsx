@@ -1,25 +1,19 @@
 // src/components/dialogs/OtherDialogs.tsx
 'use client'
 
-import { useState } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '../ui/dialog'
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '../ui/alert-dialog'
+
 import { Button } from '../ui/button'
 import { Label } from '../ui/label'
 import { Input } from '../ui/input'
 import { toast } from 'sonner'
-import { AuthDialogProps, DeactivateAlertDialogProps, DeleteConversationDialogProps, DeleteMessageDialogProps, EditMessageDialogProps, NewConversationDialogProps } from '@/src/types/props'
+import { AddModelDialogProps, AuthDialogProps, DeactivateAlertDialogProps, DeleteConversationDialogProps, DeleteMessageDialogProps, EditMessageDialogProps, NewConversationDialogProps } from '@/src/types/props'
 import { Textarea } from '../ui/textarea'
-import { AlertTriangle } from 'lucide-react'
+import { AlertTriangle, Check, Plus, Search } from 'lucide-react'
+import { AiModel, OllamaInstalledModel } from '@/src/types/msg_conversation_model'
+import { ScrollArea } from '../ui/scroll-area'
+import { Separator } from '../ui/separator'
 
 // ── AuthDialog ────────────────────────────────────────────────────────────────
 export function AuthDialog({ open, mode, onOpenChange, onLogin }: AuthDialogProps) {
@@ -268,6 +262,177 @@ export function DeleteConversationDialog({
             Cancel
           </Button>
         </div>
+      </DialogContent>
+    </Dialog>
+  )
+}
+
+export function AddModelDialog({
+  open,
+  onOpenChange,
+  token,
+  onAdded,
+}: AddModelDialogProps) {
+  const [q, setQ] = useState('')
+  const [installed, setInstalled] = useState<OllamaInstalledModel[]>([])
+  const [activatedIds, setActivatedIds] = useState<Set<string>>(new Set())
+  const [loadingList, setLoadingList] = useState(false)
+  const [addingId, setAddingId] = useState<string | null>(null)
+
+  // Render-time adjustment instead of an effect setState:
+  // when `open` flips true, mark loading immediately, in the same render pass.
+  const [prevOpen, setPrevOpen] = useState(open)
+  if (open !== prevOpen) {
+    setPrevOpen(open)
+    if (open) setLoadingList(true)
+  }
+
+  const loadInstalled = useCallback(async (query?: string) => {
+    const url = query
+      ? `/api/models/ollama-all?q=${encodeURIComponent(query)}`
+      : '/api/models/ollama-all'
+    const res = await fetch(url)
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({ error: 'Unknown' }))
+      toast.error(`Couldn't load Ollama models: ${err?.error || res.statusText}`)
+      return []
+    }
+    return res.json() as Promise<OllamaInstalledModel[]>
+  }, [])
+
+  const loadActivated = useCallback(async () => {
+    const res = await fetch('/api/models', {
+      headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+    })
+    if (!res.ok) return []
+    return res.json() as Promise<AiModel[]>
+  }, [token])
+
+  useEffect(() => {
+    if (!open) return
+    let mounted = true
+    Promise.all([loadInstalled(), loadActivated()]).then(([inst, act]) => {
+      if (!mounted) return
+      setInstalled(inst)
+      setActivatedIds(new Set(act.map((m) => m.modelId.toLowerCase())))
+      setLoadingList(false)
+    })
+    return () => { mounted = false }
+  }, [open, loadInstalled, loadActivated])
+
+  async function handleSearch() {
+    setLoadingList(true) // fine — this is inside an event handler, not an effect body
+    const inst = await loadInstalled(q)
+    setInstalled(inst)
+    setLoadingList(false)
+  }
+
+  async function activate(m: OllamaInstalledModel) {
+    setAddingId(m.modelId)
+    try {
+      const headers: Record<string, string> = { 'Content-Type': 'application/json' }
+      if (token) headers.Authorization = `Bearer ${token}`
+      const description = [m.family, m.parameterSize].filter(Boolean).join(' · ') || undefined
+      const res = await fetch('/api/models', {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({ name: m.name, modelId: m.modelId, description }),
+      })
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ error: 'Unknown' }))
+        toast.error(`Activate failed: ${err?.error || 'Unknown error'}`)
+        return
+      }
+      setActivatedIds((prev) => new Set(prev).add(m.modelId.toLowerCase()))
+      onAdded?.()
+      toast.success(`${m.name} activated`)
+    } finally {
+      setAddingId(null)
+    }
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent
+        className="sm:max-w-xl max-h-[85vh] flex flex-col overflow-hidden"
+        style={{ backgroundColor: 'var(--gray3)', borderColor: 'var(--gray3)' }}
+      >
+        <DialogHeader>
+          <DialogTitle>Add a model</DialogTitle>
+          <DialogDescription>
+            Search models installed in Ollama and activate the ones you want to use.
+          </DialogDescription>
+        </DialogHeader>
+
+        <div className="flex gap-2">
+          <div className="relative flex-1">
+            <Search
+              className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground"
+              style={{ transform: 'translateY(-3px)' }}
+            />
+            <Input
+              className="pl-8"
+              placeholder="Search installed models…"
+              value={q}
+              onChange={(e) => setQ(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+              style={{ backgroundColor: 'var(--gray3)' }}
+            />
+          </div>
+          <Button onClick={handleSearch} style={{ backgroundColor: 'var(--gray3)' }}>
+            Search
+          </Button>
+        </div>
+
+        <ScrollArea type="auto" className="flex-1 min-h-0 pr-1">
+          {loadingList ? (
+            <p className="text-sm text-muted-foreground py-4 text-center">Loading…</p>
+          ) : installed.length === 0 ? (
+            <p className="text-sm text-muted-foreground py-4 text-center">
+              No installed models found. Pull one with <code>ollama pull &lt;model&gt;</code> first.
+            </p>
+          ) : (
+            <div className="flex flex-col max-h-[240px] pr-3">
+              {/* 80px for each item */}
+              {installed.map((m, i) => {
+                const already = activatedIds.has(m.modelId.toLowerCase())
+                if (!already){
+                  return (
+                    <React.Fragment key={m.modelId}>
+                      {i > 0 && <Separator />}
+                      <div className="py-3 flex items-center justify-between gap-3">
+                        <div className="min-w-0">
+                          <p className="font-medium text-sm">{m.name}</p>
+                          <p className="text-xs text-muted-foreground font-mono mt-0.5">{m.modelId}</p>
+                          {(m.family || m.parameterSize) && (
+                            <p className="text-xs text-muted-foreground mt-0.5">
+                              {[m.family, m.parameterSize].filter(Boolean).join(' · ')}
+                            </p>
+                          )}
+                        </div>
+                        <Button
+                          size="sm"
+                          disabled={already || addingId === m.modelId}
+                          onClick={() => activate(m)}
+                          className="flex-shrink-0"
+                          style={{ backgroundColor: 'var(--gray3)' }}
+                        >
+                          {addingId === m.modelId ? (
+                            'Adding…'
+                          ) : (
+                            <>
+                              <Plus className="w-3.5 h-3.5 mr-1" /> Add
+                            </>
+                          )}
+                        </Button>
+                      </div>
+                    </React.Fragment>
+                  )
+                }
+              })}
+            </div>
+          )}
+        </ScrollArea>
       </DialogContent>
     </Dialog>
   )
