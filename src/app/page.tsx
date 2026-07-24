@@ -76,7 +76,19 @@ export default function Page() {
       const res = await fetch(url, {
         headers: auth.token ? { Authorization: `Bearer ${auth.token}` } : undefined,
       })
-      if (res.ok) setConversations(await res.json())
+      if (res.ok) {
+        const data = await res.json();
+        setConversations(data);
+
+        // Set conversation and load messages
+        const convId: string = data[0]?.id;
+        setCurrentView('chat')
+        setSelectedConv(convId)
+        const res1 = await fetch(`/api/messages?conversationId=${convId}`, {
+          headers: auth.token ? { Authorization: `Bearer ${auth.token}` } : undefined,
+        })
+        if (res1.ok) setMessages(await res1.json())
+      }
     },
     [auth.token]
   )
@@ -510,7 +522,7 @@ export default function Page() {
         onNewConversation={() => { setNewConvOpen(true); setCurrentView('chat') }}
         onSearch={() => { setIsSearchOpen(true); setCurrentView('chat') }}
         onViewTools={() => setCurrentView('tools')}
-        onModelChange={(m) => setSelectedModel(m)}
+        onModelChange={(model) => setSelectedModel(model)}
         onManageModels={() => { setShowModelManager(true); setCurrentView('chat') }}
         onRefreshConversations={() => fetchConversations()}
         onLogout={handleLogout}
