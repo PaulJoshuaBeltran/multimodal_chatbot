@@ -3,6 +3,7 @@
 
 import { AuthBoxProps } from '@/src/types/props'
 import React, { useState } from 'react'
+import { toast } from 'sonner'
 
 export default function AuthBox({ onLogin }: AuthBoxProps) {
   const [email, setEmail] = useState('')
@@ -41,15 +42,19 @@ export default function AuthBox({ onLogin }: AuthBoxProps) {
       if (res.ok) {
         const data = await res.json()
         if (data?.token) {
+          toast.success("Login success")
           onLogin(data.token)
         } else {
-          alert('Authentication failed: Missing token response.')
+          // alert('Authentication failed: Missing token response.')
+          toast.error('Authentication failed: Missing token response.')
         }
       } else {
-        alert('Authentication failed')
+        // alert('Authentication failed')
+        toast.error('Authentication failed')
       }
     } catch (err) {
-      alert(`Error: ${String(err)}`)
+      // alert(`Error: ${String(err)}`)
+      toast.error(`Error: ${String(err)}`)
     } finally {
       setLoading(false)
     }

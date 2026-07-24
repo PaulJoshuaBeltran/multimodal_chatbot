@@ -11,7 +11,6 @@ import type {
   Conversation,
   Message as ChatMessage,
   AiModel,
-  ChatMessagePayload,
   OllamaPayload,
   Attachment,
 } from '@/src/types/msg_conversation_model'
@@ -131,7 +130,7 @@ export default function Page() {
 
   // AI generation
   async function generateAssistantReply(params: {
-    messages: ChatMessagePayload[]
+    messages: ChatMessage[]
     conversationId: string | null
     systemPrompt?: string
     temperature?: number
@@ -259,7 +258,7 @@ export default function Page() {
     if (!selectedModel?.modelId) { toast.error('No model selected'); setShowModelManager(true); return }
 
     const nowIso = new Date().toISOString()
-    const userMsg: ChatMessagePayload & { createdAt?: string; attachments?: Attachment[] | null } = {
+    const userMsg: ChatMessage & { createdAt?: string; attachments?: Attachment[] | null } = {
       role: 'user',
       content: input,
       attachments: pendingAttachment ? [pendingAttachment] : undefined,
@@ -290,7 +289,7 @@ export default function Page() {
 
     setStreaming(true)
 
-    const contextMessages: ChatMessagePayload[] = [...messages, userMsg].map((m) => ({
+    const contextMessages: ChatMessage[] = [...messages, userMsg].map((m) => ({
       role: m.role,
       content: m.content,
       attachments: m.attachments,
@@ -299,7 +298,6 @@ export default function Page() {
     let reply = ''
 
     try {
-      alert(`contextMessages: ${JSON.stringify(contextMessages)}`)
       reply = await generateAssistantReply({
         messages: contextMessages,
         conversationId: selectedConv,

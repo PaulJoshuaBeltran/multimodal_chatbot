@@ -7,20 +7,7 @@ export interface Attachment {
   size: number
 }
 
-export type Message = {
-  id?: string
-  role: 'user' | 'assistant'
-  content: string
-  attachments?: Attachment[]
-  createdAt?: string
-  updatedAt?: string | null
-}
-
-export interface ProcessedMessage {
-  role: string
-  content: string
-  images?: string[]
-}
+export type ChatRole = 'user' | 'assistant'
 
 export type Conversation = {
   id: string
@@ -47,17 +34,23 @@ export interface OllamaInstalledModel {
   family?: string
 }
 
-// TEMPORARY
-export type ChatRole = 'user' | 'assistant'
-
-export type ChatMessagePayload = {
+export type Message = {
+  id?: string
   role: ChatRole
   content: string
   attachments?: Attachment[]
+  createdAt?: string
+  updatedAt?: string | null
+}
+
+export interface ProcessedMessage {
+  role: string
+  content: string
+  images?: string[]
 }
 
 export type OllamaPayload = {
-  messages: ChatMessagePayload[]
+  messages: Message[]
   model?: string
   system?: string
 }
