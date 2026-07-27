@@ -19,7 +19,6 @@ export async function POST(req: Request) {
     return new Response(JSON.stringify({ error: 'Invalid credentials' }),
       { status: 401, headers: { 'Content-Type': 'application/json' } })
       
-  // CHANGED: Added name to the token payload
   const token = signToken({ userId: user.id, name: user.name })
   
   return new Response(JSON.stringify({ token, user: { id: user.id, email: user.email, name: user.name } }),
