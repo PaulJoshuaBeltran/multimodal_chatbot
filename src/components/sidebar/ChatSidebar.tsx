@@ -47,6 +47,14 @@ function getInitials(name: string): string {
   return name.charAt(0).toUpperCase()
 }
 
+async function subscribeToPlus() {
+  const res = await fetch("/api/subscription", {
+    method: "POST",
+  });
+  const data = await res.json();
+  window.location.href = data.url;
+}
+
 export function ChatSidebar({
   token,
   conversations,
@@ -159,6 +167,7 @@ export function ChatSidebar({
         <Button
           variant="ghost"
           className="w-full justify-start gap-2 text-sm font-normal text-white hover:text-white"
+          onClick={subscribeToPlus}
           onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray1)')}
           onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}
         >
