@@ -115,3 +115,8 @@ export interface SystemPromptDialogProps {
   topK: number
   setTopK: (v: number) => void
 }
+
+export interface SettingsDialogProps {
+  open: boolean
+  onOpenChange: (open: boolean) => void
+}

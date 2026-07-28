@@ -1,6 +1,7 @@
 // src/components/sidebar/ChatSidebar.tsx
 'use client'
 
+import { useState } from 'react'
 import ConversationList from '@/src/components/sidebar/ConversationList'
 import ModelSelect from '@/src/components/dialogs/ModelSelect'
 import { Button } from '../ui/button'
@@ -24,6 +25,7 @@ import {
   Wrench,
 } from 'lucide-react'
 import { ChatSidebarProps } from '@/src/types/props'
+import { SettingsDialog } from '@/src/components/dialogs/SettingsDialog'
 
 function getUserNameFromToken(token: string | null): string {
   if (!token) return 'Account'
@@ -47,14 +49,6 @@ function getInitials(name: string): string {
   return name.charAt(0).toUpperCase()
 }
 
-async function subscribeToPlus() {
-  const res = await fetch("/api/subscription", {
-    method: "POST",
-  });
-  const data = await res.json();
-  window.location.href = data.url;
-}
-
 export function ChatSidebar({
   token,
   conversations,
@@ -72,8 +66,10 @@ export function ChatSidebar({
   onLogout,
   onDeactivate,
 }: ChatSidebarProps) {
-  const userName = getUserNameFromToken(token)
 
+  const [settingsOpen, setSettingsOpen] = useState(false)
+  const userName = getUserNameFromToken(token)
+  
   return (
     <aside
       className="w-72 flex flex-col h-full flex-shrink-0"
@@ -167,7 +163,7 @@ export function ChatSidebar({
         <Button
           variant="ghost"
           className="w-full justify-start gap-2 text-sm font-normal text-white hover:text-white"
-          onClick={subscribeToPlus}
+          onClick={() => setSettingsOpen(true)}
           onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray1)')}
           onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}
         >
@@ -218,6 +214,8 @@ export function ChatSidebar({
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
+
+      <SettingsDialog open={settingsOpen} onOpenChange={setSettingsOpen} />
     </aside>
   )
 }
