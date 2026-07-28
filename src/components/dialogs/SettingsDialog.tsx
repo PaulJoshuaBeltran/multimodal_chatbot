@@ -69,6 +69,7 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
       <DialogContent
         className="sm:max-w-2xl"
         style={{ backgroundColor: 'var(--gray3)' }}
+        onInteractOutside={(e) => e.preventDefault()}
       >
         <DialogHeader>
           <DialogTitle>Settings</DialogTitle>
@@ -89,13 +90,36 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
             <div className="flex items-center justify-between">
               <Label htmlFor="theme-select">Theme</Label>
               <Select value={theme} onValueChange={setTheme}>
-                <SelectTrigger id="theme-select" className="w-32">
+                <SelectTrigger
+                    id="theme-select"
+                    className="w-32"
+                    onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray2)')}
+                    onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}
+                >
                   <SelectValue placeholder="Theme" />
                 </SelectTrigger>
                 <SelectContent style={{ backgroundColor: 'var(--gray3)' }}>
-                  <SelectItem value="system">System</SelectItem>
-                  <SelectItem value="light">Light</SelectItem>
-                  <SelectItem value="dark">Dark</SelectItem>
+                  <SelectItem
+                    value="system"
+                    onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray2)')}
+                    onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}
+                  >
+                    System
+                  </SelectItem>
+                  <SelectItem
+                    value="light"
+                    onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray2)')}
+                    onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}
+                  >
+                    Light
+                  </SelectItem>
+                  <SelectItem
+                    value="dark"
+                    onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray2)')}
+                    onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}
+                  >
+                    Dark
+                  </SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -103,14 +127,42 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
             <div className="flex items-center justify-between">
               <Label htmlFor="language-select">Language</Label>
               <Select value={language} onValueChange={setLanguage}>
-                <SelectTrigger id="language-select" className="w-32">
+                <SelectTrigger
+                    id="language-select" className="w-32"
+                    onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray2)')}
+                    onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}
+                >
                   <SelectValue placeholder="Language" />
                 </SelectTrigger>
                 <SelectContent style={{ backgroundColor: 'var(--gray3)' }}>
-                  <SelectItem value="en">English</SelectItem>
-                  <SelectItem value="es">Español</SelectItem>
-                  <SelectItem value="fr">Français</SelectItem>
-                  <SelectItem value="ja">日本語</SelectItem>
+                  <SelectItem
+                    value="en"
+                    onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray2)')}
+                    onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}
+                  >
+                    English
+                  </SelectItem>
+                  <SelectItem
+                    value="es"
+                    onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray2)')}
+                    onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}
+                  >
+                    Español
+                  </SelectItem>
+                  <SelectItem
+                    value="fr"
+                    onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray2)')}
+                    onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}
+                  >
+                    Français
+                  </SelectItem>
+                  <SelectItem
+                    value="ja"
+                    onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray2)')}
+                    onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}
+                  >
+                    日本語
+                  </SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -120,6 +172,8 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                 id="send-on-enter"
                 checked={sendOnEnter}
                 onCheckedChange={(checked) => setSendOnEnter(checked === true)}
+                onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray2)')}
+                onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}
               />
               <Label htmlFor="send-on-enter" className="font-normal">
                 Send message on Enter
@@ -131,6 +185,8 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                 id="sound-enabled"
                 checked={soundEnabled}
                 onCheckedChange={(checked) => setSoundEnabled(checked === true)}
+                onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray2)')}
+                onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}
               />
               <Label htmlFor="sound-enabled" className="font-normal">
                 Play sound on new message
@@ -154,14 +210,40 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
 
             <div className="flex items-center justify-between">
               <Label htmlFor="density-select">Message density</Label>
-              <Select value={density} onValueChange={setDensity}>
-                <SelectTrigger id="density-select" className="w-40">
+              <Select
+                value={density}
+                onValueChange={setDensity}
+              >
+                <SelectTrigger
+                    id="density-select"
+                    className="w-40"
+                    onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray2)')}
+                    onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}
+                >
                   <SelectValue placeholder="Density" />
                 </SelectTrigger>
                 <SelectContent style={{ backgroundColor: 'var(--gray3)' }}>
-                  <SelectItem value="compact">Compact</SelectItem>
-                  <SelectItem value="comfortable">Comfortable</SelectItem>
-                  <SelectItem value="spacious">Spacious</SelectItem>
+                  <SelectItem
+                    value="compact"
+                    onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray2)')}
+                    onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}
+                  >
+                    Compact
+                  </SelectItem>
+                  <SelectItem
+                    value="comfortable"
+                    onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray2)')}
+                    onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}
+                  >
+                    Comfortable
+                  </SelectItem>
+                  <SelectItem
+                    value="spacious"
+                    onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray2)')}
+                    onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}
+                  >
+                    Spacious
+                  </SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -171,6 +253,8 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                 id="show-timestamps"
                 checked={showTimestamps}
                 onCheckedChange={(checked) => setShowTimestamps(checked === true)}
+                onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray2)')}
+                onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}
               />
               <Label htmlFor="show-timestamps" className="font-normal">
                 Show message timestamps
@@ -182,6 +266,8 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                 id="markdown-rendering"
                 checked={markdownRendering}
                 onCheckedChange={(checked) => setMarkdownRendering(checked === true)}
+                onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray2)')}
+                onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}
               />
               <Label htmlFor="markdown-rendering" className="font-normal">
                 Render Markdown &amp; code blocks
@@ -217,6 +303,8 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                 className="w-fit"
                 disabled={isSubscribing}
                 onClick={handleSubscribeClick}
+                onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray1)')}
+                onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}
               >
                 {isSubscribing ? (
                   <>

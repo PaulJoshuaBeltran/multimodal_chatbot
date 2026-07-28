@@ -95,8 +95,8 @@ export default function ConversationList({
                 className={cn(
                   'group flex items-center gap-1.5 rounded-md px-2 py-1.5 text-sm transition-colors',
                   isSelected
-                    ? 'bg-accent text-accent-foreground'
-                    : 'hover:bg-muted/60 text-foreground/80'
+                    ? 'bg-accent bg-[var(--gray1)]'
+                    : 'hover:bg-muted/60'
                 )}
                 onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray1)')}
                 onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}

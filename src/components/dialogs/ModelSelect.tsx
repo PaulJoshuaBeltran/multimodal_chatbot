@@ -58,20 +58,23 @@ export default function ModelSelect({ token, value, onChange, onManage, refreshT
             onChange(selected)
           }}
           disabled={loading || models.length === 0}
-          
         >
           <SelectTrigger
             className="flex-1 h-8 text-xs"
-            style={{ backgroundColor: 'var(--gray1)', borderColor: 'var(--gray1)'}}
+            style={{ backgroundColor: 'var(--gray2)', borderColor: 'var(--gray1)'}}
+            onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray1)')}
+            onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}
           >
             <SelectValue placeholder={loading ? 'Loading…' : 'No models available'} />
           </SelectTrigger>
           <SelectContent
-            style={{ backgroundColor: 'var(--gray1)' }}>
+            style={{ backgroundColor: 'var(--gray2)' }}>
             {models.map((m, i) => (
               <SelectItem
                 key={m.id ?? `${m.name}-${i}`} value={m.id} className="text-xs"
-                style={{ backgroundColor: 'var(--gray1)', borderColor: 'var(--gray1)'}}
+                // style={{ backgroundColor: 'var(--gray1)', borderColor: 'var(--gray1)'}}
+                onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray1)')}
+                onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}
               >
                 <span className="font-medium">{m.name}</span>
               </SelectItem>
