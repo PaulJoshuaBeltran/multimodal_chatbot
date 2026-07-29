@@ -15,8 +15,6 @@ import { AiModel, OllamaInstalledModel } from '@/src/types/msg_conversation_mode
 import { ScrollArea } from '../ui/scroll-area'
 import { Separator } from '../ui/separator'
 
-// AuthDialog removed — replaced by Clerk's <SignIn />/<SignUp /> in LoginSignup.tsx
-
 // ── NewConversationDialog ─────────────────────────────────────────────────────
 export function NewConversationDialog({
   open,

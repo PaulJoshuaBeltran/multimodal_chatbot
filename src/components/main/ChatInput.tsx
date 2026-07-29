@@ -8,10 +8,24 @@ import { Textarea } from '../ui/textarea'
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
 } from '../ui/dropdown-menu'
+import { Dialog, DialogContent, DialogTitle } from '../ui/dialog'
+import {
+  Attachment,
+  AttachmentGroup,
+  AttachmentMedia,
+  AttachmentContent,
+  AttachmentTitle,
+  AttachmentDescription,
+  AttachmentActions,
+  AttachmentAction,
+  AttachmentTrigger,
+} from '../ui/attachment'
+import { AspectRatio } from '../ui/aspect-ratio'
 import { Square, MessageSquarePlus, Plus, ImageIcon, FileText, Music, Settings, X } from 'lucide-react'
 import { toast } from 'sonner'
-import type { Attachment } from '@/src/types/msg_conversation_model'
+import type { Attachment as AttachmentData } from '@/src/types/msg_conversation_model'
 import { ChatInputProps } from '@/src/types/props'
+import ImagePreviewDialog from '../dialogs/ImagePreviewDialog'
 
 function formatFileSize(bytes: number): string {
   if (bytes < 1024) return `${bytes} B`
@@ -29,13 +43,15 @@ export function ChatInput({
   attachment,
   onAttachmentChange,
 }: ChatInputProps & {
-  attachment: Attachment | null
-  onAttachmentChange: (a: Attachment | null) => void
+  attachment: AttachmentData | null
+  onAttachmentChange: (a: AttachmentData | null) => void
 }) {
   const imageInputRef = useRef<HTMLInputElement | null>(null)
   const docInputRef = useRef<HTMLInputElement | null>(null)
   const audioInputRef = useRef<HTMLInputElement | null>(null)
   const [uploading, setUploading] = useState(false)
+  const [previewOpen, setPreviewOpen] = useState(false)
+  const [imageRatio, setImageRatio] = useState(1)
 
   async function handleFileSelected(file: File | undefined) {
     if (!file) return
@@ -65,7 +81,7 @@ export function ChatInput({
         throw new Error(message)
       }
 
-      let meta: Attachment
+      let meta: AttachmentData
       try {
         meta = await res.json()
       } catch {
@@ -79,6 +95,8 @@ export function ChatInput({
       setUploading(false)
     }
   }
+
+  const isImage = attachment?.fileType === 'image'
 
   return (
     <div className="p-4 w-full" style={{ backgroundColor: 'var(--gray3)' }}>
@@ -107,42 +125,77 @@ export function ChatInput({
 
       {/* Pending attachment preview */}
       {(attachment || uploading) && (
-        <div className="mb-3 px-3 py-2 rounded-lg max-w-xs" style={{ backgroundColor: 'var(--gray2)' }}>
+        <div className="mb-3">
           {uploading ? (
-            <span className="text-xs text-white/60">Uploading...</span>
+            <Attachment state="uploading" size="sm" className="max-w-xs">
+              <AttachmentMedia variant="icon">
+                <FileText />
+              </AttachmentMedia>
+              <AttachmentContent>
+                <AttachmentTitle>Uploading…</AttachmentTitle>
+              </AttachmentContent>
+            </Attachment>
           ) : (
-            <>
-              {attachment!.fileType === 'image' ? (
-                <div className="rounded-lg overflow-hidden" style={{ height: 160, width: 280 }}>
-                  <Image
-                    src={attachment?.url || ''}
-                    alt={attachment?.fileName || ''}
-                    fill
-                    sizes="320px"
-                    className="object-contain rounded-lg"
-                  />
-                </div>
-              ) : (
-                <div className="flex items-center gap-2">
-                  <FileText className="w-4 h-4 text-white/70 shrink-0" />
-                  <div className="flex flex-col gap-1 min-w-0">
-                    <span className="text-xs text-white/80 truncate font-medium">{attachment!.fileName}</span>
-                    <span className="text-xs text-white/50">{formatFileSize(attachment!.size)} · {(attachment!.mimeType.split('/')[1] || 'file').toUpperCase()}</span>
-                  </div>
-                </div>
-              )}
-              <button
-                type="button"
-                onClick={() => onAttachmentChange(null)}
-                className="mt-2 text-xs text-white/60 hover:text-white/80 flex items-center gap-1"
-                aria-label="Remove attachment"
-              >
-                <X className="w-3 h-3" />
-                Remove
-              </button>
-            </>
+            <AttachmentGroup>
+              <Attachment size="default" className="max-w-xs">
+                {isImage ? (
+                  <>
+                    <AttachmentTrigger
+                      onClick={() => setPreviewOpen(true)}
+                      className="hover:bg-white/10 rounded-2xl"
+                      aria-label={`Open preview of ${attachment!.fileName}`}
+                    />
+                    <AttachmentMedia variant="image">
+                      <Image
+                        src={attachment!.url}
+                        alt={attachment!.fileName}
+                        fill
+                        sizes="192px"
+                        onLoad={(e) => {
+                          const { naturalWidth, naturalHeight } = e.currentTarget
+                          if (naturalWidth && naturalHeight) {
+                            setImageRatio(naturalWidth / naturalHeight)
+                          }
+                        }}
+                      />
+                    </AttachmentMedia>
+                  </>
+                ) : (
+                  <AttachmentMedia variant="icon">
+                    <FileText />
+                  </AttachmentMedia>
+                )}
+                <AttachmentContent>
+                  <AttachmentTitle>{attachment!.fileName}</AttachmentTitle>
+                  <AttachmentDescription>
+                    {formatFileSize(attachment!.size)}
+                    {!isImage && ` · ${(attachment!.mimeType.split('/')[1] || 'file').toUpperCase()}`}
+                  </AttachmentDescription>
+                </AttachmentContent>
+                <AttachmentActions>
+                  <AttachmentAction
+                    aria-label="Remove attachment"
+                    onClick={() => onAttachmentChange(null)}
+                    onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray2)')}
+                    onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}
+                  >
+                    <X />
+                  </AttachmentAction>
+                </AttachmentActions>
+              </Attachment>
+            </AttachmentGroup>
           )}
         </div>
+      )}
+
+      {/* Full-size image preview dialog */}
+      {isImage && (
+        <ImagePreviewDialog
+          attachment={attachment}
+          imageRatio={imageRatio}
+          open={previewOpen}
+          onOpenChange={setPreviewOpen}
+        />
       )}
 
       <div className="flex items-end gap-2 mx-auto">

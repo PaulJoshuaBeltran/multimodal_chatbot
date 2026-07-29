@@ -1,5 +1,6 @@
 // src/types/props.ts
 import { AiModel, Conversation } from "./msg_conversation_model"
+import type { Attachment as AttachmentData } from '@/src/types/msg_conversation_model'
 
 export interface AuthBoxProps {
   onLogin: (token: string) => void
@@ -116,6 +117,13 @@ export interface SystemPromptDialogProps {
 }
 
 export interface SettingsDialogProps {
+  open: boolean
+  onOpenChange: (open: boolean) => void
+}
+
+export interface ImagePreviewDialogProps {
+  attachment: AttachmentData | null
+  imageRatio: number
   open: boolean
   onOpenChange: (open: boolean) => void
 }

@@ -53,7 +53,7 @@ export default function ModelManager({
           await fetch('/api/models', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ name: 'Gemma 4', modelId: 'gemma4:e4b', description: 'System Default Model' }),
+            body: JSON.stringify({ name: 'Gemma4:E4B', modelId: 'gemma4:e4b', description: 'System Default Model' }),
           })
           const freshData = await load()
           if (mounted) setModels(freshData)
