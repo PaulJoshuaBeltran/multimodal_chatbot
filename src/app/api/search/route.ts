@@ -1,6 +1,6 @@
 // src/app/api/search/route.ts
 import { prisma } from '@/lib/prisma'
-import { verifyToken, getAuthToken } from '@/lib/auth'
+import { getLocalUser } from '@/lib/get-local-user'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -8,35 +8,30 @@ export const dynamic = 'force-dynamic'
 export async function GET(req: Request) {
   const url = new URL(req.url)
   const q = url.searchParams.get('q') || ''
-  const token = getAuthToken(req)
-  const payload = token ? verifyToken(token) : null
+  const user = await getLocalUser()
 
-  if (!payload || !q.trim()) {
+  if (!user || !q.trim()) {
     return new Response(JSON.stringify({ conversations: [], messages: [] }), {
       status: 200,
       headers: { 'Content-Type': 'application/json' },
     })
   }
 
-  // 1. Search conversation titles matching the substring keyword
   const conversations = await prisma.conversation.findMany({
     where: {
-      userId: payload.userId,
+      userId: user.id,
       title: { contains: q, mode: 'insensitive' },
     },
     orderBy: { updatedAt: 'desc' },
   })
 
-  // 2. Search message contents matching the substring keyword across user's conversations
   const messages = await prisma.message.findMany({
     where: {
-      conversation: { userId: payload.userId },
+      conversation: { userId: user.id },
       content: { contains: q, mode: 'insensitive' },
     },
     include: {
-      conversation: {
-        select: { title: true },
-      },
+      conversation: { select: { title: true } },
     },
     orderBy: { createdAt: 'desc' },
   })

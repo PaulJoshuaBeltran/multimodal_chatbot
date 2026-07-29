@@ -1246,25 +1246,25 @@ export namespace Prisma {
 
   export type UserMinAggregateOutputType = {
     id: string | null
+    clerkId: string | null
     email: string | null
     name: string | null
-    password: string | null
     createdAt: Date | null
   }
 
   export type UserMaxAggregateOutputType = {
     id: string | null
+    clerkId: string | null
     email: string | null
     name: string | null
-    password: string | null
     createdAt: Date | null
   }
 
   export type UserCountAggregateOutputType = {
     id: number
+    clerkId: number
     email: number
     name: number
-    password: number
     createdAt: number
     _all: number
   }
@@ -1272,25 +1272,25 @@ export namespace Prisma {
 
   export type UserMinAggregateInputType = {
     id?: true
+    clerkId?: true
     email?: true
     name?: true
-    password?: true
     createdAt?: true
   }
 
   export type UserMaxAggregateInputType = {
     id?: true
+    clerkId?: true
     email?: true
     name?: true
-    password?: true
     createdAt?: true
   }
 
   export type UserCountAggregateInputType = {
     id?: true
+    clerkId?: true
     email?: true
     name?: true
-    password?: true
     createdAt?: true
     _all?: true
   }
@@ -1369,9 +1369,9 @@ export namespace Prisma {
 
   export type UserGroupByOutputType = {
     id: string
+    clerkId: string
     email: string
     name: string | null
-    password: string
     createdAt: Date
     _count: UserCountAggregateOutputType | null
     _min: UserMinAggregateOutputType | null
@@ -1394,9 +1394,9 @@ export namespace Prisma {
 
   export type UserSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
+    clerkId?: boolean
     email?: boolean
     name?: boolean
-    password?: boolean
     createdAt?: boolean
     conversations?: boolean | User$conversationsArgs<ExtArgs>
     models?: boolean | User$modelsArgs<ExtArgs>
@@ -1407,13 +1407,13 @@ export namespace Prisma {
 
   export type UserSelectScalar = {
     id?: boolean
+    clerkId?: boolean
     email?: boolean
     name?: boolean
-    password?: boolean
     createdAt?: boolean
   }
 
-  export type UserOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "email" | "name" | "password" | "createdAt", ExtArgs["result"]["user"]>
+  export type UserOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "clerkId" | "email" | "name" | "createdAt", ExtArgs["result"]["user"]>
   export type UserInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     conversations?: boolean | User$conversationsArgs<ExtArgs>
     models?: boolean | User$modelsArgs<ExtArgs>
@@ -1428,9 +1428,9 @@ export namespace Prisma {
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
+      clerkId: string
       email: string
       name: string | null
-      password: string
       createdAt: Date
     }, ExtArgs["result"]["user"]>
     composites: {}
@@ -1827,9 +1827,9 @@ export namespace Prisma {
    */
   interface UserFieldRefs {
     readonly id: FieldRef<"User", 'String'>
+    readonly clerkId: FieldRef<"User", 'String'>
     readonly email: FieldRef<"User", 'String'>
     readonly name: FieldRef<"User", 'String'>
-    readonly password: FieldRef<"User", 'String'>
     readonly createdAt: FieldRef<"User", 'DateTime'>
   }
     
@@ -5287,9 +5287,9 @@ export namespace Prisma {
 
   export const UserScalarFieldEnum: {
     id: 'id',
+    clerkId: 'clerkId',
     email: 'email',
     name: 'name',
-    password: 'password',
     createdAt: 'createdAt'
   };
 
@@ -5411,9 +5411,9 @@ export namespace Prisma {
     OR?: UserWhereInput[]
     NOT?: UserWhereInput | UserWhereInput[]
     id?: StringFilter<"User"> | string
+    clerkId?: StringFilter<"User"> | string
     email?: StringFilter<"User"> | string
     name?: StringNullableFilter<"User"> | string | null
-    password?: StringFilter<"User"> | string
     createdAt?: DateTimeFilter<"User"> | Date | string
     conversations?: ConversationListRelationFilter
     models?: AiModelListRelationFilter
@@ -5421,9 +5421,9 @@ export namespace Prisma {
 
   export type UserOrderByWithRelationInput = {
     id?: SortOrder
+    clerkId?: SortOrder
     email?: SortOrder
     name?: SortOrder
-    password?: SortOrder
     createdAt?: SortOrder
     conversations?: ConversationOrderByRelationAggregateInput
     models?: AiModelOrderByRelationAggregateInput
@@ -5431,22 +5431,22 @@ export namespace Prisma {
 
   export type UserWhereUniqueInput = Prisma.AtLeast<{
     id?: string
+    clerkId?: string
     email?: string
     AND?: UserWhereInput | UserWhereInput[]
     OR?: UserWhereInput[]
     NOT?: UserWhereInput | UserWhereInput[]
     name?: StringNullableFilter<"User"> | string | null
-    password?: StringFilter<"User"> | string
     createdAt?: DateTimeFilter<"User"> | Date | string
     conversations?: ConversationListRelationFilter
     models?: AiModelListRelationFilter
-  }, "id" | "email">
+  }, "id" | "clerkId" | "email">
 
   export type UserOrderByWithAggregationInput = {
     id?: SortOrder
+    clerkId?: SortOrder
     email?: SortOrder
     name?: SortOrder
-    password?: SortOrder
     createdAt?: SortOrder
     _count?: UserCountOrderByAggregateInput
     _max?: UserMaxOrderByAggregateInput
@@ -5458,9 +5458,9 @@ export namespace Prisma {
     OR?: UserScalarWhereWithAggregatesInput[]
     NOT?: UserScalarWhereWithAggregatesInput | UserScalarWhereWithAggregatesInput[]
     id?: StringWithAggregatesFilter<"User"> | string
+    clerkId?: StringWithAggregatesFilter<"User"> | string
     email?: StringWithAggregatesFilter<"User"> | string
     name?: StringNullableWithAggregatesFilter<"User"> | string | null
-    password?: StringWithAggregatesFilter<"User"> | string
     createdAt?: DateTimeWithAggregatesFilter<"User"> | Date | string
   }
 
@@ -5657,9 +5657,9 @@ export namespace Prisma {
 
   export type UserCreateInput = {
     id?: string
+    clerkId: string
     email: string
     name?: string | null
-    password: string
     createdAt?: Date | string
     conversations?: ConversationCreateNestedManyWithoutUserInput
     models?: AiModelCreateNestedManyWithoutUserInput
@@ -5667,27 +5667,27 @@ export namespace Prisma {
 
   export type UserUncheckedCreateInput = {
     id?: string
+    clerkId: string
     email: string
     name?: string | null
-    password: string
     createdAt?: Date | string
     conversations?: ConversationUncheckedCreateNestedManyWithoutUserInput
     models?: AiModelUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserUpdateInput = {
+    clerkId?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     name?: NullableStringFieldUpdateOperationsInput | string | null
-    password?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     conversations?: ConversationUpdateManyWithoutUserNestedInput
     models?: AiModelUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateInput = {
+    clerkId?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     name?: NullableStringFieldUpdateOperationsInput | string | null
-    password?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     conversations?: ConversationUncheckedUpdateManyWithoutUserNestedInput
     models?: AiModelUncheckedUpdateManyWithoutUserNestedInput
@@ -5695,23 +5695,23 @@ export namespace Prisma {
 
   export type UserCreateManyInput = {
     id?: string
+    clerkId: string
     email: string
     name?: string | null
-    password: string
     createdAt?: Date | string
   }
 
   export type UserUpdateManyMutationInput = {
+    clerkId?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     name?: NullableStringFieldUpdateOperationsInput | string | null
-    password?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type UserUncheckedUpdateManyInput = {
+    clerkId?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     name?: NullableStringFieldUpdateOperationsInput | string | null
-    password?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -5971,25 +5971,25 @@ export namespace Prisma {
 
   export type UserCountOrderByAggregateInput = {
     id?: SortOrder
+    clerkId?: SortOrder
     email?: SortOrder
     name?: SortOrder
-    password?: SortOrder
     createdAt?: SortOrder
   }
 
   export type UserMaxOrderByAggregateInput = {
     id?: SortOrder
+    clerkId?: SortOrder
     email?: SortOrder
     name?: SortOrder
-    password?: SortOrder
     createdAt?: SortOrder
   }
 
   export type UserMinOrderByAggregateInput = {
     id?: SortOrder
+    clerkId?: SortOrder
     email?: SortOrder
     name?: SortOrder
-    password?: SortOrder
     createdAt?: SortOrder
   }
 
@@ -6695,18 +6695,18 @@ export namespace Prisma {
 
   export type UserCreateWithoutConversationsInput = {
     id?: string
+    clerkId: string
     email: string
     name?: string | null
-    password: string
     createdAt?: Date | string
     models?: AiModelCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutConversationsInput = {
     id?: string
+    clerkId: string
     email: string
     name?: string | null
-    password: string
     createdAt?: Date | string
     models?: AiModelUncheckedCreateNestedManyWithoutUserInput
   }
@@ -6755,17 +6755,17 @@ export namespace Prisma {
   }
 
   export type UserUpdateWithoutConversationsInput = {
+    clerkId?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     name?: NullableStringFieldUpdateOperationsInput | string | null
-    password?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     models?: AiModelUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutConversationsInput = {
+    clerkId?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     name?: NullableStringFieldUpdateOperationsInput | string | null
-    password?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     models?: AiModelUncheckedUpdateManyWithoutUserNestedInput
   }
@@ -6851,18 +6851,18 @@ export namespace Prisma {
 
   export type UserCreateWithoutModelsInput = {
     id?: string
+    clerkId: string
     email: string
     name?: string | null
-    password: string
     createdAt?: Date | string
     conversations?: ConversationCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutModelsInput = {
     id?: string
+    clerkId: string
     email: string
     name?: string | null
-    password: string
     createdAt?: Date | string
     conversations?: ConversationUncheckedCreateNestedManyWithoutUserInput
   }
@@ -6884,17 +6884,17 @@ export namespace Prisma {
   }
 
   export type UserUpdateWithoutModelsInput = {
+    clerkId?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     name?: NullableStringFieldUpdateOperationsInput | string | null
-    password?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     conversations?: ConversationUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutModelsInput = {
+    clerkId?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     name?: NullableStringFieldUpdateOperationsInput | string | null
-    password?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     conversations?: ConversationUncheckedUpdateManyWithoutUserNestedInput
   }

@@ -5,7 +5,7 @@ import path from 'path'
 
 export const runtime = 'nodejs'
 
-const UPLOAD_DIR = path.join(process.cwd(), 'data', 'uploads')
+const UPLOAD_DIR = path.join(process.cwd(), 'data', 'uploads', 'image_docu')
 
 export async function GET(
   _req: Request,

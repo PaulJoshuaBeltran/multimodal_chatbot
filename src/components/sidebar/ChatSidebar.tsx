@@ -2,6 +2,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useUser } from '@clerk/nextjs'
 import ConversationList from '@/src/components/sidebar/ConversationList'
 import ModelSelect from '@/src/components/dialogs/ModelSelect'
 import { Button } from '../ui/button'
@@ -27,30 +28,11 @@ import {
 import { ChatSidebarProps } from '@/src/types/props'
 import { SettingsDialog } from '@/src/components/dialogs/SettingsDialog'
 
-function getUserNameFromToken(token: string | null): string {
-  if (!token) return 'Account'
-  try {
-    const base64Url = token.split('.')[1]
-    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/')
-    const jsonPayload = decodeURIComponent(
-      window
-        .atob(base64)
-        .split('')
-        .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
-        .join('')
-    )
-    return JSON.parse(jsonPayload).name || 'User Account'
-  } catch {
-    return 'User Account'
-  }
-}
-
 function getInitials(name: string): string {
   return name.charAt(0).toUpperCase()
 }
 
 export function ChatSidebar({
-  token,
   conversations,
   selectedConv,
   currentView,
@@ -65,11 +47,12 @@ export function ChatSidebar({
   onRefreshConversations,
   onLogout,
   onDeactivate,
-}: ChatSidebarProps) {
+}: Omit<ChatSidebarProps, 'token'>) {
 
   const [settingsOpen, setSettingsOpen] = useState(false)
-  const userName = getUserNameFromToken(token)
-  
+  const { user } = useUser()
+  const userName = user?.fullName || user?.firstName || 'User Account'
+
   return (
     <aside
       className="w-72 flex flex-col h-full flex-shrink-0"
@@ -129,7 +112,6 @@ export function ChatSidebar({
       {/* Model selector */}
       <div className="px-3 py-2">
         <ModelSelect
-          token={token}
           value={selectedModel?.id ?? null}
           onChange={onModelChange}
           onManage={onManageModels}
@@ -151,7 +133,6 @@ export function ChatSidebar({
           selectedConvId={selectedConv}
           onSelect={onSelectConversation}
           onUpdate={onRefreshConversations}
-          token={token}
           conversations={conversations}
         />
       </ScrollArea>

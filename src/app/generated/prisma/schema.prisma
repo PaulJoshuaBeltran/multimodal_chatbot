@@ -18,9 +18,9 @@ datasource db {
 
 model User {
   id            String         @id @default(auto()) @map("_id") @db.ObjectId
+  clerkId       String         @unique // Clerk's user.id — the only identity link you need
   email         String         @unique
   name          String?
-  password      String
   conversations Conversation[]
   models        AiModel[]
   createdAt     DateTime       @default(now())

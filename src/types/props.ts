@@ -99,7 +99,6 @@ export interface NewConversationDialogProps {
 export interface SearchDialogProps {
   isOpen: boolean
   onClose: () => void
-  token: string | null
   onSelectResult: (conversationId: string, messageId?: string, query?: string) => void
 }
 

@@ -15,7 +15,7 @@ import { Label } from '../ui/label'
 import { Settings2 } from 'lucide-react'
 import { ModelSelectProps } from '@/src/types/props'
 
-export default function ModelSelect({ token, value, onChange, onManage, refreshToken }: ModelSelectProps) {
+export default function ModelSelect({ value, onChange, onManage, refreshToken }: Omit<ModelSelectProps, 'token'>) {
   const [models, setModels] = useState<AiModel[]>([])
   const [loading, setLoading] = useState(false)
 
@@ -24,9 +24,7 @@ export default function ModelSelect({ token, value, onChange, onManage, refreshT
     async function fetchModels() {
       setLoading(true)
       try {
-        const res = await fetch('/api/models', {
-          headers: token ? { Authorization: `Bearer ${token}` } : undefined,
-        })
+        const res = await fetch('/api/models')
         if (res.ok && active) {
           const data = await res.json()
           setModels(data)
@@ -45,7 +43,7 @@ export default function ModelSelect({ token, value, onChange, onManage, refreshT
     fetchModels()
     return () => { active = false }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [token, refreshToken])
+  }, [refreshToken])
 
   return (
     <div className="flex flex-col gap-1.5">
@@ -72,7 +70,6 @@ export default function ModelSelect({ token, value, onChange, onManage, refreshT
             {models.map((m, i) => (
               <SelectItem
                 key={m.id ?? `${m.name}-${i}`} value={m.id} className="text-xs"
-                // style={{ backgroundColor: 'var(--gray1)', borderColor: 'var(--gray1)'}}
                 onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray1)')}
                 onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}
               >

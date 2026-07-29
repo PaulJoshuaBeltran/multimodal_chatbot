@@ -20,12 +20,10 @@ import { cn } from '@/lib/utils'
 import { Label } from '../ui/label'
 
 export default function ModelManager({
-  token,
   onClose,
   onUpdated,
   onOpenAddModel,
 }: {
-  token?: string | null
   onClose: () => void
   onUpdated?: () => void
   /** Parent should close this dialog and open AddModelDialog (OtherDialogs.tsx) */
@@ -37,20 +35,14 @@ export default function ModelManager({
   const [editFields, setEditFields] = useState({ name: '', modelId: '', description: '' })
   const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null)
 
-  // "list" = model list, "confirm-delete" = delete confirmation screen
   const [screen, setScreen] = useState<'list' | 'confirm-delete'>('list')
 
-  const load = useCallback(
-    async (query?: string): Promise<AiModel[]> => {
-      const url = query ? `/api/models?q=${encodeURIComponent(query)}` : '/api/models'
-      const res = await fetch(url, {
-        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
-      })
-      if (!res.ok) return []
-      return res.json()
-    },
-    [token]
-  )
+  const load = useCallback(async (query?: string): Promise<AiModel[]> => {
+    const url = query ? `/api/models?q=${encodeURIComponent(query)}` : '/api/models'
+    const res = await fetch(url)
+    if (!res.ok) return []
+    return res.json()
+  }, [])
 
   useEffect(() => {
     let mounted = true
@@ -58,11 +50,9 @@ export default function ModelManager({
       if (!mounted) return
       if (data.length === 0) {
         try {
-          const headers: Record<string, string> = { 'Content-Type': 'application/json' }
-          if (token) headers.Authorization = `Bearer ${token}`
           await fetch('/api/models', {
             method: 'POST',
-            headers,
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ name: 'Gemma 4', modelId: 'gemma4:e4b', description: 'System Default Model' }),
           })
           const freshData = await load()
@@ -75,7 +65,7 @@ export default function ModelManager({
       }
     })
     return () => { mounted = false }
-  }, [load, token])
+  }, [load])
 
   async function handleSearch() {
     const data = await load(q)
@@ -96,11 +86,9 @@ export default function ModelManager({
       toast.error('This Model ID is already in use.')
       return
     }
-    const headers: Record<string, string> = { 'Content-Type': 'application/json' }
-    if (token) headers.Authorization = `Bearer ${token}`
     const res = await fetch(`/api/models/${m.id}`, {
       method: 'PATCH',
-      headers,
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(editFields),
     })
     if (!res.ok) {
@@ -116,9 +104,7 @@ export default function ModelManager({
   }
 
   async function deleteModel(id: string) {
-    const headers: Record<string, string> = {}
-    if (token) headers.Authorization = `Bearer ${token}`
-    const res = await fetch(`/api/models/${id}`, { method: 'DELETE', headers })
+    const res = await fetch(`/api/models/${id}`, { method: 'DELETE' })
     if (!res.ok) {
       const err = await res.json().catch(() => ({ error: 'Unknown' }))
       toast.error(`Delete failed: ${err?.error || 'Unknown error'}`)
@@ -151,7 +137,6 @@ export default function ModelManager({
         style={{ backgroundColor: 'var(--gray3)', borderColor: 'var(--gray3)' }}
       >
         {screen === 'confirm-delete' ? (
-          /* ── Delete confirmation screen ── */
           <>
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2">
@@ -182,7 +167,6 @@ export default function ModelManager({
             </div>
           </>
         ) : (
-          /* ── Main list screen ── */
           <>
             <DialogHeader className="flex-row items-center justify-between gap-2 space-y-0">
               <div>
@@ -191,7 +175,6 @@ export default function ModelManager({
               </div>
             </DialogHeader>
 
-            {/* Search + Add model trigger */}
             <div className="flex gap-2">
               <div className="relative flex-1">
                 <Search
@@ -229,13 +212,11 @@ export default function ModelManager({
               </Button>
             </div>
 
-            {/* Model list */}
             <ScrollArea type="auto" className="flex-1 px-2 min-h-0 pr-3">
               {models.length === 0 ? (
                 <p className="text-sm text-muted-foreground py-4 text-center">No models yet.</p>
               ) : (
                 <div className="flex flex-col max-h-[320px] pr-1">
-                  {/* 80px for each item */}
                   {models.map((m, i) => (
                     <div key={m.id}>
                       {i > 0 && <Separator />}

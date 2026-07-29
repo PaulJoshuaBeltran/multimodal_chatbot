@@ -2,7 +2,7 @@
 import { writeFile, mkdir } from 'fs/promises'
 import path from 'path'
 import { randomUUID } from 'crypto'
-import { verifyToken } from '@/lib/auth'
+import { auth } from '@clerk/nextjs/server'
 import { UPLOAD_DIR, classifyAndValidate, uploadErrorMessage } from '@/lib/uploads'
 
 export const runtime = 'nodejs'
@@ -10,9 +10,8 @@ export const dynamic = 'force-dynamic'
 
 export async function POST(req: Request) {
   try {
-    const auth = req.headers.get('authorization')?.split(' ')[1]
-    const payload = verifyToken(auth)
-    if (!payload) {
+    const { userId } = await auth()
+    if (!userId) {
       return new Response(JSON.stringify({ error: 'Unauthorized' }), {
         status: 401,
         headers: { 'Content-Type': 'application/json' },

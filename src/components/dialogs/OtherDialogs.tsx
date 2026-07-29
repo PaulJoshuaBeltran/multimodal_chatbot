@@ -8,126 +8,31 @@ import { Button } from '../ui/button'
 import { Label } from '../ui/label'
 import { Input } from '../ui/input'
 import { toast } from 'sonner'
-import { AddModelDialogProps, AuthDialogProps, DeactivateAlertDialogProps, DeleteConversationDialogProps, DeleteMessageDialogProps, EditMessageDialogProps, NewConversationDialogProps } from '@/src/types/props'
+import { DeactivateAlertDialogProps, DeleteConversationDialogProps, DeleteMessageDialogProps, EditMessageDialogProps, NewConversationDialogProps } from '@/src/types/props'
 import { Textarea } from '../ui/textarea'
 import { AlertTriangle, Plus, Search } from 'lucide-react'
 import { AiModel, OllamaInstalledModel } from '@/src/types/msg_conversation_model'
 import { ScrollArea } from '../ui/scroll-area'
 import { Separator } from '../ui/separator'
 
-// ── AuthDialog ────────────────────────────────────────────────────────────────
-export function AuthDialog({ open, mode, onOpenChange, onLogin }: AuthDialogProps) {
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [name, setName] = useState('')
-  const [loading, setLoading] = useState(false)
-
-  async function submit() {
-    setLoading(true)
-    const url = mode === 'login' ? '/api/auth/login' : '/api/auth/signup'
-    const body = mode === 'login' ? { email, password } : { name, email, password }
-    try {
-      const res = await fetch(url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body),
-      })
-      if (res.ok) {
-        const data = await res.json()
-        if (data?.token) {
-          onLogin(data.token)
-          onOpenChange(false)
-          toast.success(mode === 'login' ? 'Welcome back!' : 'Account created! You are now logged in.')
-        } else {
-          toast.error('Authentication failed: Missing token in response.')
-        }
-      } else {
-        toast.error('Authentication failed: Please check your credentials.')
-      }
-    } catch (err) {
-      toast.error('An error occurred while processing your request: ' + String(err))
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader>
-          <DialogTitle>{mode === 'login' ? 'Sign in' : 'Create account'}</DialogTitle>
-          <DialogDescription>
-            {mode === 'login'
-              ? 'Enter your credentials to continue.'
-              : 'Fill in the details below to get started.'}
-          </DialogDescription>
-        </DialogHeader>
-        <div className="flex flex-col gap-4 py-2">
-          {mode === 'signup' && (
-            <div className="flex flex-col gap-1.5">
-              <Label htmlFor="name">Name</Label>
-              <Input
-                id="name"
-                placeholder="Your name"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                disabled={loading}
-              />
-            </div>
-          )}
-          <div className="flex flex-col gap-1.5">
-            <Label htmlFor="email">Email</Label>
-            <Input
-              id="email"
-              type="email"
-              placeholder="you@example.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              disabled={loading}
-            />
-          </div>
-          <div className="flex flex-col gap-1.5">
-            <Label htmlFor="password">Password</Label>
-            <Input
-              id="password"
-              type="password"
-              placeholder="••••••••"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              disabled={loading}
-              onKeyDown={(e) => e.key === 'Enter' && submit()}
-            />
-          </div>
-          <Button onClick={submit} disabled={loading} className="w-full">
-            {loading ? 'Please wait…' : mode === 'login' ? 'Sign in' : 'Create account'}
-          </Button>
-        </div>
-      </DialogContent>
-    </Dialog>
-  )
-}
+// AuthDialog removed — replaced by Clerk's <SignIn />/<SignUp /> in LoginSignup.tsx
 
 // ── NewConversationDialog ─────────────────────────────────────────────────────
 export function NewConversationDialog({
   open,
   onOpenChange,
-  token,
   onCreated,
-}: NewConversationDialogProps) {
+}: Omit<NewConversationDialogProps, 'token'>) {
   const [title, setTitle] = useState('')
   const [loading, setLoading] = useState(false)
 
   async function create() {
     if (!title.trim()) return
-    if (!token) {
-      toast.error('Not logged in: Please sign in to create a conversation.')
-      return
-    }
     setLoading(true)
     try {
       const res = await fetch('/api/conversations', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ title }),
       })
       if (res.ok) {
@@ -267,20 +172,22 @@ export function DeleteConversationDialog({
   )
 }
 
+// ── AddModelDialog ────────────────────────────────────────────────────────────
 export function AddModelDialog({
   open,
   onOpenChange,
-  token,
   onAdded,
-}: AddModelDialogProps) {
+}: {
+  open: boolean
+  onOpenChange: (open: boolean) => void
+  onAdded?: () => void
+}) {
   const [q, setQ] = useState('')
   const [installed, setInstalled] = useState<OllamaInstalledModel[]>([])
   const [activatedIds, setActivatedIds] = useState<Set<string>>(new Set())
   const [loadingList, setLoadingList] = useState(false)
   const [addingId, setAddingId] = useState<string | null>(null)
 
-  // Render-time adjustment instead of an effect setState:
-  // when `open` flips true, mark loading immediately, in the same render pass.
   const [prevOpen, setPrevOpen] = useState(open)
   if (open !== prevOpen) {
     setPrevOpen(open)
@@ -301,12 +208,10 @@ export function AddModelDialog({
   }, [])
 
   const loadActivated = useCallback(async () => {
-    const res = await fetch('/api/models', {
-      headers: token ? { Authorization: `Bearer ${token}` } : undefined,
-    })
+    const res = await fetch('/api/models')
     if (!res.ok) return []
     return res.json() as Promise<AiModel[]>
-  }, [token])
+  }, [])
 
   useEffect(() => {
     if (!open) return
@@ -321,7 +226,7 @@ export function AddModelDialog({
   }, [open, loadInstalled, loadActivated])
 
   async function handleSearch() {
-    setLoadingList(true) // fine — this is inside an event handler, not an effect body
+    setLoadingList(true)
     const inst = await loadInstalled(q)
     setInstalled(inst)
     setLoadingList(false)
@@ -330,12 +235,10 @@ export function AddModelDialog({
   async function activate(m: OllamaInstalledModel) {
     setAddingId(m.modelId)
     try {
-      const headers: Record<string, string> = { 'Content-Type': 'application/json' }
-      if (token) headers.Authorization = `Bearer ${token}`
       const description = [m.family, m.parameterSize].filter(Boolean).join(' · ') || undefined
       const res = await fetch('/api/models', {
         method: 'POST',
-        headers,
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name: m.name, modelId: m.modelId, description }),
       })
       if (!res.ok) {
@@ -393,7 +296,6 @@ export function AddModelDialog({
             </p>
           ) : (
             <div className="flex flex-col max-h-[240px] pr-3">
-              {/* 80px for each item */}
               {installed.map((m, i) => {
                 const already = activatedIds.has(m.modelId.toLowerCase())
                 if (!already){

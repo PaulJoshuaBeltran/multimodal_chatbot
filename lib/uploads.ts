@@ -3,7 +3,7 @@ import { ALLOWED_DOCUMENT_MIME_TYPES, UploadValidationError } from '@/src/types/
 import { fileType } from '@/src/types/msg_conversation_model'
 import path from 'path'
 
-export const UPLOAD_DIR = path.join(process.cwd(), 'data', 'uploads')
+export const UPLOAD_DIR = path.join(process.cwd(), 'data', 'uploads', 'image_docu')
 
 export const MAX_FILE_SIZE = 25 * 1024 * 1024 // 25MB
 export const MAX_AUDIO_SIZE = 50 * 1024 * 1024 // 50MB — audio files run bigger

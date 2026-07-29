@@ -1,7 +1,8 @@
 // src/app/page.tsx
 'use client'
 
-import React, { useCallback, useEffect, useReducer, useRef, useState } from 'react'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
+import { useAuth, useClerk } from '@clerk/nextjs'
 import MessageList from '@/src/components/main/MessageList'
 import ModelManager from '@/src/components/dialogs/ModelManager'
 import SearchDialog from '@/src/components/dialogs/SearchDialog'
@@ -18,25 +19,15 @@ import type {
 import { ChatSidebar } from '../components/sidebar/ChatSidebar'
 import { ChatInput } from '../components/main/ChatInput'
 import { ToolList } from '../components/main/ToolList'
-import { AuthDialog, NewConversationDialog, DeactivateAlertDialog, AddModelDialog } from '../components/dialogs/OtherDialogs'
+import { NewConversationDialog, DeactivateAlertDialog, AddModelDialog } from '../components/dialogs/OtherDialogs'
 import { SystemPromptDialog } from '../components/dialogs/SystemPromptDialog'
 import { HttpError } from '../models/http_error'
 import { LoginSignup } from '../components/main/LoginSignup'
 
 // Page
 export default function Page() {
-  const [auth, dispatch] = useReducer(
-    (
-      _: { token: string | null; ready: boolean },
-      action: { token: string | null; ready: boolean }
-    ) => action,
-    { token: null, ready: false }
-  )
-
-  useEffect(() => {
-    const stored = localStorage.getItem('token')
-    dispatch({ token: stored, ready: true })
-  }, [])
+  const { isLoaded, isSignedIn } = useAuth()
+  const { signOut } = useClerk()
 
   const [conversations, setConversations] = useState<Conversation[]>([])
   const [selectedConv, setSelectedConv] = useState<string | null>(null)
@@ -48,7 +39,7 @@ export default function Page() {
   const abortRef = useRef<AbortController | null>(null)
   const [systemPrompt, setSystemPrompt] = useState('')
 
-  // AI generation params
+  // AI generation paramaters
   const [temperature, setTemperature] = useState([0.3])
   const [topP, setTopP] = useState([0.5])
   const [topK, setTopK] = useState(5)
@@ -61,68 +52,51 @@ export default function Page() {
   const [currentView, setCurrentView] = useState<'chat' | 'tools'>('chat')
 
   // Dialog open states
-  const [authDialogOpen, setAuthDialogOpen] = useState(false)
-  const [authDialogMode, setAuthDialogMode] = useState<'login' | 'signup'>('login')
   const [newConvOpen, setNewConvOpen] = useState(false)
   const [systemPromptOpen, setSystemPromptOpen] = useState(false)
   const [deactivateAlertOpen, setDeactivateAlertOpen] = useState(false)
 
   // Data fetching
-  const fetchConversations = useCallback(
-    async (q?: string) => {
-      const url = q
-        ? `/api/conversations?q=${encodeURIComponent(q)}`
-        : '/api/conversations'
-      const res = await fetch(url, {
-        headers: auth.token ? { Authorization: `Bearer ${auth.token}` } : undefined,
-      })
-      if (res.ok) {
-        const data = await res.json();
-        setConversations(data);
+  const fetchConversations = useCallback(async (q?: string) => {
+    const url = q ? `/api/conversations?q=${encodeURIComponent(q)}` : '/api/conversations'
+    const res = await fetch(url)
+    if (res.ok) {
+      const data = await res.json()
+      setConversations(data)
 
-        // Set conversation and load messages
-        const convId: string = data[0]?.id;
-        setCurrentView('chat')
-        setSelectedConv(convId)
-        const res1 = await fetch(`/api/messages?conversationId=${convId}`, {
-          headers: auth.token ? { Authorization: `Bearer ${auth.token}` } : undefined,
-        })
-        if (res1.ok) setMessages(await res1.json())
-      }
-    },
-    [auth.token]
-  )
+      const convId: string = data[0]?.id
+      setCurrentView('chat')
+      setSelectedConv(convId)
+      const res1 = await fetch(`/api/messages?conversationId=${convId}`)
+      if (res1.ok) setMessages(await res1.json())
+    }
+  }, [])
 
   useEffect(() => {
+    if (!isSignedIn) return
     let active = true
     ;(async () => {
-      const res = await fetch('/api/conversations', {
-        headers: auth.token ? { Authorization: `Bearer ${auth.token}` } : undefined,
-      })
+      const res = await fetch('/api/conversations')
       if (!active) return
       if (res.ok) setConversations(await res.json())
     })()
     return () => {
       active = false
     }
-  }, [auth.token])
+  }, [isSignedIn])
 
   // Message loading
   async function loadMessages(convId: string) {
     setCurrentView('chat')
     setSelectedConv(convId)
-    const res = await fetch(`/api/messages?conversationId=${convId}`, {
-      headers: auth.token ? { Authorization: `Bearer ${auth.token}` } : undefined,
-    })
+    const res = await fetch(`/api/messages?conversationId=${convId}`)
     if (res.ok) setMessages(await res.json())
   }
 
   async function handleSelectSearchResult(conversationId: string, messageId?: string) {
     setCurrentView('chat')
     setSelectedConv(conversationId)
-    const res = await fetch(`/api/messages?conversationId=${conversationId}`, {
-      headers: auth.token ? { Authorization: `Bearer ${auth.token}` } : undefined,
-    })
+    const res = await fetch(`/api/messages?conversationId=${conversationId}`)
     if (res.ok) {
       setMessages(await res.json())
       if (messageId) {
@@ -216,7 +190,7 @@ export default function Page() {
     let assistantIndex = index
 
     setMessages((prev) => {
-      const copy = prev.slice(0, index) // drop the old (possibly errored) assistant message
+      const copy = prev.slice(0, index)
       copy.push({ role: 'assistant', content: '', createdAt: new Date().toISOString() })
       assistantIndex = copy.length - 1
       return copy
@@ -238,7 +212,7 @@ export default function Page() {
             const existing = copy[assistantIndex]
             copy[assistantIndex] = {
               role: 'assistant',
-              content: (existing?.content ?? '') + text, // accumulate, don't overwrite
+              content: (existing?.content ?? '') + text,
               createdAt: existing?.createdAt ?? new Date().toISOString(),
             }
             return copy
@@ -282,11 +256,9 @@ export default function Page() {
     setPendingAttachment(null)
     setIsThinking(true)
 
-    const saveHeaders: Record<string, string> = { 'Content-Type': 'application/json' }
-    if (auth.token) saveHeaders.Authorization = `Bearer ${auth.token}`
     const saveRes = await fetch('/api/messages', {
       method: 'POST',
-      headers: saveHeaders,
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         conversationId: selectedConv,
         role: 'user',
@@ -334,7 +306,7 @@ export default function Page() {
       })
     } catch (err) {
       const errorText =
-        err instanceof Error ? `âš ï¸ Ollama ${err.message}` : 'âš ï¸ Ollama Unknown error'
+        err instanceof Error ? `⚠️ Ollama ${err.message}` : '⚠️ Ollama Unknown error'
       setMessages((prev) => {
         const copy = [...prev]
         if (copy.length && copy[copy.length - 1].role === 'assistant') {
@@ -349,11 +321,9 @@ export default function Page() {
       setIsThinking(false)
       setStreaming(false)
       if (reply) {
-        const h: Record<string, string> = { 'Content-Type': 'application/json' }
-        if (auth.token) h.Authorization = `Bearer ${auth.token}`
         const r = await fetch('/api/messages', {
           method: 'POST',
-          headers: h,
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ conversationId: selectedConv, role: 'assistant', content: reply, attachments: [] }),
         })
         if (r.ok) {
@@ -376,9 +346,11 @@ export default function Page() {
       setShowModelManager(true)
       return
     }
-    const headers: Record<string, string> = { 'Content-Type': 'application/json' }
-    if (auth.token) headers.Authorization = `Bearer ${auth.token}`
-    await fetch(`/api/messages/${id}`, { method: 'PATCH', headers, body: JSON.stringify({ content }) })
+    await fetch(`/api/messages/${id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ content }),
+    })
 
     const editedIndex = messages.findIndex((m) => m.id === id)
     if (editedIndex === -1) return
@@ -390,12 +362,7 @@ export default function Page() {
 
     const toDelete = messages.slice(editedIndex + 1).filter((m) => m.id)
     await Promise.all(
-      toDelete.map((m) =>
-        fetch(`/api/messages/${m.id}`, {
-          method: 'DELETE',
-          headers: auth.token ? { Authorization: `Bearer ${auth.token}` } : undefined,
-        })
-      )
+      toDelete.map((m) => fetch(`/api/messages/${m.id}`, { method: 'DELETE' }))
     )
 
     if (!selectedConv) return
@@ -450,42 +417,25 @@ export default function Page() {
       setIsThinking(false)
       setStreaming(false)
       if (reply) {
-        const h: Record<string, string> = { 'Content-Type': 'application/json' }
-        if (auth.token) h.Authorization = `Bearer ${auth.token}`
         await fetch('/api/messages', {
           method: 'POST',
-          headers: h,
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ conversationId: selectedConv, role: 'assistant', content: reply }),
         })
       }
     }
   }
 
-  // Auth helpers
   function stop() { abortRef.current?.abort(); setIsThinking(false); setStreaming(false) }
 
-  function handleLogin(tokenValue: string) {
-    localStorage.setItem('token', tokenValue)
-    dispatch({ token: tokenValue, ready: true })
-  }
-
-  function handleLogout() {
-    localStorage.removeItem('token')
-    dispatch({ token: null, ready: true })
-    setConversations([])
-    setMessages([])
-    setCurrentView('chat')
-    toast.success('Signed out successfully')
-  }
-
   async function handleDeactivate() {
-    const res = await fetch('/api/auth/deactivate', {
-      method: 'DELETE',
-      headers: { Authorization: `Bearer ${auth.token}` },
-    })
+    const res = await fetch('/api/account/deactivate', { method: 'DELETE' })
     if (res.ok) {
       toast.success('Account deactivated: Your account and all data have been removed.')
-      handleLogout()
+      await signOut()
+      setConversations([])
+      setMessages([])
+      setCurrentView('chat')
     } else {
       toast.error('Deactivation failed: Please try again.')
     }
@@ -493,18 +443,11 @@ export default function Page() {
   }
 
   // Unauthenticated landing
-  if (auth.ready && !auth.token) {
-    return (
-      <LoginSignup
-        authDialogOpen={authDialogOpen}
-        authDialogMode={authDialogMode}
-        setAuthDialogOpen={setAuthDialogOpen}
-        setAuthDialogMode={setAuthDialogMode}
-        handleLogin={handleLogin}
-      >
-      </LoginSignup>
-    )
+  if (isLoaded && !isSignedIn) {
+    return <LoginSignup />
   }
+
+  if (!isLoaded) return null // or a loading skeleton
 
   // Authenticated layout
   return (
@@ -512,7 +455,6 @@ export default function Page() {
 
       {/* Sidebar */}
       <ChatSidebar
-        token={auth.token}
         conversations={conversations}
         selectedConv={selectedConv}
         currentView={currentView}
@@ -525,7 +467,7 @@ export default function Page() {
         onModelChange={(model) => setSelectedModel(model)}
         onManageModels={() => { setShowModelManager(true); setCurrentView('chat') }}
         onRefreshConversations={() => fetchConversations()}
-        onLogout={handleLogout}
+        onLogout={() => {signOut(); setMessages([]); }}
         onDeactivate={() => setDeactivateAlertOpen(true)}
       />
 
@@ -547,9 +489,7 @@ export default function Page() {
                 isThinking={isThinking}
                 onEdit={handleEditMessage}
                 onDelete={async (id: string) => {
-                  const headers: Record<string, string> = {}
-                  if (auth.token) headers.Authorization = `Bearer ${auth.token}`
-                  await fetch(`/api/messages/${id}`, { method: 'DELETE', headers })
+                  await fetch(`/api/messages/${id}`, { method: 'DELETE' })
                   setMessages((prev) => prev.filter((m) => m.id !== id))
                   toast.success('Message deleted')
                 }}
@@ -566,7 +506,6 @@ export default function Page() {
               onOpenSystemPrompt={() => setSystemPromptOpen(true)}
               attachment={pendingAttachment}
               onAttachmentChange={setPendingAttachment}
-              token={auth.token}
             />
           </>
         ) : (
@@ -581,15 +520,7 @@ export default function Page() {
           setShowAddModelOpen(open)
           if (!open) setShowModelManager(true)
         }}
-        token={auth.token}
         onAdded={() => setModelsRefresh((x) => x + 1)}
-      />
-
-      <AuthDialog
-        open={authDialogOpen}
-        mode={authDialogMode}
-        onOpenChange={setAuthDialogOpen}
-        onLogin={handleLogin}
       />
 
       <DeactivateAlertDialog
@@ -600,7 +531,6 @@ export default function Page() {
 
       {showModelManager && (
         <ModelManager
-          token={auth.token}
           onClose={() => { setShowModelManager(false); setModelsRefresh((x) => x + 1) }}
           onUpdated={() => setModelsRefresh((x) => x + 1)}
           onOpenAddModel={() => {
@@ -613,14 +543,12 @@ export default function Page() {
       <NewConversationDialog
         open={newConvOpen}
         onOpenChange={setNewConvOpen}
-        token={auth.token}
         onCreated={fetchConversations}
       />
 
       <SearchDialog
         isOpen={isSearchOpen}
         onClose={() => setIsSearchOpen(false)}
-        token={auth.token}
         onSelectResult={handleSelectSearchResult}
       />
 

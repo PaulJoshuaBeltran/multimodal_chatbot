@@ -44,7 +44,7 @@ function searchReducer(state: SearchState, action: SearchAction): SearchState {
   }
 }
 
-export default function SearchDialog({ isOpen, onClose, token, onSelectResult }: SearchDialogProps) {
+export default function SearchDialog({ isOpen, onClose, onSelectResult }: SearchDialogProps) {
   const [state, dispatch] = useReducer(searchReducer, initialState)
   const { query, results, loading } = state
 
@@ -60,9 +60,7 @@ export default function SearchDialog({ isOpen, onClose, token, onSelectResult }:
 
     async function performSearch() {
       try {
-        const res = await fetch(`/api/search?q=${encodeURIComponent(query)}`, {
-          headers: token ? { Authorization: `Bearer ${token}` } : undefined,
-        })
+        const res = await fetch(`/api/search?q=${encodeURIComponent(query)}`)
         if (res.ok) {
           const data = await res.json()
           dispatch({ type: 'SEARCH_SUCCESS', payload: data })
@@ -77,7 +75,7 @@ export default function SearchDialog({ isOpen, onClose, token, onSelectResult }:
 
     const timer = setTimeout(performSearch, 300)
     return () => clearTimeout(timer)
-  }, [query, isOpen, token])
+  }, [query, isOpen])
 
   // Atomic Reset: Clears input, results, and loading indicators instantly when dialog closes
   useEffect(() => {

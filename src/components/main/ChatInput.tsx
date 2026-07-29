@@ -28,11 +28,9 @@ export function ChatInput({
   onOpenSystemPrompt,
   attachment,
   onAttachmentChange,
-  token,
 }: ChatInputProps & {
   attachment: Attachment | null
   onAttachmentChange: (a: Attachment | null) => void
-  token: string | null
 }) {
   const imageInputRef = useRef<HTMLInputElement | null>(null)
   const docInputRef = useRef<HTMLInputElement | null>(null)
@@ -50,7 +48,6 @@ export function ChatInput({
       try {
         res = await fetch('/api/upload', {
           method: 'POST',
-          headers: token ? { Authorization: `Bearer ${token}` } : undefined,
           body: form,
         })
       } catch {
