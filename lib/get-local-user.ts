@@ -4,6 +4,9 @@ import { prisma } from '@/lib/prisma'
 
 export async function getLocalUser() {
   const { userId: clerkId } = await auth()
+  console.log('clerkId:', clerkId)
   if (!clerkId) return null
-  return prisma.user.findUnique({ where: { clerkId } })
+  const user = await prisma.user.findUnique({ where: { clerkId } })
+  console.log('local user found:', !!user)
+  return user
 }

@@ -16,10 +16,12 @@ export async function PATCH(req: Request, { params }: { params: { id: string } |
   return new Response(JSON.stringify(updated), { status: 200, headers: { 'Content-Type': 'application/json' } })
 }
 
-export async function DELETE(req: Request, { params }: { params: { id: string } | Promise<{ id: string }> }) {
-  const user = await getLocalUser()
-  if (!user) return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401, headers: { 'Content-Type': 'application/json' } })
+export async function DELETE(req: Request, { params }: { params: Promise<{ id: string }> }) {
+  console.log('Deleting conversation with params:', params)
   const { id } = await params
+  const user = await getLocalUser()
+  console.log('User:', user)
+  if (!user) return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401, headers: { 'Content-Type': 'application/json' } })
   const conv = await prisma.conversation.findUnique({ where: { id } })
   if (!conv || conv.userId !== user.id) return new Response(JSON.stringify({ error: 'Forbidden' }), { status: 403, headers: { 'Content-Type': 'application/json' } })
   await prisma.message.deleteMany({ where: { conversationId: id } })

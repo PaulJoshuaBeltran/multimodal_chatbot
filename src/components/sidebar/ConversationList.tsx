@@ -5,7 +5,7 @@ import React, { useState } from 'react'
 import type { Conversation } from '@/src/types/msg_conversation_model'
 import { Button } from '../ui/button'
 import { Input } from '../ui/input'
-import { toast } from 'sonner'
+import { toast } from "@/src/components/ui/toast"
 import { MoreVertical, Edit2, Trash2, Check, X, MessageSquare } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { groupByDate } from '@/lib/dateGroups'
@@ -37,32 +37,38 @@ export default function ConversationList({
 
   async function renameConversation(id: string) {
     if (!editTitle.trim()) return
-    const headers: Record<string, string> = {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${token}`,
-    }
     const res = await fetch(`/api/conversations/${id}`, {
       method: 'PATCH',
-      headers,
       body: JSON.stringify({ title: editTitle }),
     })
     if (res.ok) {
       setEditingId(null)
       onUpdate()
-      toast.success('Conversation renamed')
+      toast.add({
+        title: "SUCCESS",
+        description: 'Conversation renamed',
+      })
     } else {
-      toast.error('Rename failed')
+      toast.add({
+        title: "ERROR",
+        description: 'Rename failed',
+      })
     }
   }
 
   async function deleteConversation(id: string) {
-    const headers: Record<string, string> = { Authorization: `Bearer ${token}` }
-    const res = await fetch(`/api/conversations/${id}`, { method: 'DELETE', headers })
+    const res = await fetch(`/api/conversations/${id}`, { method: 'DELETE' })
     if (res.ok || res.status === 204) {
       onUpdate()
-      toast.success('Conversation deleted')
+      toast.add({
+        title: "SUCCESS",
+        description: 'Conversation deleted',
+      })
     } else {
-      toast.error('Delete failed')
+      toast.add({
+        title: "ERROR",
+        description: 'Delete failed',
+      })
     }
     setDeleteTargetId(null)
   }

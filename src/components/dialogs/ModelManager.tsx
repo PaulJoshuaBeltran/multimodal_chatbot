@@ -14,7 +14,7 @@ import { Input } from '../ui/input'
 import { Button } from '../ui/button'
 import { ScrollArea } from '../ui/scroll-area'
 import { Separator } from '../ui/separator'
-import { toast } from 'sonner'
+import { toast } from "@/src/components/ui/toast"
 import { Search, Pencil, Trash2, Check, X, Plus, AlertTriangle } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Label } from '../ui/label'
@@ -79,11 +79,17 @@ export default function ModelManager({
 
   async function saveEdit(m: AiModel) {
     if (!editFields.name.trim() || !editFields.modelId.trim()) {
-      toast.error('Display Name and Model ID are required.')
+      toast.add({
+        title: "ERROR",
+        description: "Display Name and Model ID are required."
+      })
       return
     }
     if (models.some((mod) => mod.id !== m.id && mod.modelId.toLowerCase() === editFields.modelId.trim().toLowerCase())) {
-      toast.error('This Model ID is already in use.')
+      toast.add({
+        title: "ERROR",
+        description: "This Model ID is already in use."
+      })
       return
     }
     const res = await fetch(`/api/models/${m.id}`, {
@@ -93,28 +99,40 @@ export default function ModelManager({
     })
     if (!res.ok) {
       const err = await res.json().catch(() => ({ error: 'Unknown' }))
-      toast.error(`Update failed: ${err?.error || 'Unknown error'}`)
+      toast.add({
+        title: "ERROR",
+        description: `Update failed: ${err?.error || 'Unknown error'}`,
+      })
       return
     }
     setEditingId(null)
     const newModels = await load()
     setModels(newModels)
     onUpdated?.()
-    toast.success('Model updated')
+    toast.add({
+      title: "SUCCESS",
+      description: "Model updated",
+    })
   }
 
   async function deleteModel(id: string) {
     const res = await fetch(`/api/models/${id}`, { method: 'DELETE' })
     if (!res.ok) {
       const err = await res.json().catch(() => ({ error: 'Unknown' }))
-      toast.error(`Delete failed: ${err?.error || 'Unknown error'}`)
+      toast.add({
+        title: "ERROR",
+        description: `Delete failed: ${err?.error || 'Unknown error'}`,
+      })
       cancelDelete()
       return
     }
     const newModels = await load()
     setModels(newModels)
     onUpdated?.()
-    toast.success('Model deleted')
+    toast.add({
+      title: "SUCCESS",
+      description: "Model deleted",
+    })
     cancelDelete()
   }
 

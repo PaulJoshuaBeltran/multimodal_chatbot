@@ -4,7 +4,7 @@
 import React, { useEffect, useState, useCallback } from 'react'
 import MessageBubble from './MessageBubble'
 import type { Message } from '@/src/types/msg_conversation_model'
-import { toast } from 'sonner'
+import { toast } from "@/src/components/ui/toast"
 import { DeleteMessageDialog, EditMessageDialog } from '../dialogs/OtherDialogs'
 
 function formatDateLabel(date: Date): string {
@@ -143,7 +143,10 @@ export default function MessageList({
   function confirmEdit() {
     if (editTarget && onEdit) {
       onEdit(editTarget.id, editDraft || editTarget.content)
-      toast.info('Message updated')
+      toast.add({
+        title: "INFO",
+        description: 'Message updated',
+      })
     }
     setEditDialogOpen(false)
     setEditTarget(null)
@@ -157,7 +160,10 @@ export default function MessageList({
   function confirmDelete() {
     if (deleteTargetId && onDelete) {
       onDelete(deleteTargetId)
-      toast.info('Message deleted')
+      toast.add({
+        title: "INFO",
+        description: 'Message deleted',
+      })
     }
     setDeleteDialogOpen(false)
     setDeleteTargetId(null)

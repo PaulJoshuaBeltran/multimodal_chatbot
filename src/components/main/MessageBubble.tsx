@@ -17,7 +17,7 @@ import {
 } from '../ui/dropdown-menu'
 import { MoreHorizontal, Pencil, Trash2, Copy, RotateCcw, AlertCircle } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { toast } from 'sonner'
+import { toast } from "@/src/components/ui/toast"
 import { HastNode } from '@/src/types/hast_nodes'
 import type { Attachment } from '@/src/types/msg_conversation_model'
 import ImagePreviewDialog from '../dialogs/ImagePreviewDialog'
@@ -175,9 +175,15 @@ export default function MessageBubble({
   async function handleCopy() {
     try {
       await navigator.clipboard.writeText(content)
-      toast.info('Copied to clipboard')
+      toast.add({
+        title: "INFO",
+        description: 'Copied to clipboard',
+      })
     } catch {
-      toast.error('Failed to copy')
+      toast.add({
+        title: "ERROR",
+        description: 'Failed to copy',
+      })
     }
   }
 

@@ -8,7 +8,6 @@ import { Textarea } from '../ui/textarea'
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
 } from '../ui/dropdown-menu'
-import { Dialog, DialogContent, DialogTitle } from '../ui/dialog'
 import {
   Attachment,
   AttachmentGroup,
@@ -20,9 +19,8 @@ import {
   AttachmentAction,
   AttachmentTrigger,
 } from '../ui/attachment'
-import { AspectRatio } from '../ui/aspect-ratio'
 import { Square, MessageSquarePlus, Plus, ImageIcon, FileText, Music, Settings, X } from 'lucide-react'
-import { toast } from 'sonner'
+import { toast } from "@/src/components/ui/toast"
 import type { Attachment as AttachmentData } from '@/src/types/msg_conversation_model'
 import { ChatInputProps } from '@/src/types/props'
 import ImagePreviewDialog from '../dialogs/ImagePreviewDialog'
@@ -90,7 +88,10 @@ export function ChatInput({
 
       onAttachmentChange(meta)
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'Upload failed')
+      toast.add({
+        title: "ERROR",
+        description: err instanceof Error ? err.message : 'Upload failed',
+      })
     } finally {
       setUploading(false)
     }

@@ -7,7 +7,7 @@ import MessageList from '@/src/components/main/MessageList'
 import ModelManager from '@/src/components/dialogs/ModelManager'
 import SearchDialog from '@/src/components/dialogs/SearchDialog'
 import { ScrollArea } from '../components/ui/scroll-area'
-import { toast } from 'sonner'
+import { toast } from "@/src/components/ui/toast"
 import type {
   Conversation,
   Message as ChatMessage,
@@ -126,7 +126,10 @@ export default function Page() {
     signal: AbortSignal
   }): Promise<string> {
     if (!selectedModel?.modelId) {
-      toast.error('No model selected')
+      toast.add({
+        title: "ERROR",
+        description: "No model selected",
+      })
       setShowModelManager(true)
       throw new Error('No model selected')
     }
@@ -240,8 +243,21 @@ export default function Page() {
     abortRef.current = controller
     if (!input.trim() || streaming) return
 
-    if (!selectedConv) { toast.error('No conversation selected'); return }
-    if (!selectedModel?.modelId) { toast.error('No model selected'); setShowModelManager(true); return }
+    if (!selectedConv) {
+      toast.add({
+        title: "ERROR",
+        description: "No conversation selected"
+      })
+      return
+    }
+    if (!selectedModel?.modelId) {
+      toast.add({
+        title: "ERROR",
+        description: "No model selected",
+      })
+      setShowModelManager(true)
+      return
+    }
 
     const nowIso = new Date().toISOString()
     const userMsg: ChatMessage & { createdAt?: string; attachments?: Attachment[] | null } = {
@@ -316,7 +332,10 @@ export default function Page() {
         }
         return copy
       })
-      toast.error(errorText)
+      toast.add({
+        title: "ERROR",
+        description: errorText,
+      })  
     } finally {
       setIsThinking(false)
       setStreaming(false)
@@ -341,7 +360,11 @@ export default function Page() {
   // Edit message
   async function handleEditMessage(id: string, content: string) {
     if (!selectedModel?.modelId) {
-      toast.error('No model selected: Please add or select an AI model first.')
+      // toast.error('No model selected: Please add or select an AI model first.')
+      toast.add({
+        title: "ERROR",
+        description: "No model selected: Please add or select an AI model first.",
+      })
       setCurrentView('chat')
       setShowModelManager(true)
       return
@@ -431,13 +454,19 @@ export default function Page() {
   async function handleDeactivate() {
     const res = await fetch('/api/account/deactivate', { method: 'DELETE' })
     if (res.ok) {
-      toast.success('Account deactivated: Your account and all data have been removed.')
+      toast.add({
+        title: "SUCCESS",
+        description: "Account deactivated: Your account and all data have been removed.",
+      })
       await signOut()
       setConversations([])
       setMessages([])
       setCurrentView('chat')
     } else {
-      toast.error('Deactivation failed: Please try again.')
+      toast.add({
+        title: "ERROR",
+        description: "Deactivation failed: Please try again.",
+      })
     }
     setDeactivateAlertOpen(false)
   }
@@ -491,7 +520,10 @@ export default function Page() {
                 onDelete={async (id: string) => {
                   await fetch(`/api/messages/${id}`, { method: 'DELETE' })
                   setMessages((prev) => prev.filter((m) => m.id !== id))
-                  toast.success('Message deleted')
+                  toast.add({
+                    title: "SUCCESS",
+                    description: "Message deleted",
+                  })
                 }}
                 onRegenerate={handleRegenerateFromIndex}
               />

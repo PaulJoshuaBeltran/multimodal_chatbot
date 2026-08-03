@@ -7,7 +7,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Button } from '../ui/button'
 import { Label } from '../ui/label'
 import { Input } from '../ui/input'
-import { toast } from 'sonner'
+import { toast } from "@/src/components/ui/toast"
 import { DeactivateAlertDialogProps, DeleteConversationDialogProps, DeleteMessageDialogProps, EditMessageDialogProps, NewConversationDialogProps } from '@/src/types/props'
 import { Textarea } from '../ui/textarea'
 import { AlertTriangle, Plus, Search } from 'lucide-react'
@@ -37,7 +37,10 @@ export function NewConversationDialog({
         setTitle('')
         onCreated()
         onOpenChange(false)
-        toast.success('Conversation created')
+        toast.add({
+          title: "SUCCESS",
+          description: "Conversation created",
+        })
       }
     } finally {
       setLoading(false)
@@ -199,7 +202,10 @@ export function AddModelDialog({
     const res = await fetch(url)
     if (!res.ok) {
       const err = await res.json().catch(() => ({ error: 'Unknown' }))
-      toast.error(`Couldn't load Ollama models: ${err?.error || res.statusText}`)
+      toast.add({
+        title: "ERROR",
+        description: `Couldn't load Ollama models: ${err?.error || res.statusText}`,
+      })
       return []
     }
     return res.json() as Promise<OllamaInstalledModel[]>
@@ -241,12 +247,18 @@ export function AddModelDialog({
       })
       if (!res.ok) {
         const err = await res.json().catch(() => ({ error: 'Unknown' }))
-        toast.error(`Activate failed: ${err?.error || 'Unknown error'}`)
+        toast.add({
+          title: "ERROR",
+          description: `Activate failed: ${err?.error || 'Unknown error'}`,
+        })
         return
       }
       setActivatedIds((prev) => new Set(prev).add(m.modelId.toLowerCase()))
       onAdded?.()
-      toast.success(`${m.name} activated`)
+      toast.add({
+        title: "SUCCESS",
+        description: `${m.name} activated`,
+      })
     } finally {
       setAddingId(null)
     }
