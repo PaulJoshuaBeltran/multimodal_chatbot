@@ -4,6 +4,7 @@ import path from 'path'
 import { randomUUID } from 'crypto'
 import { auth } from '@clerk/nextjs/server'
 import { UPLOAD_DIR, classifyAndValidate, uploadErrorMessage } from '@/lib/uploads'
+import { MIME_TYPES } from '@/src/types/file_upload'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -45,8 +46,14 @@ export async function POST(req: Request) {
       })
     }
 
+    const file_format = file.name.split('.').at(-1)
+    const mime_type = MIME_TYPES[file_format ? `.${file_format}` : ''] || "unknown/file"
+    const file_type = mime_type.startsWith('application/') ||
+      mime_type.startsWith('text/') ? 'document' : mime_type.split('/')[0];
+    console.log('[TEST 3] file_type:', file_type)
+
     try {
-      await mkdir(UPLOAD_DIR, { recursive: true })
+      await mkdir(UPLOAD_DIR(file_type), { recursive: true })
     } catch {
       return new Response(JSON.stringify({ error: 'Server could not prepare storage for the upload.' }), {
         status: 500,
@@ -68,7 +75,7 @@ export async function POST(req: Request) {
     }
 
     try {
-      await writeFile(path.join(UPLOAD_DIR, safeName), buffer)
+      await writeFile(path.join(UPLOAD_DIR(file_type), safeName), buffer)
     } catch {
       return new Response(JSON.stringify({ error: 'Failed to save the file. Please try again.' }), {
         status: 500,
@@ -81,7 +88,7 @@ export async function POST(req: Request) {
         url: `/api/uploads/${safeName}`,
         fileName: file.name,
         fileType: validation.fileType,
-        mimeType: file.type || 'application/octet-stream',
+        mimeType: file.type || 'unknown/file',
         size: file.size,
       }),
       { status: 201, headers: { 'Content-Type': 'application/json' } }

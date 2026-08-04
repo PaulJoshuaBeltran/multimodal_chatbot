@@ -1,15 +1,13 @@
 // src/lib/uploads.ts
-import { ALLOWED_DOCUMENT_MIME_TYPES, UploadValidationError } from '@/src/types/file_upload'
+import { MIME_TYPES, UploadValidationError } from '@/src/types/file_upload'
 import { fileType } from '@/src/types/msg_conversation_model'
 import path from 'path'
 
-export const UPLOAD_DIR = path.join(process.cwd(), 'data', 'uploads', 'image_docu')
+// export const UPLOAD_DIR = path.join(process.cwd(), 'data', 'uploads', 'image_docu')
+export const UPLOAD_DIR = (file_type: string) => path.join(process.cwd(), 'data', 'uploads', file_type)
 
 export const MAX_FILE_SIZE = 25 * 1024 * 1024 // 25MB
 export const MAX_AUDIO_SIZE = 50 * 1024 * 1024 // 50MB — audio files run bigger
-
-export const ALLOWED_MIME_PREFIXES = ['image/', 'audio/']
-
 
 export function classifyAndValidate(
   file: { type: string; size: number; name: string }
@@ -18,7 +16,8 @@ export function classifyAndValidate(
 
   const isImage = file.type.startsWith('image/')
   const isAudio = file.type.startsWith('audio/')
-  const isDocument = ALLOWED_DOCUMENT_MIME_TYPES.includes(file.type)
+  // const isDocument = ALLOWED_DOCUMENT_MIME_TYPES.includes(file.type)
+  const isDocument = file.type.startsWith('application/') || file.type.startsWith('text/')
 
   if (!isImage && !isAudio && !isDocument) {
     return { ok: false, error: 'UNSUPPORTED_TYPE' }
@@ -41,6 +40,12 @@ export function uploadErrorMessage(error: UploadValidationError): string {
 
 export function uploadPathFromUrl(url: string): string {
   const pathnameOnly = url.split(/[?#]/)[0]
+  const file_format = pathnameOnly.split('.').at(-1)
+  const mime_type = MIME_TYPES[file_format ? `.${file_format}` : ''] || "unknown/file"
+  const file_type = mime_type.startsWith('application/') ||
+    mime_type.startsWith('text/') ? 'document' : mime_type.split('/')[0];
+  console.log('[TEST 1] file_type:', file_type)
+
   const filename = decodeURIComponent(path.basename(pathnameOnly))
-  return path.join(UPLOAD_DIR, filename)
+  return path.join(UPLOAD_DIR(file_type), filename)
 }
