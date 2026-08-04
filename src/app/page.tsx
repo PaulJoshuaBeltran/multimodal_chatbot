@@ -495,7 +495,7 @@ export default function Page() {
         onViewTools={() => setCurrentView('tools')}
         onModelChange={(model) => setSelectedModel(model)}
         onManageModels={() => { setShowModelManager(true); setCurrentView('chat') }}
-        onRefreshConversations={() => fetchConversations()}
+        onRefreshConversations={() => { fetchConversations(); setMessages([]); }}
         onLogout={() => {signOut(); setMessages([]); }}
         onDeactivate={() => setDeactivateAlertOpen(true)}
       />

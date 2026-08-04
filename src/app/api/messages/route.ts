@@ -11,13 +11,23 @@ export async function GET(req: Request) {
   if (!user) return new Response(JSON.stringify([]), { status: 200, headers: { 'Content-Type': 'application/json' } })
 
   const url = new URL(req.url)
-  const conversationId = url.searchParams.get('conversationId')
+  const rawConversationId = url.searchParams.get('conversationId')
+  if (rawConversationId && !/^[a-f0-9]{24}$/i.test(rawConversationId)) {
+    return new Response(JSON.stringify({ error: 'Invalid conversationId' }), {
+      status: 400,
+      headers: { 'Content-Type': 'application/json' },
+    })
+  }
+
+  const conversationId =
+    rawConversationId && /^[a-f0-9]{24}$/i.test(rawConversationId) ? rawConversationId : null
   const q = url.searchParams.get('q') || undefined
 
   if (conversationId) {
     const conv = await prisma.conversation.findUnique({ where: { id: conversationId } })
     if (!conv || conv.userId !== user.id) {
-      return new Response(JSON.stringify({ error: 'Forbidden' }), { status: 403, headers: { 'Content-Type': 'application/json' } })
+      return new Response(JSON.stringify({ error: 'Forbidden' }),
+        { status: 403, headers: { 'Content-Type': 'application/json' } })
     }
   }
 
