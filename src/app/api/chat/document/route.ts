@@ -1,13 +1,14 @@
 import * as pdfjs from "pdfjs-dist/legacy/build/pdf.mjs";
 import type { TextItem } from "pdfjs-dist/types/src/display/api";
 import fs from "node:fs";
+import { readFile } from "node:fs/promises";
+import mammoth from "mammoth";
+import Papa from "papaparse";
 
 pdfjs.GlobalWorkerOptions.workerSrc = new URL(
     "pdfjs-dist/build/pdf.worker.mjs",
     import.meta.url
 ).toString();
-
-const filename = "./documents/sample.pdf";
 
 async function readPDF(filename: string): Promise<Record<string, string>[]> {
     const data = new Uint8Array(fs.readFileSync(filename));
@@ -79,11 +80,68 @@ async function readPDF(filename: string): Promise<Record<string, string>[]> {
     return result;
 }
 
+async function readDOCX(filename: string): Promise<string> {
+    const buffer = await fs.readFileSync(filename);
+    const result = await mammoth.convertToHtml({
+        buffer
+    });
+    console.log(result.value);
+    return result.value;
+}
+
+async function readTXT(filename: string): Promise<string> {
+    const data = await readFile(filename, 'utf-8');
+    return data;
+}
+
+async function readCSV(filename: string): Promise<Papa.ParseResult<unknown>> {
+    const csv = await readFile(filename, "utf8");
+    const result = Papa.parse(csv, {
+        header: true,
+        skipEmptyLines: true,
+    });
+    return result;
+}
+
+async function readJSON(filename: string): Promise<unknown> {
+    const read_json = await readFile(filename, "utf8");
+    const json = JSON.parse(read_json);
+    return json;
+}
+
 export async function GET(req: Request) {
   const url = new URL(req.url)
   const filepath = url.searchParams.get('filepath') || undefined
-  const pdf_result = filepath ? await readPDF(filepath) : { error: 'Filepath not provided' };
-  return new Response(JSON.stringify(pdf_result), { status: 200, headers: { 'Content-Type': 'application/json' } });
-}
 
-readPDF(filename).catch(console.error);
+  // http://localhost:3000/api/chat/document?filepath=C:/Users/PaulJoshua/Downloads/Options 2.txt
+  if (filepath && filepath.endsWith('.txt')) {
+    const txt_result = await readTXT(filepath);
+    return new Response(JSON.stringify({ content: txt_result }), { status: 200, headers: { 'Content-Type': 'text/plain' } });
+  }
+
+  // http://localhost:3000/api/chat/document?filepath=C:/Users/PaulJoshua/Downloads/redis_df_af5.csv
+  if (filepath && filepath.endsWith('.csv')) {
+    const csv_result = await readCSV(filepath);
+    return new Response(JSON.stringify({ content: csv_result }), { status: 200, headers: { 'Content-Type': 'text/plain' } });
+  }
+
+  // http://localhost:3000/api/chat/document?filepath=C:/Users/PaulJoshua/Downloads/RFT_grading_results.json
+  if (filepath && filepath.endsWith('.json')) {
+    const json_result = await readJSON(filepath);
+    return new Response(JSON.stringify({ content: json_result }), { status: 200, headers: { 'Content-Type': 'application/json' } });
+  }
+
+  // http://localhost:3000/api/chat/document?filepath=C:/Users/PaulJoshua/Downloads/Developer_Mock_Exam_Detailed_Final.docx
+  if (filepath && filepath.endsWith('.docx')) {
+    const docx_result = await readDOCX(filepath);
+    return new Response(JSON.stringify({ content: docx_result }), { status: 200, headers: { 'Content-Type': 'application/json' } });
+  }
+
+  // http://localhost:3000/api/chat/document?filepath=C%3A%2FUsers%2FPaulJoshua%2FDownloads%2FBeltran_PaulJoshua_Cover_Letter.pdf
+  else if (filepath && filepath.endsWith('.pdf')) {
+    const pdf_result = await readPDF(filepath);
+    return new Response(JSON.stringify({ content: pdf_result }), { status: 200, headers: { 'Content-Type': 'application/json' } });
+  }
+
+  return new Response(JSON.stringify({ error: 'Unsupported file type. Only .pdf and .docx are supported.' }), { status: 400, headers: { 'Content-Type': 'application/json' } });
+}

@@ -9,7 +9,6 @@ export const MIME_TYPES: Record<string, string> = {
   '.csv':   'text/csv',
   '.json':   'application/json',
   '.docx':  'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-  // '.zip':   'application/zip',
   '.mp3':   'audio/mpeg',
   '.wav':   'audio/wav',
   '.ogg':   'audio/ogg',
