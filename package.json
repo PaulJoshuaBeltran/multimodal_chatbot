@@ -17,6 +17,7 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "docx4js": "^3.3.0",
+    "exceljs": "^4.4.0",
     "jsonwebtoken": "^9.0.3",
     "katex": "^0.17.0",
     "lucide-react": "^1.21.0",
@@ -36,7 +37,8 @@
     "remark-math": "^6.0.0",
     "sonner": "^2.0.7",
     "stripe": "^22.3.2",
-    "tailwind-merge": "^3.6.0"
+    "tailwind-merge": "^3.6.0",
+    "xlsx": "^0.18.5"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",

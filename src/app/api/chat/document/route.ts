@@ -4,6 +4,7 @@ import fs from "node:fs";
 import { readFile } from "node:fs/promises";
 import mammoth from "mammoth";
 import Papa from "papaparse";
+import * as XLSX from "xlsx";
 
 pdfjs.GlobalWorkerOptions.workerSrc = new URL(
     "pdfjs-dist/build/pdf.worker.mjs",
@@ -85,7 +86,6 @@ async function readDOCX(filename: string): Promise<string> {
     const result = await mammoth.convertToHtml({
         buffer
     });
-    console.log(result.value);
     return result.value;
 }
 
@@ -109,39 +109,50 @@ async function readJSON(filename: string): Promise<unknown> {
     return json;
 }
 
+async function readXLSX(filename: string): Promise<Record<string, unknown[]>> {
+    const buffer = fs.readFileSync(filename);
+    const workbook = XLSX.read(buffer, { type: "buffer" });
+
+    const result: Record<string, unknown[]> = {};
+    for (const name of workbook.SheetNames) {
+        result[name] = XLSX.utils.sheet_to_json(workbook.Sheets[name]);
+    }
+    return result;
+}
+
 export async function GET(req: Request) {
   const url = new URL(req.url)
   const filepath = url.searchParams.get('filepath') || undefined
 
-  // http://localhost:3000/api/chat/document?filepath=C:/Users/PaulJoshua/Downloads/Options 2.txt
+  // http://localhost:3000/api/chat/document?filepath=C:/Users/PaulJoshua/Downloads/Chatbot_sample_files/Options 2.txt
   if (filepath && filepath.endsWith('.txt')) {
     const txt_result = await readTXT(filepath);
     return new Response(JSON.stringify({ content: txt_result }), { status: 200, headers: { 'Content-Type': 'text/plain' } });
   }
-
-  // http://localhost:3000/api/chat/document?filepath=C:/Users/PaulJoshua/Downloads/redis_df_af5.csv
-  if (filepath && filepath.endsWith('.csv')) {
+  // http://localhost:3000/api/chat/document?filepath=C:/Users/PaulJoshua/Downloads/Chatbot_sample_files/redis_df_af5.csv
+  else if (filepath && filepath.endsWith('.csv')) {
     const csv_result = await readCSV(filepath);
     return new Response(JSON.stringify({ content: csv_result }), { status: 200, headers: { 'Content-Type': 'text/plain' } });
   }
-
-  // http://localhost:3000/api/chat/document?filepath=C:/Users/PaulJoshua/Downloads/RFT_grading_results.json
-  if (filepath && filepath.endsWith('.json')) {
+  // http://localhost:3000/api/chat/document?filepath=C:/Users/PaulJoshua/Downloads/Chatbot_sample_files/RFT_grading_results.json
+  else if (filepath && filepath.endsWith('.json')) {
     const json_result = await readJSON(filepath);
     return new Response(JSON.stringify({ content: json_result }), { status: 200, headers: { 'Content-Type': 'application/json' } });
   }
-
-  // http://localhost:3000/api/chat/document?filepath=C:/Users/PaulJoshua/Downloads/Developer_Mock_Exam_Detailed_Final.docx
-  if (filepath && filepath.endsWith('.docx')) {
+  // http://localhost:3000/api/chat/document?filepath=C:/Users/PaulJoshua/Downloads/Chatbot_sample_files/UPNL Fix.xlsx
+  else if (filepath && filepath.endsWith('.xlsx')) {
+    const xlsx_result = await readXLSX(filepath);
+    return new Response(JSON.stringify({ content: xlsx_result }), { status: 200, headers: { 'Content-Type': 'application/json' } });
+  }
+  // http://localhost:3000/api/chat/document?filepath=C:/Users/PaulJoshua/Downloads/Chatbot_sample_files/Developer_Mock_Exam_Detailed_Final.docx
+  else if (filepath && filepath.endsWith('.docx')) {
     const docx_result = await readDOCX(filepath);
     return new Response(JSON.stringify({ content: docx_result }), { status: 200, headers: { 'Content-Type': 'application/json' } });
   }
-
-  // http://localhost:3000/api/chat/document?filepath=C%3A%2FUsers%2FPaulJoshua%2FDownloads%2FBeltran_PaulJoshua_Cover_Letter.pdf
+  // http://localhost:3000/api/chat/document?filepath=C:/Users/PaulJoshua/Downloads/Chatbot_sample_files/Beltran_PaulJoshua_Cover_Letter.pdf
   else if (filepath && filepath.endsWith('.pdf')) {
     const pdf_result = await readPDF(filepath);
     return new Response(JSON.stringify({ content: pdf_result }), { status: 200, headers: { 'Content-Type': 'application/json' } });
   }
-
   return new Response(JSON.stringify({ error: 'Unsupported file type. Only .pdf and .docx are supported.' }), { status: 400, headers: { 'Content-Type': 'application/json' } });
 }
