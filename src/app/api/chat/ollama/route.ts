@@ -27,13 +27,15 @@ async function loadImageBase64(url: string): Promise<string | null> {
 
 export async function POST(req: Request) {
   try {
-    const { messages, model, system, temperature, top_p, top_k } = (await req.json()) as {
+    const { messages, model, system, temperature, top_p, top_k, num_ctx, num_predict } = (await req.json()) as {
       messages: IncomingMessage[]
       model?: string
       system?: string
       temperature?: number
       top_p?: number
       top_k?: number
+      num_ctx?: number
+      num_predict?: number
     }
     const modelToUse = model ?? process.env.DEFAULT_MODEL ?? 'gemma4:12b'
 
@@ -88,6 +90,8 @@ export async function POST(req: Request) {
     if (temperature !== undefined) options.temperature = temperature
     if (top_p !== undefined) options.top_p = top_p
     if (top_k !== undefined) options.top_k = top_k
+    if (num_ctx !== undefined) options.num_ctx = num_ctx
+    if (num_predict !== undefined) options.num_predict = num_predict
 
     console.log('Sending to Ollama model:', modelToUse, 'with', fullMessages.length, 'messages')
     const hasImages = fullMessages.some((m: ProcessedMessage) => m.images && m.images.length > 0)

@@ -1,8 +1,9 @@
 // src/components/main/ChatInput.tsx
+// src/components/main/ChatInput.tsx
 'use client'
 
 import Image from 'next/image'
-import { useRef, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import { Button } from '../ui/button'
 import { Textarea } from '../ui/textarea'
 import {
@@ -21,14 +22,22 @@ import {
 } from '../ui/attachment'
 import { Square, MessageSquarePlus, Plus, ImageIcon, FileText, Music, Settings, X } from 'lucide-react'
 import { toast } from "@/src/components/ui/toast"
-import type { Attachment as AttachmentData } from '@/src/types/msg_conversation_model'
+import type { Attachment as AttachmentData, Message as ChatMessage } from '@/src/types/msg_conversation_model'
 import { ChatInputProps } from '@/src/types/props'
 import ImagePreviewDialog from '../dialogs/ImagePreviewDialog'
+import { cn } from '@/lib/utils'
 
 function formatFileSize(bytes: number): string {
   if (bytes < 1024) return `${bytes} B`
   if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
+}
+
+// Rough heuristic (~4 chars/token for English). No tokenizer is wired up
+// client-side, so treat this as an estimate, not an exact count.
+function estimateTokens(text: string): number {
+  if (!text) return 0
+  return Math.ceil(text.length / 4)
 }
 
 export function ChatInput({
@@ -40,9 +49,15 @@ export function ChatInput({
   onOpenSystemPrompt,
   attachment,
   onAttachmentChange,
+  numCtx,
+  numPredict,
+  historyMessages = [],
 }: ChatInputProps & {
   attachment: AttachmentData | null
   onAttachmentChange: (a: AttachmentData | null) => void
+  numCtx: number
+  numPredict: number
+  historyMessages?: ChatMessage[]
 }) {
   const imageInputRef = useRef<HTMLInputElement | null>(null)
   const docInputRef = useRef<HTMLInputElement | null>(null)
@@ -50,6 +65,22 @@ export function ChatInput({
   const [uploading, setUploading] = useState(false)
   const [previewOpen, setPreviewOpen] = useState(false)
   const [imageRatio, setImageRatio] = useState(1)
+
+  // Estimated usage: full history + current draft + reserved output tokens,
+  // against the configured context window.
+  const usage = useMemo(() => {
+    const historyTokens = historyMessages.reduce(
+      (sum, m) => sum + estimateTokens(m.content ?? ''),
+      0
+    )
+    const inputTokens = estimateTokens(input)
+    const used = historyTokens + inputTokens + numPredict
+    const ratio = numCtx > 0 ? used / numCtx : 0
+    return { used, ratio }
+  }, [historyMessages, input, numPredict, numCtx])
+
+  const isNearLimit = usage.ratio >= 0.8 && usage.ratio < 1
+  const isOverLimit = usage.ratio >= 1
 
   async function handleFileSelected(file: File | undefined) {
     if (!file) return
@@ -197,6 +228,26 @@ export function ChatInput({
           open={previewOpen}
           onOpenChange={setPreviewOpen}
         />
+      )}
+
+      {/* Context usage indicator */}
+      {(isNearLimit || isOverLimit) && (
+        <div
+          className={cn(
+            "mb-1.5 text-xs flex items-center gap-1.5",
+            isOverLimit ? "text-red-400" : "text-yellow-400"
+          )}
+        >
+          <span>
+            ~{usage.used.toLocaleString()} / {numCtx.toLocaleString()} tokens
+            {' '}({Math.round(usage.ratio * 100)}%)
+          </span>
+          <span>
+            {isOverLimit
+              ? "— over context limit, reply will likely truncate mid-response"
+              : "— approaching context limit"}
+          </span>
+        </div>
       )}
 
       <div className="flex items-end gap-2 mx-auto">

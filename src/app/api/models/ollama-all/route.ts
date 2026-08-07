@@ -24,7 +24,7 @@ export async function GET(req: Request) {
     modelId: m.model ?? m.name,
     parameterSize: m.details?.parameter_size,
     family: m.details?.family,
-    size: m.size,
+    size: m.size
   }))
 
   const filtered = q

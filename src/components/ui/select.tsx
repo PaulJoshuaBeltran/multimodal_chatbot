@@ -172,7 +172,6 @@ function SelectScrollDownButton({
       )}
       {...props}
     >
-      <ChevronDownIcon />
     </SelectPrimitive.ScrollDownButton>
   )
 }

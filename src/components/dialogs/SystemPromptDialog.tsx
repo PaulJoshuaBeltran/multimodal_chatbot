@@ -8,8 +8,17 @@ import { Label } from '../ui/label'
 import { Textarea } from '../ui/textarea'
 import { Slider } from '../ui/slider'
 import { NumericUpDown } from '../ui/numeric-updown'
+import {
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+} from '../ui/select'
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '../ui/accordion'
 import { SystemPromptDialogProps } from '@/src/types/props'
+
+const NUM_CTX_OPTIONS = [2048, 4096, 8192, 16384, 32768, 65536, 131072] as const
+
+function formatCtx(n: number) {
+  return n >= 1024 ? `${n / 1024}k` : `${n}`
+}
 
 export function getThinkingQuality(temp: number, topP: number, topK: number) {
   const score =
@@ -33,6 +42,10 @@ export function SystemPromptDialog({
   setTopP,
   topK,
   setTopK,
+  numCtx,
+  setNumCtx,
+  numPredict,
+  setNumPredict,
 }: SystemPromptDialogProps) {
   const [draft, setDraft] = useState(value)
   const thinkingQuality = getThinkingQuality(temperature[0], topP[0], topK)
@@ -42,6 +55,7 @@ export function SystemPromptDialog({
       <DialogContent
         className="sm:max-w-lg"
         style={{ backgroundColor: 'var(--gray3)' }}
+        onInteractOutside={(e) => e.preventDefault()}
       >
         <DialogHeader>
           <DialogTitle>AI Settings</DialogTitle>
@@ -60,49 +74,103 @@ export function SystemPromptDialog({
             onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray2)')}
             onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}
           />
-          <Accordion type="single" collapsible className="w-full">
-            <AccordionItem value="generation-settings">
-              <AccordionTrigger>
-                More Settings (Think {thinkingQuality})
-              </AccordionTrigger>
-              <AccordionContent>
-                <div className="flex flex-col gap-2">
-                  <div className="flex items-center">
-                    <Label className="w-32 shrink-0">Temperature ({temperature}):</Label>
-                    <Slider
-                      className="flex-1"
-                      value={temperature}
-                      min={0}
-                      max={2}
-                      step={0.1}
-                      onValueChange={setTemperature}
-                    />
+
+          <div className="flex flex-col">
+            {/* Context length — separate from the collapsible accordion since it
+            affects VRAM at load time, not just generation behaviour */}
+            <Accordion type="single" collapsible className="w-full">
+              <AccordionItem value="generation-settings">
+                <AccordionTrigger>
+                  Context Window
+                </AccordionTrigger>
+                <AccordionContent>
+                  <div className="flex flex-col gap-3">
+                    
+                    <div className="flex items-center">
+                      <Label className="w-32 shrink-0">Context length:</Label>
+                      <Select
+                        value={String(numCtx)}
+                        onValueChange={(v) => setNumCtx(Number(v))}
+                      >
+                        <SelectTrigger className="flex-1 bg-[var(--gray3)] border-white hover:bg-[var(--gray2)]">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {NUM_CTX_OPTIONS.map((n) => (
+                            <SelectItem
+                              key={n}
+                              value={String(n)}
+                              style = {{ backgroundColor: 'var(--gray3)' }}
+                              onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray2)')}
+                              onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray3)')}
+                            >
+                              {formatCtx(n)} tokens
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="flex items-center">
+                      <Label className="w-32 shrink-0">Max reply tokens:</Label>
+                      <NumericUpDown
+                        className="flex-1 bg-[var(--gray3)] border-white hover:bg-[var(--gray2)]"
+                        value={numPredict}
+                        min={64}
+                        max={numCtx}
+                        step={64}
+                        onValueChange={setNumPredict}
+                      />
+                    </div>
                   </div>
-                  <div className="flex items-center">
-                    <Label className="w-32 shrink-0">Top-P ({topP}):</Label>
-                    <Slider
-                      className="flex-1"
-                      value={topP}
-                      min={0}
-                      max={1}
-                      step={0.1}
-                      onValueChange={setTopP}
-                    />
+                </AccordionContent>
+              </AccordionItem>
+            </Accordion>
+
+            <Accordion type="single" collapsible className="w-full">
+              <AccordionItem value="generation-settings">
+                <AccordionTrigger>
+                  More Settings (Think {thinkingQuality})
+                </AccordionTrigger>
+                <AccordionContent>
+                  <div className="flex flex-col gap-4">
+                    <div className="flex items-center">
+                      <Label className="w-32 shrink-0">Temperature ({temperature}):</Label>
+                      <Slider
+                        className="flex-1"
+                        value={temperature}
+                        min={0}
+                        max={2}
+                        step={0.1}
+                        onValueChange={setTemperature}
+                      />
+                    </div>
+                    <div className="flex items-center">
+                      <Label className="w-32 shrink-0">Top-P ({topP}):</Label>
+                      <Slider
+                        className="flex-1"
+                        value={topP}
+                        min={0}
+                        max={1}
+                        step={0.1}
+                        onValueChange={setTopP}
+                      />
+                    </div>
+                    <div className="flex items-center">
+                      <Label className="w-32 shrink-0">Top-K:</Label>
+                      <NumericUpDown
+                        className="flex-1 bg-[var(--gray3)] border-white hover:bg-[var(--gray2)]"
+                        value={topK}
+                        min={0}
+                        step={1}
+                        onValueChange={setTopK}
+                      />
+                    </div>
                   </div>
-                  <div className="flex items-center">
-                    <Label className="w-32 shrink-0">Top-K:</Label>
-                    <NumericUpDown
-                      className="flex-1 bg-[var(--gray3)] border-white hover:bg-[var(--gray2)]"
-                      value={topK}
-                      min={0}
-                      step={1}
-                      onValueChange={setTopK}
-                    />
-                  </div>
-                </div>
-              </AccordionContent>
-            </AccordionItem>
-          </Accordion>
+                </AccordionContent>
+              </AccordionItem>
+            </Accordion>
+          </div>
+
           <div className="flex justify-end gap-2">
             <Button
               onClick={() => { onChange(draft); onOpenChange(false) }}

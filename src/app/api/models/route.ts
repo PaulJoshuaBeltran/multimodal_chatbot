@@ -10,7 +10,8 @@ export async function GET(req: Request) {
   const url = new URL(req.url)
   const q = url.searchParams.get('q')?.trim() || undefined
   const user = await getLocalUser()
-  if (!user) return new Response(JSON.stringify([]), { status: 200, headers: { 'Content-Type': 'application/json' } })
+  if (!user) return new Response(JSON.stringify([]),
+    { status: 200, headers: { 'Content-Type': 'application/json' } })
 
   const models = await prisma.aiModel.findMany({
     where: { userId: user.id },
@@ -30,16 +31,29 @@ export async function GET(req: Request) {
 
 export async function POST(req: Request) {
   const user = await getLocalUser()
-  if (!user) return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401, headers: { 'Content-Type': 'application/json' } })
+  if (!user) return new Response(JSON.stringify(
+    { error: 'Unauthorized' }),
+    { status: 401, headers: { 'Content-Type': 'application/json' } }
+  )
   const body = await req.json().catch(() => null)
-  if (!body) return new Response(JSON.stringify({ error: 'Invalid JSON' }), { status: 400, headers: { 'Content-Type': 'application/json' } })
+  if (!body) return new Response(JSON.stringify(
+    { error: 'Invalid JSON' }),
+    { status: 400, headers: { 'Content-Type': 'application/json' } }
+  )
   const { name, modelId, description } = body
-  if (!name || !modelId) return new Response(JSON.stringify({ error: 'Missing fields' }), { status: 400, headers: { 'Content-Type': 'application/json' } })
+  if (!name || !modelId) return new Response(JSON.stringify(
+    { error: 'Missing fields' }),
+    { status: 400, headers: { 'Content-Type': 'application/json' } }
+  )
+  console.log(`[api/models] Creating model: name=${name}, modelId=${modelId}, description=${description}`)
 
   try {
     await ollama.chat({ model: modelId, messages: [{ role: 'user', content: 'ping' }], stream: false })
   } catch (err) {
-    return new Response(JSON.stringify({ error: 'Model validation failed', detail: String(err) }), { status: 400, headers: { 'Content-Type': 'application/json' } })
+    return new Response(JSON.stringify(
+      { error: 'Model validation failed', detail: String(err) }),
+      { status: 400, headers: { 'Content-Type': 'application/json' } }
+    )
   }
 
   const model = await prisma.aiModel.create({ data: { name, modelId, description, userId: user.id } })

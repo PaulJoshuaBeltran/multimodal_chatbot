@@ -75,17 +75,17 @@ function NumericUpDown({
       <div className="flex flex-col">
         <button
           type="button"
-          className="h-3 w-6 text-xs leading-none hover:bg-muted"
+          className="h-3 w-6 text-xs leading-none hover:bg-muted translate-y-1"
           onClick={() => setValue(currentValue + step)}
         >
-          ▲
+          🞁
         </button>
         <button
           type="button"
-          className="h-3 w-6 text-xs leading-none hover:bg-muted"
+          className="h-3 w-6 text-xs leading-none hover:bg-muted -translate-y-1"
           onClick={() => setValue(currentValue - step)}
         >
-          ▼
+          🞃
         </button>
       </div>
     </div>

@@ -43,6 +43,8 @@ export default function Page() {
   const [temperature, setTemperature] = useState([0.3])
   const [topP, setTopP] = useState([0.5])
   const [topK, setTopK] = useState(5)
+  const [numCtx, setNumCtx] = useState(8192)
+  const [numPredict, setNumPredict] = useState(2048)
 
   const [selectedModel, setSelectedModel] = useState<AiModel | null>(null)
   const [modelsRefresh, setModelsRefresh] = useState(0)
@@ -122,6 +124,8 @@ export default function Page() {
     temperature?: number
     topP?: number
     topK?: number
+    numCtx?: number
+    numPredict?: number
     onToken: (text: string) => void
     signal: AbortSignal
   }): Promise<string> {
@@ -139,6 +143,8 @@ export default function Page() {
       temperature?: number
       top_p?: number
       top_k?: number
+      num_ctx?: number
+      num_predict?: number
     } = {
       messages: params.messages,
       model: selectedModel.modelId,
@@ -148,6 +154,8 @@ export default function Page() {
     if (params.temperature !== undefined) payload.temperature = params.temperature
     if (params.topP !== undefined) payload.top_p = params.topP
     if (params.topK !== undefined) payload.top_k = params.topK
+    if (params.numCtx !== undefined) payload.num_ctx = params.numCtx
+    if (params.numPredict !== undefined) payload.num_predict = params.numPredict
 
     const res = await fetch('/api/chat/ollama', {
       method: 'POST',
@@ -305,6 +313,8 @@ export default function Page() {
         temperature: temperature[0],
         topP: topP[0],
         topK,
+        numCtx,
+        numPredict,
         signal: controller.signal,
         onToken: (chunk) => {
           setIsThinking(false)
@@ -538,6 +548,9 @@ export default function Page() {
               onOpenSystemPrompt={() => setSystemPromptOpen(true)}
               attachment={pendingAttachment}
               onAttachmentChange={setPendingAttachment}
+              numCtx={numCtx}
+              numPredict={numPredict}
+              historyMessages={messages}
             />
           </>
         ) : (
@@ -596,6 +609,10 @@ export default function Page() {
         setTopP={setTopP}
         topK={topK}
         setTopK={setTopK}
+        numCtx={numCtx}
+        setNumCtx={setNumCtx}
+        numPredict={numPredict}
+        setNumPredict={setNumPredict}
       />
     </div>
   )

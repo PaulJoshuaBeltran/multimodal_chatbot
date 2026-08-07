@@ -1,6 +1,9 @@
 // src/types/props.ts
 import { AiModel, Conversation } from "./msg_conversation_model"
-import type { Attachment as AttachmentData } from '@/src/types/msg_conversation_model'
+import type {
+  Attachment as AttachmentData,
+  Message
+} from '@/src/types/msg_conversation_model'
 
 export interface AuthBoxProps {
   onLogin: (token: string) => void
@@ -20,6 +23,9 @@ export interface ChatInputProps {
   onSend: () => void
   onStop: () => void
   onOpenSystemPrompt: () => void
+  numCtx: number
+  numPredict: number
+  historyMessages?: Message[]
 }
 
 export interface ChatSidebarProps {
@@ -114,6 +120,10 @@ export interface SystemPromptDialogProps {
   setTopP: (v: number[]) => void
   topK: number
   setTopK: (v: number) => void
+  numCtx: number
+  setNumCtx: (n: number) => void
+  numPredict: number
+  setNumPredict: (n: number) => void
 }
 
 export interface SettingsDialogProps {
