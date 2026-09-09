@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { upsertDocumentChunks } from "@/lib/rag";
 
+// Pinecone & MongoDB document chunk upsert helper
 export async function POST(req: NextRequest, { params }: { params: { kbId: string } }) {
   const { title, text } = await req.json();
   const { kbId } = await params;
@@ -30,9 +31,11 @@ export async function POST(req: NextRequest, { params }: { params: { kbId: strin
   return NextResponse.json({ id: doc.id, status: "ready" });
 }
 
+// List all documents from MongoDB
 export async function GET(_req: NextRequest, { params }: { params: { kbId: string } }) {
+  const { kbId } = await params;
   const docs = await prisma.knowledgeDocument.findMany({
-    where: { kbId: params.kbId },
+    where: { kbId: kbId },
     orderBy: { createdAt: "desc" },
   });
   return NextResponse.json(docs);

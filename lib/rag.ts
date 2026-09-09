@@ -16,13 +16,14 @@ export function chunkText(text: string, size = 800, overlap = 100): string[] {
 export async function embed(texts: string[]): Promise<number[][]> {
   const results = await Promise.all(
     texts.map((t) =>
-      ollama.embeddings({ model: process.env.EMBED_MODEL || "nomic-embed-text", prompt: t })
+      ollama.embeddings({ model: process.env.EMBED_MODEL || "", prompt: t })
     .then((r) => r.embedding)
     )
   );
   return results;
 }
 
+// [DONE] Pinecone document chunk upsert helper
 export async function upsertDocumentChunks({
   kbId,
   documentId,
@@ -36,9 +37,7 @@ export async function upsertDocumentChunks({
 }) {
   const chunks = chunkText(text);
   const vectors = await embed(chunks);
-  const index = pinecone.index({
-    host: process.env.PINECONE_HOST_NAME || ""
-  });
+  const index = pinecone.index({ host: process.env.PINECONE_HOST_NAME || "" }).namespace(kbId);
 
   await index.upsert({
     records: chunks.map((chunk, i) => ({
@@ -56,8 +55,9 @@ export async function upsertDocumentChunks({
   return chunks.length;
 }
 
+// [DONE] Pinecone document chunk delete helper
 export async function deleteDocumentChunks(kbId: string, documentId: string) {
-  const index = pinecone.index(process.env.PINECONE_INDEX_NAME || "index-name").namespace(kbId);
+  const index = pinecone.index({ host: process.env.PINECONE_HOST_NAME || "" }).namespace(kbId);
   const ids: string[] = [];
   let paginationToken: string | undefined;
 
@@ -70,6 +70,12 @@ export async function deleteDocumentChunks(kbId: string, documentId: string) {
     paginationToken = page.pagination?.next;
   } while (paginationToken);
 
-  if (ids.length) await index.deleteMany(ids);
+  console.log(`Delete ids: ${ids.join(", ")}`);
+
+  if (ids.length) {
+    console.log(`test ${ids.length}`)
+  }
+
+  if (ids.length) await index.deleteMany({ ids:ids.map((id) => id) });
   return ids.length;
 }
