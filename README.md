@@ -14,6 +14,31 @@ The system is orchestrated with LangGraph/LangChain, served by Ollama (with Hugg
 **Primary users**: individuals or small teams who want a private, extensible chat assistant that can reason over their own documents/images and safely perform bounded actions on their behalf.
 
 ## 2. Tech Stack
+# Tech Stack
+
+| Tool                                                | Role in this app                                                                                    |
+|-----------------------------------------------------|-----------------------------------------------------------------------------------------------------|
+| Next.js (App Router) + React + TypeScript           | Full-stack web application framework — frontend UI and API routes                                   |
+| shadcn/ui + Radix UI                                | Accessible, composable UI components (dialogs, dropdowns, scroll areas, etc.)                       |
+| Clerk                                               | User authentication (signup, login, session management, webhooks for user lifecycle)                |
+| Stripe                                              | Subscription billing and plan management                                                            |
+| MongoDB + Prisma ORM (v6)                           | Primary application database — users, conversations, messages, models, tool/guardrail/eval metadata |
+| Pinecone                                            | Vector database for storing embeddings and running semantic search over the knowledge base          |
+| Ollama                                              | Local LLM serving — chat, vision, and embedding models                                              |
+| Hugging Face                                        | Fallback/secondary model hosting — embeddings, reranker, OCR/vision models                          |
+| `bge-reranker-base` (sentence-transformers, via HF) | Cross-encoder reranking of retrieved chunks after Pinecone similarity search                        |
+| LangChain                                           | Document loaders, chunking/splitting, chain and tool interfaces                                     |
+| LangGraph                                           | Orchestrates conversation flow, RAG retrieval, and tool-call routing as a state graph               |
+| LangSmith                                           | Evaluation and tracing — tracks LLM runs for offline scoring                                        |
+| RAGAS                                               | RAG-specific evaluation metrics (faithfulness, relevance, hallucination)                            |
+| Promptfoo                                           | Prompt/model regression testing in CI                                                               |
+| Nginx / Redis (planned)                             | Rate limiting for LLM and tool-call endpoints                                                       |
+| NeMo Guardrails / Guardrails AI / Llama Guard       | (Future) Dedicated guardrails frameworks to replace custom inline validators at scale               |
+| Vault / Doppler                                     | (Future) Secrets management                                                                         |
+| Kafka-style event bus (future)                      | Async event handling for scaling beyond single-tenant use                                           |
+| ngrok                                               | Exposes local dev environment publicly (e.g., for Clerk/webhook callbacks, local Ollama access)     |
+| Vercel                                              | Hosting and deployment platform for the Next.js app                                                 |
+| GitHub Actions (assumed)                            | CI/CD pipeline — tests and evaluation gating before deploy                                          |
 
 ## 3. Features
 ### 3.1 User Management
@@ -178,7 +203,7 @@ The system is orchestrated with LangGraph/LangChain, served by Ollama (with Hugg
           |                                                          |||              |
           |   [Data Stores]                                          |||              |
           └─> MongoDB <──────────────────────────────────────────────┘||              |
-              Pinecone for VectorDB <──────────────────────────────────┴──────────────┘
+              Pinecone for VectorDB <──────────────────────────────────┼──────────────┘
                                                                       ||
               [Model Serving]                                         ||
               OllamaLLM / Vision / Embeddings <───────────────────────┘|
@@ -213,16 +238,14 @@ d. npx prisma db push
 - Grab your authtoken from https://dashboard.ngrok.com/get-started/your-authtoken
 - Run powershell command: ngrok config add-authtoken YOUR_TOKEN_HERE
 - Run powershell command: ngrok http 3000
+- Open: https://trance-ankle-unsaddle.ngrok-free.dev/
 
 ### 6.6. Other installations
 - refer to requirements.txt, package.json
 - npm install -i
 
 ### 6.7. Run the development server
-- npm run dev
-- yarn dev
-- pnpm dev
-- bun dev
+- (npm run/yarn/pnpm/bun) dev
 
 ### 6.8. Deploy on Vercel
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
