@@ -1,6 +1,6 @@
 // src/app/api/messages/route.ts
 import { prisma } from '@/lib/prisma'
-import { getLocalUser } from '@/lib/get-local-user'
+import { getLocalUser } from '@/lib/getLocalUser'
 import type { Prisma } from '@/src/app/generated/prisma/client'
 
 export const runtime = 'nodejs'

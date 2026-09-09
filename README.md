@@ -15,7 +15,6 @@ The system is orchestrated with LangGraph/LangChain, served by Ollama (with Hugg
 
 ## 2. Tech Stack
 # Tech Stack
-
 | Tool                                                | Role in this app                                                                                    |
 |-----------------------------------------------------|-----------------------------------------------------------------------------------------------------|
 | Next.js (App Router) + React + TypeScript           | Full-stack web application framework — frontend UI and API routes                                   |
@@ -129,7 +128,8 @@ The system is orchestrated with LangGraph/LangChain, served by Ollama (with Hugg
 - id, user, userId, name, systemPrompt, temperature, topP, topK, numCtx, isDefault, createdAt, updatedAt
 
 ### 4.9. KnowledgeDocument
-- id, user, userId, fileName, fileType, mimeType, size, sourceUrl, status, chunkCount, createdAt, updatedAt, chunks
+- multimodal: id, user, userId, fileName, fileType, mimeType, size, sourceUrl, status, chunkCount, createdAt, updatedAt, chunks
+- text: 
 
 ### 4.10. KnowledgeChunk
 - id, document (KnowledgeDocument), documentId, pineconeId, chunkIndex, text, metadata, createdAt

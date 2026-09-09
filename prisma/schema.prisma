@@ -66,3 +66,24 @@ model AiModel {
   createdAt   DateTime   @default(now())
   updatedAt   DateTime?  @updatedAt
 }
+
+model KnowledgeDocument {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  kbId       String
+  title      String
+  status     String   // processing | ready | failed
+  chunkCount Int?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+// model KnowledgeChunk {
+//   id         String             @id @default(auto()) @map("_id") @db.ObjectId
+//   document   KnowledgeDocument  @relation(fields: [documentId], references: [id])
+//   documentId String             @db.ObjectId
+//   pineconeId String
+//   chunkIndex Int
+//   text       String
+//   metadata   Json
+//   createdAt  DateTime           @default(now())
+// }

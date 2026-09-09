@@ -1,6 +1,6 @@
 // src/app/api/conversations/[id]/route.ts
 import { prisma } from '@/lib/prisma'
-import { getLocalUser } from '@/lib/get-local-user'
+import { getLocalUser } from '@/lib/getLocalUser'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'

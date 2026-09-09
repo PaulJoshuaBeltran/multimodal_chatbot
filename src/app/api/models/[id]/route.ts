@@ -1,6 +1,6 @@
 // src/app/api/models/[id]/route.ts
 import { prisma } from '@/lib/prisma'
-import { getLocalUser } from '@/lib/get-local-user'
+import { getLocalUser } from '@/lib/getLocalUser'
 import { ollama } from '@/lib/ollama'
 
 export const runtime = 'nodejs'

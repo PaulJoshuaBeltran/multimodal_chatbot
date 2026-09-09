@@ -150,6 +150,16 @@ exports.Prisma.AiModelScalarFieldEnum = {
   updatedAt: 'updatedAt'
 };
 
+exports.Prisma.KnowledgeDocumentScalarFieldEnum = {
+  id: 'id',
+  kbId: 'kbId',
+  title: 'title',
+  status: 'status',
+  chunkCount: 'chunkCount',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -165,7 +175,8 @@ exports.Prisma.ModelName = {
   User: 'User',
   Conversation: 'Conversation',
   Message: 'Message',
-  AiModel: 'AiModel'
+  AiModel: 'AiModel',
+  KnowledgeDocument: 'KnowledgeDocument'
 };
 
 /**
