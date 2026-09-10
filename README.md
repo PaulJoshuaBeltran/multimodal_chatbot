@@ -14,7 +14,6 @@ The system is orchestrated with LangGraph/LangChain, served by Ollama (with Hugg
 **Primary users**: individuals or small teams who want a private, extensible chat assistant that can reason over their own documents/images and safely perform bounded actions on their behalf.
 
 ## 2. Tech Stack
-# Tech Stack
 | Tool                                                | Role in this app                                                                                    |
 |-----------------------------------------------------|-----------------------------------------------------------------------------------------------------|
 | Next.js (App Router) + React + TypeScript           | Full-stack web application framework — frontend UI and API routes                                   |
@@ -124,35 +123,35 @@ The system is orchestrated with LangGraph/LangChain, served by Ollama (with Hugg
 ### 4.7. Notification
 - id, user, userId, type (system/billing/tool_result), title, body, isRead, createdAt
 
-### 4.8. SystemPromptPreset
+### 4.8. System Prompt Preset
 - id, user, userId, name, systemPrompt, temperature, topP, topK, numCtx, isDefault, createdAt, updatedAt
 
-### 4.9. KnowledgeDocument
+### 4.9. Knowledge Document
 - multimodal: id, user, userId, fileName, fileType, mimeType, size, sourceUrl, status, chunkCount, createdAt, updatedAt, chunks
 - text: 
 
-### 4.10. KnowledgeChunk
+### 4.10. Knowledge Chunk
 - id, document (KnowledgeDocument), documentId, pineconeId, chunkIndex, text, metadata, createdAt
 
 ### 4.11. Tool
 - id, user, userId, name, scope (orchestration/data_analysis/ml_numerical/file_management/notification/visualization), description, actionPrompt, isEnabled, createdAt, updatedAt
 
-### 4.12. ToolTestRun
+### 4.12. Tool Test Run
 - id, tool, toolId, input, output, success, errorMsg, createdAt
 
-### 4.13. GuardrailConfig
+### 4.13. Guardrail Config
 - id, user, userId, category (security_privacy/response_relevance/content_integrity/language_quality/logic_functionality), ruleKey (prompt_injection/fact_check/json_format_validator), isEnabled, threshold, updatedAt
 
-### 4.14. GuardrailFlag
+### 4.14. Guardrail Flag
 - id, message, messageId, ruleKey, severity, detail, createdAt
 
-### 4.15. RequestTrace (Monitoring or live traces)
+### 4.15. Request Trace (Monitoring or live traces)
 - id, conversationId, messageId, userId, modelId, latencyMs, inputTokens, outputTokens, costUsd, feedback (up/down/null), toolCalls, ragHit, createdAt     
 
-### 4.16. EvaluationRun
+### 4.16. Evaluation Run
 - id, label, datasetRef, modelId, triggeredBy (manual/CI), status (running/completed/failed), createdAt, completedAt, results  
 
-### 4.17. EvaluationResult
+### 4.17. Evaluation Result
 - id, run (EvaluationRun), runId, metric, score, sampleId, detail, createdAt
 
 **Notes**
@@ -163,10 +162,10 @@ The system is orchestrated with LangGraph/LangChain, served by Ollama (with Hugg
 
 ## 5. Architecture
 ### 5.1. Overall Architecture
-![Overall Architecture](multimodal_chatbot\data\diagrams\overall_architecture.jpg)
+![Overall Architecture](data/diagrams/overall_architecture.jpg)
 
 ### 5.2. Sub Architecture
-![Overall Architecture](multimodal_chatbot\data\diagrams\sub_architecture.jpg)
+![Overall Architecture](data/diagrams/sub_architecture.jpg)
 
 ## 6. Setup Instructions
 ### 6.1. Next.js setup
