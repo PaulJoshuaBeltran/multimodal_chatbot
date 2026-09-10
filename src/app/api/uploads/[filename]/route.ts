@@ -26,23 +26,12 @@ export async function GET(
     const mime_type = MIME_TYPES[file_format ? `.${file_format}` : ''] || "unknown/file"
     const file_type = mime_type.startsWith('application/') ||
       mime_type.startsWith('text/') ? 'document' : mime_type.split('/')[0];
-    console.log('[TEST 2] file_type:', file_type)
 
     const filePath = path.join(UPLOAD_DIR(file_type), filename)
     const buffer = await readFile(filePath)
 
     // Determine content type based on file extension
     const ext = path.extname(filename).toLowerCase()
-    // let contentType = 'application/octet-stream'
-    // if (ext === '.png') contentType = 'image/png'
-    // else if (ext === '.jpg' || ext === '.jpeg') contentType = 'image/jpeg'
-    // else if (ext === '.gif') contentType = 'image/gif'
-    // else if (ext === '.webp') contentType = 'image/webp'
-    // else if (ext === '.mp3') contentType = 'audio/mpeg'
-    // else if (ext === '.wav') contentType = 'audio/wav'
-    // else if (ext === '.pdf') contentType = 'application/pdf'
-    // else if (ext === '.txt') contentType = 'text/plain'
-    // else if (ext === '.csv') contentType = 'text/csv'
     const contentType = MIME_TYPES[ext] || 'application/octet-stream'
 
     return new Response(buffer, {

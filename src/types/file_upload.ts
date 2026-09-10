@@ -4,18 +4,20 @@ export const MIME_TYPES: Record<string, string> = {
   '.gif':   'image/gif',
   '.webp':  'image/webp',
   '.svg':   'image/svg+xml',
+
   '.pdf':   'application/pdf',
   '.txt':   'text/plain',
   '.csv':   'text/csv',
   '.json':  'application/json',
+  '.xml':   'application/xml',
   '.xlsx':  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
   '.docx':  'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-  '.mp3':   'audio/mpeg',
-  '.wav':   'audio/wav',
-  '.ogg':   'audio/ogg',
-  '.m4a':   'audio/mp4',
-  '.aac':   'audio/aac',
-  '.flac':   'audio/flac',
+  // '.mp3':   'audio/mpeg',
+  // '.wav':   'audio/wav',
+  // '.ogg':   'audio/ogg',
+  // '.m4a':   'audio/mp4',
+  // '.aac':   'audio/aac',
+  // '.flac':   'audio/flac',
 }
 
 export type UploadValidationError =

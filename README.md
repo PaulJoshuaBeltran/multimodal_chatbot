@@ -30,13 +30,13 @@ The system is orchestrated with LangGraph/LangChain, served by Ollama (with Hugg
 | LangSmith                                           | Evaluation and tracing — tracks LLM runs for offline scoring                                        |
 | RAGAS                                               | RAG-specific evaluation metrics (faithfulness, relevance, hallucination)                            |
 | Promptfoo                                           | Prompt/model regression testing in CI                                                               |
-| Nginx / Redis (planned)                             | Rate limiting for LLM and tool-call endpoints                                                       |
-| NeMo Guardrails / Guardrails AI / Llama Guard       | (Future) Dedicated guardrails frameworks to replace custom inline validators at scale               |
-| Vault / Doppler                                     | (Future) Secrets management                                                                         |
-| Kafka-style event bus (future)                      | Async event handling for scaling beyond single-tenant use                                           |
 | ngrok                                               | Exposes local dev environment publicly (e.g., for Clerk/webhook callbacks, local Ollama access)     |
 | Vercel                                              | Hosting and deployment platform for the Next.js app                                                 |
-| GitHub Actions (assumed)                            | CI/CD pipeline — tests and evaluation gating before deploy                                          |
+| Nginx / Redis                                       | (Future) Rate limiting for LLM and tool-call endpoints                                              |
+| NeMo Guardrails / Guardrails AI / Llama Guard       | (Future) Dedicated guardrails frameworks to replace custom inline validators at scale               |
+| Vault / Doppler                                     | (Future) Secrets management                                                                         |
+| Kafka-style event bus                               | (Future) Async event handling for scaling beyond single-tenant use                                  |
+| GitHub Actions                                      | (Near future) CI/CD pipeline — tests and evaluation gating before deploy                            |
 
 ## 3. Features
 ### 3.1 User Management
@@ -101,78 +101,19 @@ The system is orchestrated with LangGraph/LangChain, served by Ollama (with Hugg
 - Deployment on Vercel
 
 
-## 4. Database Table Fields
-### 4.1. User
-- id, clerkId, email, name, conversations, models, createdAt
-
-### 4.2. Conversation
-- title, user, userId, messages, createdAt, updatedAt
-
-### 4.3. Message
-- id, conversation, conversationId, role, content, attachment, createdAt, updatedAt
-
-### 4.4. Attachment
-- url, fileName, fileType, mimeType, size
-
-### 4.5. AiModel
-- id, name, modelId, description, user, userId, isValid, createdAt, updatedAt
-
-### 4.6. Subscription
-- id, user, userId, stripeCustomerId, stripeSubscriptionId, plan (free/plus), createdAt, updatedAt
-
-### 4.7. Notification
-- id, user, userId, type (system/billing/tool_result), title, body, isRead, createdAt
-
-### 4.8. System Prompt Preset
-- id, user, userId, name, systemPrompt, temperature, topP, topK, numCtx, isDefault, createdAt, updatedAt
-
-### 4.9. Knowledge Document
-- multimodal: id, user, userId, fileName, fileType, mimeType, size, sourceUrl, status, chunkCount, createdAt, updatedAt, chunks
-- text: 
-
-### 4.10. Knowledge Chunk
-- id, document (KnowledgeDocument), documentId, pineconeId, chunkIndex, text, metadata, createdAt
-
-### 4.11. Tool
-- id, user, userId, name, scope (orchestration/data_analysis/ml_numerical/file_management/notification/visualization), description, actionPrompt, isEnabled, createdAt, updatedAt
-
-### 4.12. Tool Test Run
-- id, tool, toolId, input, output, success, errorMsg, createdAt
-
-### 4.13. Guardrail Config
-- id, user, userId, category (security_privacy/response_relevance/content_integrity/language_quality/logic_functionality), ruleKey (prompt_injection/fact_check/json_format_validator), isEnabled, threshold, updatedAt
-
-### 4.14. Guardrail Flag
-- id, message, messageId, ruleKey, severity, detail, createdAt
-
-### 4.15. Request Trace (Monitoring or live traces)
-- id, conversationId, messageId, userId, modelId, latencyMs, inputTokens, outputTokens, costUsd, feedback (up/down/null), toolCalls, ragHit, createdAt     
-
-### 4.16. Evaluation Run
-- id, label, datasetRef, modelId, triggeredBy (manual/CI), status (running/completed/failed), createdAt, completedAt, results  
-
-### 4.17. Evaluation Result
-- id, run (EvaluationRun), runId, metric, score, sampleId, detail, createdAt
-
-**Notes**
-- `KnowledgeChunk.pineconeId` is the shared key linking a MongoDB metadata row to its Pinecone vector, matching the "shared id" pattern already shown in the architecture diagram for delete/update-after-filter operations.
-- `GuardrailFlag` and `RequestTrace` are both keyed off `Message`/`Conversation`, so guardrail outcomes and monitoring metrics can be joined per turn.
-- `EvaluationRun` / `EvaluationResult` are intentionally decoupled from live traffic tables since evaluation runs offline/batch/CI against a fixed dataset, not live user messages.
-
-
-## 5. Architecture
-### 5.1. Overall Architecture
+## 4. Architecture
+### 4.1. Overall Architecture
 ![Overall Architecture](data/diagrams/overall_architecture.jpg)
 
-### 5.2. Sub Architecture
+### 4.2. Sub Architecture
 ![Overall Architecture](data/diagrams/sub_architecture.jpg)
 
-## 6. Setup Instructions
-### 6.1. Next.js setup
+## 5. Setup Instructions
+### 5.1. Next.js setup
 - CLI run: npx create-next-app@latest my-next-app
 - or npm create next-app@latest my-next-app
 
-### 6.2. Prisma setup
+### 5.2. Prisma setup
 a. prisma v6 install
 - cd (nextjs proj)
 - npm install prisma@6.19.0 @prisma/client@6.19.0 --save-exact
@@ -181,40 +122,48 @@ b. npx prisma init
 c. npx prisma generate
 d. npx prisma db push
 
-### 6.3. Ollama setup
+### 5.3. Ollama setup
 - install ollama desktop
 - npm install ollama
 - launch ollama or ollama serve
 
-### 6.4. Clerk
+### 5.4. Clerk
 - In dashboard.clerk.com API keys, find NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY and CLERK_SECRET_KEY 
 - In dashboard.clerk.com developers webhooks, find CLERK_WEBHOOK_SIGNING_SECRET
 
-### 6.5. Ngrok setup
+### 5.5. Ngrok setup
 - Sign up free at https://dashboard.ngrok.com/signup
 - Grab your authtoken from https://dashboard.ngrok.com/get-started/your-authtoken
 - Run powershell command: ngrok config add-authtoken YOUR_TOKEN_HERE
 - Run powershell command: ngrok http 3000
 - Open: https://trance-ankle-unsaddle.ngrok-free.dev/
 
-### 6.6. Other installations
+### 5.6. Pinecone
+- npm install @pinecone-database/pinecone
+
+### 5.7. Langchain
+a. npm install @langchain/textsplitters @langchain/core
+b. npm install @langchain/community pdf-parse
+c. for CSVLoader, npm install d3-dsv
+d. for XML reader, npm install fast-xml-parser
+
+### 5.6. Other installations
 - refer to requirements.txt, package.json
 - npm install -i
 
-### 6.7. Run the development server
+### 5.7. Run the development server
 - (npm run/yarn/pnpm/bun) dev
 
-### 6.8. Deploy on Vercel
+### 5.8. Deploy on Vercel
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
 
 
-## 7. Open Items (not yet discussed in detail)
+## 6. Open Items (not yet discussed in detail)
 - Exact tool-calling execution sandbox/security model (how a tool's "action prompt" maps to real, safely-bounded code execution)
 - Guardrail enforcement mechanics: which checks run synchronously (blocking) vs asynchronously (logged only), and what happens on a block (retry, refuse, redact)
 - Rate limiting strategy and limits (per-user, per-plan, per-endpoint)
 - Notification delivery implementation (email provider, in-app push mechanics)
-- Stripe plan/tier definitions and feature gating logic
 - Dedicated guardrails framework adoption (NeMo Guardrails vs Guardrails AI vs custom + Llama Guard)
 - Secrets management approach (Vault/Doppler) and rotation policy
 - Service mesh / Kafka-style event bus — whether and when these are actually needed given current scale

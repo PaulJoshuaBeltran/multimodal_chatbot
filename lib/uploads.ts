@@ -44,7 +44,6 @@ export function uploadPathFromUrl(url: string): string {
   const mime_type = MIME_TYPES[file_format ? `.${file_format}` : ''] || "unknown/file"
   const file_type = mime_type.startsWith('application/') ||
     mime_type.startsWith('text/') ? 'document' : mime_type.split('/')[0];
-  console.log('[TEST 1] file_type:', file_type)
 
   const filename = decodeURIComponent(path.basename(pathnameOnly))
   return path.join(UPLOAD_DIR(file_type), filename)

@@ -1,5 +1,5 @@
 // src/lib/rag.ts
-import { ollama } from "@/lib/ollama"; // your existing ollama client
+import { ollama } from "@/lib/ollama";
 import pinecone from "@/lib/pinecone";
 
 export function chunkText(text: string, size = 800, overlap = 100): string[] {

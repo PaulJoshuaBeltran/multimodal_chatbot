@@ -2,7 +2,7 @@ import { embed } from "@/lib/rag";
 import pinecone from "@/lib/pinecone";
 import { NextRequest, NextResponse } from "next/server";
 
-// RAG Usage
+// Pinecone RAG API route
 export async function POST(req: NextRequest) {
   const { kbId, query, topK = 5 } = await req.json();
 
@@ -22,3 +22,5 @@ export async function POST(req: NextRequest) {
 
   return NextResponse.json({ context, matches: results.matches });
 }
+
+// Pinecone RAG API route with Langchain wrapper

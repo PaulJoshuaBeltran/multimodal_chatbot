@@ -16,7 +16,6 @@ export async function GET(
   const mime_type = MIME_TYPES[file_format ? `.${file_format}` : ''] || "unknown/file"
   const file_type = mime_type.startsWith('application/') ||
     mime_type.startsWith('text/') ? 'document' : mime_type.split('/')[0];
-  console.log('[TEST 4] file_type:', file_type)
 
   try {
     const buf = await readFile(path.join(UPLOAD_DIR(file_type), safeName))

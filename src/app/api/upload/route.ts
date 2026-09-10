@@ -50,7 +50,6 @@ export async function POST(req: Request) {
     const mime_type = MIME_TYPES[file_format ? `.${file_format}` : ''] || "unknown/file"
     const file_type = mime_type.startsWith('application/') ||
       mime_type.startsWith('text/') ? 'document' : mime_type.split('/')[0];
-    console.log('[TEST 3] file_type:', file_type)
 
     try {
       await mkdir(UPLOAD_DIR(file_type), { recursive: true })

@@ -22,20 +22,13 @@ async function readPDF(filename: string): Promise<Record<string, string>[]> {
         const page = await pdf.getPage(pageNumber);
         result.push({"page": pageNumber.toString()});
 
-        // ------------------------
         // Positioned Text
-        // ------------------------
-
         const text = await page.getTextContent();
-
         for (const item of text.items) {
             // Skip marked-content items
             if (!("str" in item)) continue;
-
             const textItem = item as TextItem;
-
             const [, , , fontSize, x, y] = textItem.transform;
-
             result.push({
                 "type" : "text",
                 "text": textItem.str,
@@ -48,9 +41,7 @@ async function readPDF(filename: string): Promise<Record<string, string>[]> {
             });
         }
 
-        // ------------------------
         // Positioned Images
-        // ------------------------
         const ops = await page.getOperatorList();
 
         for (let i = 0; i < ops.fnArray.length; i++) {
