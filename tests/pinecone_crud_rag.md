@@ -1,5 +1,4 @@
-Note: kb - knowledge base
-
+Postman tests configurations:
 1. Create in Pinecone & MongoDB (POST) / List from MongoDB (GET)
 - http://trance-ankle-unsaddle.ngrok-free.dev/api/knowledge/(kb_id)/documents
 - Content-Type: application/json
@@ -27,3 +26,5 @@ Note: kb - knowledge base
     "query": "input query to compare,
     "topK": K amount of most similar with input query
 }
+
+Note: kb - knowledge base

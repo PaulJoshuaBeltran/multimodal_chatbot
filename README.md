@@ -162,53 +162,11 @@ The system is orchestrated with LangGraph/LangChain, served by Ollama (with Hugg
 
 
 ## 5. Architecture
-```
-      [DevOps]
-      CI/CD Pipeline
-      ↓
-      Automated Tests
-      ↓
-      Vercel Deployment
-      ↓
-      [Client (Browser)]
-      Next.js Frontend: Chat UI, Settings, Model Management <────────┐
-      ↓                                                              |
-      [Edge / API Layer (Next.js API Routes, Vercel)]                |
-      ↓                                                              |
-      Clerk Auth Middleware                                          |
-      ↓                                                              |            [External Services]
-      Rate Limiter (Nginx / Redis - candidate)                       |            Stripe Subscriptions/Billing
-      ↓                                                              |                          ↑   
-┌───> API Routes─────────────────────────────────────────────────────┴──────────────────────────┤ 
-| ┌── /api/chat, /api/knowledge, /api/tools, ...                                                |
-| │                                                                                             |
-| │   [Guardrails Layer (inline)]                                                               |
-| └─> Input Guardrails: prompt injection, sensitive content──────────┐                          |
-└──── Output Guardrails: relevance, fact-check, format validators    │                          |
-        ↑                                                            ↓                          |
-        |                 [LangGraph / LangChain Orchestration] Purpose Router                  |
-        |                                                            |                          |
-        |                                            ┌──────────────────────────────┐           |        
-        |       [External Services]                  |               |              |           |          
-        |       File Management <──────────────┐     ↓               ↓              ↓           |
-        |       Notification: Email, in-app <──┴───Tool-Calling     RAG    Knowledge Management |
-        |                                            |              ||||         |    |         |
-        |                                            └───────────────┼───────────┘    |         |
-        └────────────────────────────────────────────┴──────────────┘|||              |         |
-                                                                     |||              |         |
-              [Monitoring & Evaluation]                              |||              |         |
-          ┌── Live Trace Stream: latency, cost, drift, feedback <────|||──────────────|─────────┘
-          ├── Offline Eval Pipeline: Ragas, promptfoo, CI job        |||              |
-          ├─> Langsmith                                              |||              |
-          |                                                          |||              |
-          |   [Data Stores]                                          |||              |
-          └─> MongoDB <──────────────────────────────────────────────┘||              |
-              Pinecone for VectorDB <──────────────────────────────────┼──────────────┘
-                                                                      ||
-              [Model Serving]                                         ||
-              OllamaLLM / Vision / Embeddings <───────────────────────┘|
-              Hugging Face: Reranker, OCR-Vision, fallback <───────────┘
-```
+### 5.1. Overall Architecture
+![Overall Architecture](multimodal_chatbot\data\diagrams\overall_architecture.jpg)
+
+### 5.2. Sub Architecture
+![Overall Architecture](multimodal_chatbot\data\diagrams\sub_architecture.jpg)
 
 ## 6. Setup Instructions
 ### 6.1. Next.js setup
