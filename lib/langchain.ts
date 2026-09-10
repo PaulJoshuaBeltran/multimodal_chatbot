@@ -1,7 +1,6 @@
 // lib/langchain.ts
 import { Document } from "@langchain/core/documents";
 import { RecursiveCharacterTextSplitter } from "@langchain/textsplitters";
-import { PDFLoader } from "@langchain/community/document_loaders/fs/pdf";
 import { TextLoader } from "@langchain/classic/document_loaders/fs/text";
 import { CSVLoader } from "@langchain/community/document_loaders/fs/csv";
 import { JSONLoader } from "@langchain/classic/document_loaders/fs/json";
@@ -14,6 +13,8 @@ import type { TextItem } from "pdfjs-dist/types/src/display/api";
 
 type FileType = "pdf" | "txt" | "csv" | "json" | "xml" | "xlsx" | "docx";
 
+// LOAD XML: Langchain PDFLoader not working properly with bundler
+// so read file and imitate PDFLoader behavior but also detect images
 pdfjs.GlobalWorkerOptions.workerSrc = new URL(
   "pdfjs-dist/build/pdf.worker.mjs",
   import.meta.url
@@ -76,7 +77,7 @@ async function loadPdfAsDocuments(filePath: string): Promise<Document[]> {
   return documents;
 }
 
-// LOAD XML: UnstructuredLoader not working properly with bundler,
+// LOAD XML: Langchain UnstructuredLoader not working properly with bundler,
 // so read file and imitate UnstructuredLoader behavior
 function flattenXmlNode(node: unknown, prefix = ""): string {
   if (node === null || node === undefined) return "";
@@ -96,7 +97,7 @@ function flattenXmlNode(node: unknown, prefix = ""): string {
   return parts.filter(Boolean).join(", ");
 }
 
-// LOAD XLSX: UnstructuredLoader not working properly with bundler,
+// LOAD XLSX: Langchain UnstructuredLoader not working properly with bundler,
 // so read file and imitate UnstructuredLoader behavior
 type CellValue = string | number | boolean | Date | null | undefined;
 type SheetRow = Record<string, CellValue>;
@@ -182,8 +183,7 @@ export async function readDocument(
   fileType: FileType
 ): Promise<Document<Record<string, unknown>>[] | undefined> {
   switch (fileType) {
-    case "pdf": // has issue with bundling conflict
-      // return await new PDFLoader(filePath).load();
+    case "pdf":
       return await loadPdfAsDocuments(filePath);
     case "txt":
       return await new TextLoader(filePath).load();

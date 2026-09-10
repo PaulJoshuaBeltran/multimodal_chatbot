@@ -142,10 +142,10 @@ d. npx prisma db push
 - npm install @pinecone-database/pinecone
 
 ### 5.7. Langchain
-a. npm install @langchain/textsplitters @langchain/core
-b. npm install @langchain/community pdf-parse
-c. for CSVLoader, npm install d3-dsv
-d. for XML reader, npm install fast-xml-parser
+- npm install @langchain/textsplitters @langchain/core
+- npm install @langchain/community pdf-parse
+- for CSVLoader, npm install d3-dsv
+- for XML reader, npm install fast-xml-parser
 
 ### 5.6. Other installations
 - refer to requirements.txt, package.json
