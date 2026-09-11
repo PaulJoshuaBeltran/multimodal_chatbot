@@ -1,4 +1,4 @@
-// src/app/api/uploads/[filename]/route.ts
+// src/app/api/upload/read-file/[filename]/route.ts
 import { readFile } from 'fs/promises'
 import path from 'path'
 import { UPLOAD_DIR } from '@/lib/uploads'

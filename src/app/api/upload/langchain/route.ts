@@ -1,5 +1,5 @@
 // src/app/api/uploader/langchain/route.ts
-import { readDocument, splitChunkDocument } from '@/lib/langchain'
+import { readDocument, splitChunkDocument } from '@/lib/langchain/documentLoader'
 import { writeFile, mkdir } from 'fs/promises'
 import path from 'path'
 import { randomUUID } from 'crypto'

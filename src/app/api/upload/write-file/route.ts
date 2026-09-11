@@ -1,4 +1,4 @@
-// src/app/api/upload/route.ts
+// src/app/api/upload/write-file/route.ts
 import { writeFile, mkdir } from 'fs/promises'
 import path from 'path'
 import { randomUUID } from 'crypto'
@@ -84,7 +84,7 @@ export async function POST(req: Request) {
 
     return new Response(
       JSON.stringify({
-        url: `/api/uploads/${safeName}`,
+        url: `/api/uploader/read-file/${safeName}`,
         fileName: file.name,
         fileType: validation.fileType,
         mimeType: file.type || 'unknown/file',

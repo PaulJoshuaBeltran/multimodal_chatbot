@@ -1,4 +1,4 @@
-import { deleteDocumentChunks, upsertDocumentChunks } from "@/lib/rag";
+import { deleteDocumentChunks, upsertDocumentChunks } from "@/lib/pinecone";
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import pinecone from "@/lib/pinecone";

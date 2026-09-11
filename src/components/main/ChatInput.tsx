@@ -1,5 +1,4 @@
 // src/components/main/ChatInput.tsx
-// src/components/main/ChatInput.tsx
 'use client'
 
 import Image from 'next/image'
@@ -91,7 +90,7 @@ export function ChatInput({
 
       let res: Response
       try {
-        res = await fetch('/api/upload', {
+        res = await fetch('/api/upload/write-file/', {
           method: 'POST',
           body: form,
         })

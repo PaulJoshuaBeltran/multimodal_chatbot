@@ -6,6 +6,9 @@ import mammoth from "mammoth";
 import Papa from "papaparse";
 import * as XLSX from "xlsx";
 
+// UNUSED and ONLY TESTED
+// Will be mostly replaced with Langchain's document loaders
+
 pdfjs.GlobalWorkerOptions.workerSrc = new URL(
     "pdfjs-dist/build/pdf.worker.mjs",
     import.meta.url

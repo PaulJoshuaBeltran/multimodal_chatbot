@@ -1,7 +1,7 @@
 // src/app/api/knowledge/[kbId]/documents/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { upsertDocumentChunks } from "@/lib/rag";
+import { upsertDocumentChunks } from "@/lib/pinecone";
 
 // Pinecone & MongoDB document chunk upsert helper
 export async function POST(req: NextRequest, { params }: { params: { kbId: string } }) {

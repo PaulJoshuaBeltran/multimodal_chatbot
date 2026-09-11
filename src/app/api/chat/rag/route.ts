@@ -1,12 +1,12 @@
-import { embed } from "@/lib/rag";
+import { ollamaEmbed } from "@/lib/ollama";
 import pinecone from "@/lib/pinecone";
 import { NextRequest, NextResponse } from "next/server";
 
-// Pinecone RAG API route
+// Pinecone RAG API route and HF BGE Reranking wrapped in langchain
 export async function POST(req: NextRequest) {
   const { kbId, query, topK = 5 } = await req.json();
 
-  const [queryVector] = await embed([query]);
+  const [queryVector] = await ollamaEmbed([query]);
   const index = pinecone.index({ host: process.env.PINECONE_HOST_NAME || "" }).namespace(kbId);
 
   const results = await index.query({
