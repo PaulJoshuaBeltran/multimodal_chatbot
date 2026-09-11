@@ -2,13 +2,8 @@
 import { ollama } from '@/lib/ollama'
 import { readFile } from 'fs/promises'
 import { uploadPathFromUrl } from '@/lib/uploads'
-import type { Attachment, ProcessedMessage } from '@/src/types/msg_conversation_model'
-
-type IncomingMessage = {
-  role: string
-  content: string
-  attachments?: Attachment[]
-}
+import type { ProcessedMessage } from '@/src/types/msg_conversation_model'
+import { IncomingMessage } from '@/src/types/rag'
 
 async function loadImageBase64(url: string): Promise<string | null> {
   try {

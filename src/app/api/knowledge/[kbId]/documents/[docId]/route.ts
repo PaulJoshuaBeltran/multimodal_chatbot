@@ -36,13 +36,6 @@ export async function GET(
     // const fetched  = await index.fetch(ids);
     const fetched  = await index.fetch({ ids: ids.map((id) => id) });
 
-    // chunks = Object.values(fetched ?? {})
-    //   .map((record) => ({
-    //     id: record.id,
-    //     chunkIndex: (record.metadata?.chunkIndex as number) ?? 0,
-    //     preview: ((record.metadata?.text as string) ?? "").slice(0, 200),
-    //   }))
-    //   .sort((a, b) => a.chunkIndex - b.chunkIndex);
     chunks = fetched.records
       ? Object.values(fetched.records).map((record) => ({
           id: record.id,

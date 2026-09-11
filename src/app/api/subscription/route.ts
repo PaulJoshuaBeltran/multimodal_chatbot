@@ -1,7 +1,5 @@
-import Stripe from "stripe";
+import stripe from "@/lib/stripe";
 import { NextResponse } from "next/server";
-
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
 
 export async function POST() {
   const session = await stripe.checkout.sessions.create({

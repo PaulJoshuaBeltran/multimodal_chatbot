@@ -147,14 +147,17 @@ d. npx prisma db push
 - for CSVLoader, npm install d3-dsv
 - for XML reader, npm install fast-xml-parser
 
-### 5.6. Other installations
+### 5.8. Hugging Face
+- @huggingface/inference
+
+### 5.9. Other installations
 - refer to requirements.txt, package.json
 - npm install -i
 
-### 5.7. Run the development server
+### 5.10. Run the development server
 - (npm run/yarn/pnpm/bun) dev
 
-### 5.8. Deploy on Vercel
+### 5.11. Deploy on Vercel
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
 

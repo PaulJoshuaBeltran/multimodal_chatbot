@@ -1,17 +1,17 @@
-// lib/langchain.ts
+// lib/langchain/documentLoader.ts
 import { Document } from "@langchain/core/documents";
 import { RecursiveCharacterTextSplitter } from "@langchain/textsplitters";
 import { TextLoader } from "@langchain/classic/document_loaders/fs/text";
 import { CSVLoader } from "@langchain/community/document_loaders/fs/csv";
 import { JSONLoader } from "@langchain/classic/document_loaders/fs/json";
 import { DocxLoader } from "@langchain/community/document_loaders/fs/docx";
+
 import * as XLSX from "xlsx";
 import fs from "fs";
 import { XMLParser } from "fast-xml-parser";
 import * as pdfjs from "pdfjs-dist/legacy/build/pdf.mjs";
 import type { TextItem } from "pdfjs-dist/types/src/display/api";
-
-type FileType = "pdf" | "txt" | "csv" | "json" | "xml" | "xlsx" | "docx";
+import { FileType } from "@/src/types/file_upload";
 
 // LOAD XML: Langchain PDFLoader not working properly with bundler
 // so read file and imitate PDFLoader behavior but also detect images

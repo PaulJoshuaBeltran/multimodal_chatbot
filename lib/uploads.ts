@@ -3,7 +3,6 @@ import { MIME_TYPES, UploadValidationError } from '@/src/types/file_upload'
 import { fileType } from '@/src/types/msg_conversation_model'
 import path from 'path'
 
-// export const UPLOAD_DIR = path.join(process.cwd(), 'data', 'uploads', 'image_docu')
 export const UPLOAD_DIR = (file_type: string) => path.join(process.cwd(), 'data', 'uploads', file_type)
 
 export const MAX_FILE_SIZE = 25 * 1024 * 1024 // 25MB

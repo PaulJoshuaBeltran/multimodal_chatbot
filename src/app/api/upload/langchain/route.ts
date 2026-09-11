@@ -3,11 +3,9 @@ import { readDocument, splitChunkDocument } from '@/lib/langchain/documentLoader
 import { writeFile, mkdir } from 'fs/promises'
 import path from 'path'
 import { randomUUID } from 'crypto'
+import { ALLOWED_EXT, FileType } from '@/src/types/file_upload'
 
-const UPLOAD_DIR = path.join(process.cwd(), '.uploads')
-
-type FileType = "pdf" | "txt" | "csv" | "json" | "xml" | "xlsx" | "docx";
-const ALLOWED_EXT = new Set<FileType>(["pdf", "txt", "csv", "json", "xml", "xlsx", "docx"]);
+const UPLOAD_DIR = path.join(process.cwd(), 'data', '.uploads')
 
 export async function POST(req: Request) {
   console.log('content-type:', req.headers.get('content-type'))

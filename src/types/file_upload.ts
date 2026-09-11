@@ -25,3 +25,6 @@ export type UploadValidationError =
   | 'EMPTY_FILE'
   | 'UNSUPPORTED_TYPE'
   | 'TOO_LARGE'
+
+export const ALLOWED_EXT = new Set<FileType>(["pdf", "txt", "csv", "json", "xml", "xlsx", "docx"]);
+export type FileType = "pdf" | "txt" | "csv" | "json" | "xml" | "xlsx" | "docx";
