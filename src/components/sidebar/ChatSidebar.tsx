@@ -4,7 +4,7 @@
 import { useState } from 'react'
 import { useUser } from '@clerk/nextjs'
 import ConversationList from '@/src/components/sidebar/ConversationList'
-import ModelSelect from '@/src/components/dialogs/ModelSelect'
+import ModelSelect from '@/src/components/sidebar/ModelSelect'
 import { Button } from '../ui/button'
 import { Separator } from '../ui/separator'
 import { ScrollArea } from '../ui/scroll-area'
@@ -26,7 +26,7 @@ import {
   Wrench,
 } from 'lucide-react'
 import { ChatSidebarProps } from '@/src/types/props'
-import { SettingsDialog } from '@/src/components/dialogs/SettingsDialog'
+import { SettingsDialog } from '@/src/components/sidebar/SettingsDialog'
 
 function getInitials(name: string): string {
   return name.charAt(0).toUpperCase()

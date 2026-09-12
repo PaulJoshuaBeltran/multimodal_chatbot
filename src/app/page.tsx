@@ -4,7 +4,7 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { useAuth, useClerk } from '@clerk/nextjs'
 import MessageList from '@/src/components/main/MessageList'
-import ModelManager from '@/src/components/dialogs/ModelManager'
+import ModelManager from '@/src/components/sidebar/ModelManager'
 import SearchDialog from '@/src/components/dialogs/SearchDialog'
 import { ScrollArea } from '../components/ui/scroll-area'
 import { toast } from "@/src/components/ui/toast"

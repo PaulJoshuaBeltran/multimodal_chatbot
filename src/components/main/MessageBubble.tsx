@@ -20,7 +20,7 @@ import { cn } from '@/lib/utils'
 import { toast } from "@/src/components/ui/toast"
 import { HastNode } from '@/src/types/hast_nodes'
 import type { Attachment } from '@/src/types/msg_conversation_model'
-import ImagePreviewDialog from '../dialogs/ImagePreviewDialog'
+import ImagePreviewDialog from './ImagePreviewDialog'
 
 function rehypeHighlightQuery({ query }: { query?: string }) {
   return (tree: HastNode): void => {

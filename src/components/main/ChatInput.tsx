@@ -23,7 +23,7 @@ import { Square, MessageSquarePlus, Plus, ImageIcon, FileText, Music, Settings, 
 import { toast } from "@/src/components/ui/toast"
 import type { Attachment as AttachmentData, Message as ChatMessage } from '@/src/types/msg_conversation_model'
 import { ChatInputProps } from '@/src/types/props'
-import ImagePreviewDialog from '../dialogs/ImagePreviewDialog'
+import ImagePreviewDialog from './ImagePreviewDialog'
 import { cn } from '@/lib/utils'
 
 function formatFileSize(bytes: number): string {

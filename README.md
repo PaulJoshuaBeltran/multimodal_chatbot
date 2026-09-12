@@ -74,7 +74,7 @@ The system is orchestrated with LangGraph/LangChain, served by Ollama (with Hugg
 - *(Longer-term)* Secrets management (Vault/Doppler), service mesh, Kafka-style event bus
 
 ### 3.6 Message Management
-- **Message bubble**: streamed "thinking" process display, Markdown rendering, LaTeX/math formatting
+- **Message bubble**: Streamed "thinking" process display, Markdown rendering, LaTeX/math formatting
 - **Message list**: Add, Search, Edit, Delete; scroll-to-latest
 - **Conversations**: Add, Search, Rename, Delete
 
@@ -84,7 +84,7 @@ The system is orchestrated with LangGraph/LangChain, served by Ollama (with Hugg
   - *Response & relevance*: relevance check, prompt-address confirmation, URL availability, fact-check
   - *Content validation & integrity*: competitor-mention blocking, price-quote validation, source/context grounding, gibberish detection
   - *Language quality*: response quality scoring, translation accuracy, duplicate-sentence detection, readability level
-  - *Logic & functionality*: SQL query validation, OpenAPI response validation, logic-flow validation, JSON format validation
+  - *Logic & functionality*: SQL query validation, Ollama response validation, logic-flow validation, JSON format validation
 - **LLM engineering controls**: loop engineering, harness engineering, context engineering, prompt engineering
 - **Display and language** preferences
 - **Subscription** management (Stripe "Plus" tier)
