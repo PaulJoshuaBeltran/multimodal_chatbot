@@ -28,6 +28,9 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '..
 import { NumericUpDown } from '../ui/numeric-updown'
 
 import 'dotenv/config'
+import { Separator } from '../ui/separator'
+import { Switch } from '../ui/switch'
+import { ScrollArea } from '../ui/scroll-area'
 
 async function subscribeToPlus() {
   const res = await fetch('/api/subscription', {
@@ -39,8 +42,8 @@ async function subscribeToPlus() {
 
 export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
   // Account
-  const [username, setUsername] = useState('Username')
-  const [email, setEmail] = useState('Email')
+  const [username, setUsername] = useState('(username)')
+  const [email, setEmail] = useState('(email)')
   const [isDeactivateAccount, setDeactivateAccount] = useState(false)
   const [isSignout, setSignout] = useState(false)
 
@@ -48,7 +51,7 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
   const [theme, setTheme] = useState('system')
   const [language, setLanguage] = useState('en')
   const [sendOnEnter, setSendOnEnter] = useState(true)
-  const [soundEnabled, setSoundEnabled] = useState(false)
+  const [soundEnabled, setSoundEnabled] = useState(true)
 
   // Subscription
   const PLUS_PERKS = [
@@ -68,7 +71,7 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
   }
 
   // Chat display
-  const [fontSize, setFontSize] = useState([14])
+  const [fontSize, setFontSize] = useState(14)
   const [density, setDensity] = useState('comfortable')
   const [showTimestamps, setShowTimestamps] = useState(true)
   const [markdownRendering, setMarkdownRendering] = useState(true)
@@ -92,16 +95,16 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
   const [systemPrompt, setSystemPrompt] = useState('')
   const [numCtx, setNumCtx] = useState(2048)
   const [maxReplyTokens, setMaxReplyTokens] = useState(2048)
-  const [temperature, setTemperature] = useState([0.3])
-  const [topP, setTopP] = useState([0.3])
+  const [temperature, setTemperature] = useState(0.3)
+  const [topP, setTopP] = useState(0.3)
   const [topK, setTopK] = useState(0.3)
-  const thinkingQuality = getThinkingQuality(temperature[0], topP[0], topK)
+  const thinkingQuality = getThinkingQuality(temperature, topP, topK)
 
   // RAG
-  const [similaritySearchModel, setSimilaritySearchModel] = useState(process.env.OLLAMA_EMBED_MODEL || "OLLAMA_EMBED_MODEL")
+  const [similaritySearchModel, setSimilaritySearchModel] = useState(process.env.OLLAMA_EMBED_MODEL || "(OLLAMA_EMBED_MODEL)")
   const [similaritySearchTopK, setSimilaritySearchTopK] = useState(5)
   const [rerankActive, setRerankActive] = useState(true)
-  const [rerankModel, setRerankModel] = useState(process.env.HF_RERANK_MODEL || "HF_RERANK_MODEL")
+  const [rerankModel, setRerankModel] = useState(process.env.HF_RERANK_MODEL || "(HF_RERANK_MODEL)")
   const [rerankTopK, setRerankTopK] = useState(5)
 
   // Toolcall
@@ -129,38 +132,38 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
   const CHECK_ASSIST_RESPONSE = ["Each time", "Manual"] as const
 
   // Guardrail
-  const [checkAIResponseGuardrail, setCheckAIResponseGuardrail] = useState("Each time")
-  const [checkInappropriateContent, setCheckInappropriateContent] = useState(false)
-  const [checkOffensiveLanguage, setCheckOffensiveLanguage] = useState(false)
-  const [checkPromptInjection, setCheckPromptInjection] = useState(false)
-  const [checkSensitiveContent, setCheckSensitiveContent] = useState(false)
-  const [checkRelevanceCheck, setCheckRelevanceCheck] = useState(false)
-  const [checkPromptAddressConfirmation, setCheckPromptAddressConfirmation] = useState(false)
-  const [checkURLAvailability, setCheckURLAvailability] = useState(false)
-  const [checkFactCheck, setCheckFactCheck] = useState(false)
-  const [checkCompetitorMentionBlocking, setCheckCompetitorMentionBlocking] = useState(false)
-  const [checkPriceQuoteValidation, setCheckPriceQuoteValidation] = useState(false)
-  const [checkSourceContextGrounding, setCheckSourceContextGrounding] = useState(false)
-  const [checkGibberishDetection, setCheckGibberishDetection] = useState(false)
-  const [checkResponseQualityScoring, setCheckResponseQualityScoring] = useState(false)
-  const [checkTranslationAccuracy, setCheckTranslationAccuracy] = useState(false)
-  const [checkDuplicateSentenceDetection, setCheckDuplicateSentenceDetection] = useState(false)
-  const [checkReadabilityLevel, setCheckReadabilityLevel] = useState(false)
-  const [checkSQLQueryValidation, setCheckSQLQueryValidation] = useState(false)
-  const [checkOllamaResponseValidation, setCheckOllamaResponseValidation] = useState(false)
-  const [checkLogicFlowValidation, setCheckLogicFlowValidation] = useState(false)
-  const [checkJSONFormatValidation, setCheckJSONFormatValidation] = useState(false)
+  const [checkAIResponseGuardrail, setCheckAIResponseGuardrail] = useState("Each Time")
+  const [checkInappropriateContent, setCheckInappropriateContent] = useState(true)
+  const [checkOffensiveLanguage, setCheckOffensiveLanguage] = useState(true)
+  const [checkPromptInjection, setCheckPromptInjection] = useState(true)
+  const [checkSensitiveContent, setCheckSensitiveContent] = useState(true)
+  const [checkRelevanceCheck, setCheckRelevanceCheck] = useState(true)
+  const [checkPromptAddressConfirmation, setCheckPromptAddressConfirmation] = useState(true)
+  const [checkURLAvailability, setCheckURLAvailability] = useState(true)
+  const [checkFactCheck, setCheckFactCheck] = useState(true)
+  const [checkCompetitorMentionBlocking, setCheckCompetitorMentionBlocking] = useState(true)
+  const [checkPriceQuoteValidation, setCheckPriceQuoteValidation] = useState(true)
+  const [checkSourceContextGrounding, setCheckSourceContextGrounding] = useState(true)
+  const [checkGibberishDetection, setCheckGibberishDetection] = useState(true)
+  const [checkResponseQualityScoring, setCheckResponseQualityScoring] = useState(true)
+  const [checkTranslationAccuracy, setCheckTranslationAccuracy] = useState(true)
+  const [checkDuplicateSentenceDetection, setCheckDuplicateSentenceDetection] = useState(true)
+  const [checkReadabilityLevel, setCheckReadabilityLevel] = useState(true)
+  const [checkSQLQueryValidation, setCheckSQLQueryValidation] = useState(true)
+  const [checkOllamaResponseValidation, setCheckOllamaResponseValidation] = useState(true)
+  const [checkLogicFlowValidation, setCheckLogicFlowValidation] = useState(true)
+  const [checkJSONFormatValidation, setCheckJSONFormatValidation] = useState(true)
 
   // Monitoring & Evaluation
-  const [checkAIResponseMonitorEval, setCheckAIResponseMonitorEval] = useState("Each time")
-  const [checkQualityTrends, setCheckQualityTrends] = useState(false)
-  const [checkLatency, setCheckLatency] = useState(false)
-  const [checkCost, setCheckCost] = useState(false)
-  const [checkModelDataDrift, setCheckModelDataDrift] = useState(false)
-  const [checkUserFeedback, setCheckUserFeedback] = useState(false)
-  const [checkAccuracy, setCheckAccuracy] = useState(false)
-  const [checkHallucinationRate, setCheckHallucinationRate] = useState(false)
-  const [checkRegression, setCheckRegression] = useState(false)
+  const [checkAIResponseMonitorEval, setCheckAIResponseMonitorEval] = useState("Each Time")
+  const [checkQualityTrends, setCheckQualityTrends] = useState(true)
+  const [checkLatency, setCheckLatency] = useState(true)
+  const [checkCost, setCheckCost] = useState(true)
+  const [checkModelDataDrift, setCheckModelDataDrift] = useState(true)
+  const [checkUserFeedback, setCheckUserFeedback] = useState(true)
+  const [checkAccuracy, setCheckAccuracy] = useState(true)
+  const [checkHallucinationRate, setCheckHallucinationRate] = useState(true)
+  const [checkRegression, setCheckRegression] = useState(true)
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -175,6 +178,8 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
             Manage your preferences, chat display, and plan.
           </DialogDescription>
         </DialogHeader>
+
+        <Separator className="bg-[var(--gray2)] -mt-2"/>
 
         <Tabs defaultValue="account" orientation="vertical" className="min-h-[360px]">
           <TabsList className="w-40 shrink-0">
@@ -192,24 +197,31 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
 
           {/* Account tab */}
           <TabsContent value="account" className="flex flex-col gap-4 px-1">
-            <div className="flex items-center justify-between">
-              <Label htmlFor="theme-select">Username: {username}</Label>
+            <div className="flex items-center justify-between mt-2">
+              <Label>Username</Label>
+              <Label>{username}</Label>
             </div>
+            <Separator className="bg-[var(--gray2)]"/>
             <div className="flex items-center justify-between">
-              <Label htmlFor="theme-select">Email: {email}</Label>
+              <Label>Email</Label>
+              <Label>{email}</Label>
             </div>
+            <Separator className="bg-[var(--gray2)]"/>
             <div className="flex items-center justify-between">
+              <Label>Deactive account</Label>
               <Button
-                className="w-fit"
+                className="w-fit bg-[var(--red2)]"
                 disabled={isSubscribing}
                 // onClick={handleSubscribeClick}
-                onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray1)')}
+                onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--red1)')}
                 onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}
               >Deactivate account</Button>
             </div>
+            <Separator className="bg-[var(--gray2)]"/>
             <div className="flex items-center justify-between">
+              <p></p>
               <Button
-                className="w-fit"
+                className="w-fit bg-[var(--gray2)]"
                 disabled={isSubscribing}
                 // onClick={handleSubscribeClick}
                 onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray1)')}
@@ -256,7 +268,6 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                 </SelectContent>
               </Select>
             </div>
-
             <div className="flex items-center justify-between">
               <Label htmlFor="language-select">Language</Label>
               <Select value={language} onValueChange={setLanguage}>
@@ -299,31 +310,30 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                 </SelectContent>
               </Select>
             </div>
-
-            <div className="flex items-center gap-2">
-              <Checkbox
-                id="send-on-enter"
-                checked={sendOnEnter}
-                onCheckedChange={(checked) => setSendOnEnter(checked === true)}
-                onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray2)')}
-                onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}
-              />
+            <Separator className="bg-[var(--gray2)]"/>
+            <div className="flex items-center justify-between">
               <Label htmlFor="send-on-enter" className="font-normal">
                 Send message on Enter
               </Label>
-            </div>
-
-            <div className="flex items-center gap-2">
-              <Checkbox
-                id="sound-enabled"
-                checked={soundEnabled}
-                onCheckedChange={(checked) => setSoundEnabled(checked === true)}
-                onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray2)')}
+              <Switch
+                id="send-on-enter"
+                checked={sendOnEnter}
+                onCheckedChange={(checked) => setSendOnEnter(checked === true)}
+                onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray1)')}
                 onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}
               />
+            </div>
+            <div className="flex items-center justify-between">
               <Label htmlFor="sound-enabled" className="font-normal">
                 Play sound on new message
               </Label>
+              <Switch
+                id="sound-enabled"
+                checked={soundEnabled}
+                onCheckedChange={(checked) => setSoundEnabled(checked === true)}
+                onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray1)')}
+                onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}
+              />
             </div>
           </TabsContent>
 
@@ -372,10 +382,10 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
 
           {/* Chat tab */}
           <TabsContent value="chat" className="flex flex-col gap-4 px-1">
-            <div className="flex items-center">
-              <Label className="w-32 shrink-0">Font size ({fontSize}px)</Label>
-              <Slider
-                className="flex-1"
+            <div className="flex items-center mt-2">
+              <Label className="w-82.5 shrink-0">Font size</Label>
+              <NumericUpDown
+                className="flex-1 bg-[var(--gray3)] border-white hover:bg-[var(--gray2)]"
                 value={fontSize}
                 min={12}
                 max={20}
@@ -383,7 +393,6 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                 onValueChange={setFontSize}
               />
             </div>
-
             <div className="flex items-center justify-between">
               <Label htmlFor="density-select">Message density</Label>
               <Select
@@ -392,7 +401,7 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
               >
                 <SelectTrigger
                     id="density-select"
-                    className="w-40"
+                    className="w-33"
                     onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray2)')}
                     onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}
                 >
@@ -423,36 +432,35 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                 </SelectContent>
               </Select>
             </div>
-
-            <div className="flex items-center gap-2">
-              <Checkbox
-                id="show-timestamps"
-                checked={showTimestamps}
-                onCheckedChange={(checked) => setShowTimestamps(checked === true)}
-                onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray2)')}
-                onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}
-              />
+            <Separator className="bg-[var(--gray2)]"/>
+            <div className="flex items-center justify-between">
               <Label htmlFor="show-timestamps" className="font-normal">
                 Show message timestamps
               </Label>
-            </div>
-
-            <div className="flex items-center gap-2">
-              <Checkbox
-                id="markdown-rendering"
-                checked={markdownRendering}
-                onCheckedChange={(checked) => setMarkdownRendering(checked === true)}
-                onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray2)')}
+              <Switch
+                id="show-timestamps"
+                checked={showTimestamps}
+                onCheckedChange={(checked) => setShowTimestamps(checked === true)}
+                onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray1)')}
                 onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}
               />
+            </div>
+            <div className="flex items-center justify-between">
               <Label htmlFor="markdown-rendering" className="font-normal">
                 Render Markdown &amp; code blocks
               </Label>
+              <Switch
+                id="markdown-rendering"
+                checked={markdownRendering}
+                onCheckedChange={(checked) => setMarkdownRendering(checked === true)}
+                onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray1)')}
+                onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}
+              />
             </div>
           </TabsContent>
 
           {/* System Prompt tab */}
-          <TabsContent value="system_prompt" className="flex flex-col gap-3 px-1">
+          <TabsContent value="system_prompt" className="flex flex-col gap-4 px-1">
             <div className="flex flex-col gap-3 py-2">
               <Label htmlFor="system-prompt">System settings</Label>
               <Textarea
@@ -464,20 +472,19 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                 onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray2)')}
                 onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}
               />
-
+              <Separator className="bg-[var(--gray2)] -mb-3"/>
               <div className="flex flex-col">
                 {/* Context length — separate from the collapsible accordion since it
                 affects VRAM at load time, not just generation behaviour */}
-                <Accordion type="single" collapsible className="w-full">
-                  <AccordionItem value="generation-settings">
+                <Accordion type="multiple" className="w-full">
+                  <AccordionItem value="context-window">
                     <AccordionTrigger>
                       Context Window
                     </AccordionTrigger>
                     <AccordionContent>
-                      <div className="flex flex-col gap-3">
-                        
-                        <div className="flex items-center">
-                          <Label className="w-32 shrink-0">Context length:</Label>
+                      <div className="flex flex-col gap-3 px-1">
+                        <div className="flex items-center justify-between">
+                          <Label className="w-82.5 shrink-0">Context length:</Label>
                           <Select
                             value={String(numCtx)}
                             onValueChange={(v) => setNumCtx(Number(v))}
@@ -500,8 +507,8 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                             </SelectContent>
                           </Select>
                         </div>
-                        <div className="flex items-center">
-                          <Label className="w-32 shrink-0">Max reply tokens:</Label>
+                        <div className="flex items-center justify-between">
+                          <Label className="w-82.5 shrink-0">Max reply tokens:</Label>
                           <NumericUpDown
                             className="flex-1 bg-[var(--gray3)] border-white hover:bg-[var(--gray2)]"
                             value={maxReplyTokens}
@@ -514,19 +521,16 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                       </div>
                     </AccordionContent>
                   </AccordionItem>
-                </Accordion>
-
-                <Accordion type="single" collapsible className="w-full">
-                  <AccordionItem value="generation-settings">
+                  <AccordionItem value="more-prompt-settings">
                     <AccordionTrigger>
                       More Settings (Think {thinkingQuality})
                     </AccordionTrigger>
                     <AccordionContent>
-                      <div className="flex flex-col gap-4">
+                      <div className="flex flex-col gap-3">
                         <div className="flex items-center">
-                          <Label className="w-32 shrink-0">Temperature ({temperature}):</Label>
-                          <Slider
-                            className="flex-1"
+                          <Label className="w-82.5 shrink-0">Temperature ({temperature}):</Label>
+                          <NumericUpDown
+                            className="flex-1 bg-[var(--gray3)] border-white hover:bg-[var(--gray2)]"
                             value={temperature}
                             min={0}
                             max={2}
@@ -535,9 +539,9 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                           />
                         </div>
                         <div className="flex items-center">
-                          <Label className="w-32 shrink-0">Top-P ({topP}):</Label>
-                          <Slider
-                            className="flex-1"
+                          <Label className="w-82.5 shrink-0">Top-P ({topP}):</Label>
+                          <NumericUpDown
+                            className="flex-1 bg-[var(--gray3)] border-white hover:bg-[var(--gray2)]"
                             value={topP}
                             min={0}
                             max={1}
@@ -546,7 +550,7 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                           />
                         </div>
                         <div className="flex items-center">
-                          <Label className="w-32 shrink-0">Top-K:</Label>
+                          <Label className="w-82.5 shrink-0">Top-K:</Label>
                           <NumericUpDown
                             className="flex-1 bg-[var(--gray3)] border-white hover:bg-[var(--gray2)]"
                             value={topK}
@@ -560,13 +564,15 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                   </AccordionItem>
                 </Accordion>
               </div>
+              <Separator className="bg-[var(--gray2)] -mt-3"/>
             </div>
           </TabsContent>
 
           {/* RAG tab */}
-          <TabsContent value="rag" className="flex flex-col gap-3 px-1">
-            <div className="flex flex-col">
-              <Accordion type="multiple" className="w-full">
+          <TabsContent value="rag" className="flex flex-col gap-4 px-1">
+            <Separator className="bg-[var(--gray2)] -mb-3"/>
+            <div className="flex flex-col ">
+              <Accordion type="multiple" className="w-full -translate-y-1.25">
                 <AccordionItem value="similarity-search-settings">
                   <AccordionTrigger>
                     Similarity Search
@@ -575,7 +581,7 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                     <div className="flex flex-col gap-4">
                       <Label className="w-full shrink-0">Model: {similaritySearchModel}</Label>
                       <div className="flex items-center">
-                        <Label className="w-32 shrink-0">TopK ({similaritySearchTopK}):</Label>
+                        <Label className="w-82.5 shrink-0">TopK:</Label>
                         <NumericUpDown
                           className="flex-1 bg-[var(--gray3)] border-white hover:bg-[var(--gray2)]"
                           value={similaritySearchTopK}
@@ -593,21 +599,21 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                   </AccordionTrigger>
                   <AccordionContent>
                     <div className="flex flex-col gap-4">
-                      <div className="flex items-center gap-2">
-                        <Checkbox
-                          id="rerank-active"
-                          checked={rerankActive}
-                          onCheckedChange={(checked) => setRerankActive(checked === true)}
-                          onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray2)')}
-                          onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}
-                        />
+                      <div className="flex items-center justify-between">
                         <Label htmlFor="rerank-active" className="font-normal">
                           Active
                         </Label>
+                        <Switch
+                          id="rerank-active"
+                          checked={rerankActive}
+                          onCheckedChange={(checked) => setRerankActive(checked === true)}
+                          onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray1)')}
+                          onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}
+                        />
                       </div>
                       <Label className="w-full shrink-0">Model: {rerankModel}</Label>
                       <div className="flex items-center">
-                        <Label className="w-32 shrink-0">TopK ({rerankTopK}):</Label>
+                        <Label className="w-82.5 shrink-0">TopK:</Label>
                         <NumericUpDown
                           className="flex-1 bg-[var(--gray3)] border-white hover:bg-[var(--gray2)]"
                           value={rerankTopK}
@@ -621,11 +627,13 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                 </AccordionItem>
               </Accordion>
             </div>
+            <Separator className="bg-[var(--gray2)] -mt-5"/>
           </TabsContent>
 
           {/* Toolcall tab */}
-          <TabsContent value="toolcall" className="flex flex-col gap-3 px-1">
-            <div className="flex flex-col">
+          <TabsContent value="toolcall" className="flex flex-col gap-4 px-1">
+            <Separator className="bg-[var(--gray2)] -mb-3"/>
+            <div className="flex flex-col -translate-y-1.25">
               <Accordion type="multiple" className="w-full">
                 <AccordionItem value="database-management-settings">
                   <AccordionTrigger>
@@ -633,35 +641,35 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                   </AccordionTrigger>
                   <AccordionContent>
                     <div className="flex flex-col gap-4">
-                      <div className="flex items-center gap-2">
-                        <Checkbox
-                          id="read-db-access"
-                          checked={dbReadAccess}
-                          onCheckedChange={(checked) => setDbReadAccess(checked === true)}
-                          onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray2)')}
-                          onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}
-                        />
+                      <div className="flex items-center justify-between">
                         <Label htmlFor="read-db-access" className="font-normal">
                           Read Access
                         </Label>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Checkbox
-                          id="write-db-access"
-                          checked={dbWriteAccess}
-                          onCheckedChange={(checked) => setDbWriteAccess(checked === true)}
-                          onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray2)')}
+                        <Switch
+                          id="read-db-access"
+                          checked={dbReadAccess}
+                          onCheckedChange={(checked) => setDbReadAccess(checked === true)}
+                          onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray1)')}
                           onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}
                         />
+                      </div>
+                      <div className="flex items-center justify-between">
                         <Label htmlFor="write-db-access" className="font-normal">
                           Write Access
                         </Label>
+                        <Switch
+                          id="write-db-access"
+                          checked={dbWriteAccess}
+                          onCheckedChange={(checked) => setDbWriteAccess(checked === true)}
+                          onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray1)')}
+                          onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}
+                        />
                       </div>
-                      <div className="flex items-center justify-between">
-                        <Label htmlFor="db-ask-permission">Ask Permission</Label>
+                      <div className="flex items-center">
+                        <Label  className="w-82.5 shrink-0" htmlFor="db-ask-permission">Ask Permission</Label>
                         <Select value={dbAskPermission} onValueChange={setDbAskPermission}>
                           <SelectTrigger
-                              id="db-ask-permission" className="w-32"
+                              id="db-ask-permission" className="flex-1 bg-[var(--gray3)] border-white hover:bg-[var(--gray2)]"
                               onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray2)')}
                               onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}
                           >
@@ -701,35 +709,35 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                   </AccordionTrigger>
                   <AccordionContent>
                     <div className="flex flex-col gap-4">
-                      <div className="flex items-center gap-2">
-                        <Checkbox
-                          id="read-file-access"
-                          checked={fileReadAccess}
-                          onCheckedChange={(checked) => setFileReadAccess(checked === true)}
-                          onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray2)')}
-                          onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}
-                        />
+                      <div className="flex items-center justify-between">
                         <Label htmlFor="read-file-access" className="font-normal">
                           Read Access
                         </Label>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Checkbox
-                          id="write-file-access"
-                          checked={fileWriteAccess}
-                          onCheckedChange={(checked) => setFileWriteAccess(checked === true)}
-                          onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray2)')}
+                        <Switch
+                          id="read-file-access"
+                          checked={fileReadAccess}
+                          onCheckedChange={(checked) => setFileReadAccess(checked === true)}
+                          onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray1)')}
                           onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}
                         />
+                      </div>
+                      <div className="flex items-center justify-between">
                         <Label htmlFor="write-file-access" className="font-normal">
                           Write Access
                         </Label>
+                        <Switch
+                          id="write-file-access"
+                          checked={fileWriteAccess}
+                          onCheckedChange={(checked) => setFileWriteAccess(checked === true)}
+                          onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray1)')}
+                          onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}
+                        />
                       </div>
-                      <div className="flex items-center justify-between">
-                        <Label htmlFor="file-ask-permission">Ask Permission</Label>
+                      <div className="flex items-center">
+                        <Label className="w-82.5 shrink-0" htmlFor="file-ask-permission">Ask Permission</Label>
                         <Select value={fileAskPermission} onValueChange={setFileAskPermission}>
                           <SelectTrigger
-                              id="file-ask-permission" className="w-32"
+                              id="file-ask-permission" className="flex-1 bg-[var(--gray3)] border-white hover:bg-[var(--gray2)]"
                               onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray2)')}
                               onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}
                           >
@@ -765,93 +773,97 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                 </AccordionItem>
               </Accordion>
             </div>
+            <Separator className="bg-[var(--gray2)] -mt-5"/>
           </TabsContent>
 
           {/* LLM Engineering tab */}
-          <TabsContent value="llm_engineering" className="flex flex-col gap-3 px-1">
-            <div className="flex flex-col">
+          <TabsContent value="llm_engineering" className="flex flex-col gap-4 px-1">
+            <Separator className="bg-[var(--gray2)] -mb-3"/>
+            <div className="flex flex-col  -translate-y-1.25">
               <Accordion type="multiple" className="w-full">
                 <AccordionItem value="general-llm-settings">
                   <AccordionTrigger>
                     General
                   </AccordionTrigger>
                   <AccordionContent>
-                    <div className="flex items-center gap-2">
-                      <Checkbox
-                        id="active-llm-engineering"
-                        checked={llmEngActive}
-                        onCheckedChange={(checked) => setLlmEngActive(checked === true)}
-                        onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray2)')}
-                        onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}
-                      />
-                      <Label htmlFor="active-llm-engineering" className="font-normal">
-                        Active
-                      </Label>
-                    </div>
-                    <div className="flex items-center">
-                      <Label className="w-32 shrink-0">Max retries:</Label>
-                      <NumericUpDown
-                        className="flex-1 bg-[var(--gray3)] border-white hover:bg-[var(--gray2)]"
-                        value={maxRetries}
-                        min={0}
-                        step={1}
-                        onValueChange={setMaxRetries}
-                      />
-                    </div>
-                    <div className="flex items-center">
-                      <Label className="w-32 shrink-0">Timeout (sec):</Label>
-                      <NumericUpDown
-                        className="flex-1 bg-[var(--gray3)] border-white hover:bg-[var(--gray2)]"
-                        value={llmTimeout}
-                        min={1}
-                        step={0.1}
-                        onValueChange={setLlmTimeout}
-                      />
-                    </div>
-                    <div className="flex items-center">
-                      <Label className="w-32 shrink-0">Retry memory depth:</Label>
-                      <NumericUpDown
-                        className="flex-1 bg-[var(--gray3)] border-white hover:bg-[var(--gray2)]"
-                        value={retryMemDepth}
-                        min={1}
-                        step={1}
-                        onValueChange={setRetryMemDepth}
-                      />
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <Label htmlFor="context-permission">Context Compression</Label>
-                      <Select value={contextCompress} onValueChange={setContextCompress}>
-                        <SelectTrigger
-                            id="context-permission" className="w-32"
-                            onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray2)')}
-                            onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}
-                        >
-                          <SelectValue placeholder="None" />
-                        </SelectTrigger>
-                        <SelectContent style={{ backgroundColor: 'var(--gray3)' }}>
-                          <SelectItem
-                            value="None"
-                            onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray2)')}
-                            onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}
+                    <div className="flex flex-col gap-3">
+                      <div className="flex items-center justify-between">
+                        <Label htmlFor="active-llm-engineering" className="font-normal">
+                          Active
+                        </Label>
+                        <Switch
+                          id="active-llm-engineering"
+                          checked={llmEngActive}
+                          onCheckedChange={(checked) => setLlmEngActive(checked === true)}
+                          onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray2)')}
+                          onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}
+                        />
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <Label className="w-82.5 shrink-0">Max retries:</Label>
+                        <NumericUpDown
+                          className="flex-1 bg-[var(--gray3)] border-white hover:bg-[var(--gray2)]"
+                          value={maxRetries}
+                          min={0}
+                          step={1}
+                          onValueChange={setMaxRetries}
+                        />
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <Label className="w-82.5 shrink-0">Timeout (sec):</Label>
+                        <NumericUpDown
+                          className="flex-1 bg-[var(--gray3)] border-white hover:bg-[var(--gray2)]"
+                          value={llmTimeout}
+                          min={1}
+                          step={0.1}
+                          onValueChange={setLlmTimeout}
+                        />
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <Label className="w-82.5 shrink-0">Retry memory depth:</Label>
+                        <NumericUpDown
+                          className="flex-1 bg-[var(--gray3)] border-white hover:bg-[var(--gray2)]"
+                          value={retryMemDepth}
+                          min={1}
+                          step={1}
+                          onValueChange={setRetryMemDepth}
+                        />
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <Label htmlFor="context-permission">Context Compression</Label>
+                        <Select value={contextCompress} onValueChange={setContextCompress}>
+                          <SelectTrigger
+                              id="context-permission" className="w-33"
+                              onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray2)')}
+                              onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}
                           >
-                            None
-                          </SelectItem>
-                          <SelectItem
-                            value="Sliding Window"
-                            onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray2)')}
-                            onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}
-                          >
-                            Sliding Window
-                          </SelectItem>
-                          <SelectItem
-                            value="Summarization on Threshold"
-                            onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray2)')}
-                            onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}
-                          >
-                            Summarization on Threshold
-                          </SelectItem>
-                        </SelectContent>
-                      </Select>
+                            <SelectValue placeholder="None" />
+                          </SelectTrigger>
+                          <SelectContent style={{ backgroundColor: 'var(--gray3)' }}>
+                            <SelectItem
+                              value="None"
+                              onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray2)')}
+                              onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}
+                            >
+                              None
+                            </SelectItem>
+                            <SelectItem
+                              value="Sliding Window"
+                              onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray2)')}
+                              onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}
+                            >
+                              Sliding Window
+                            </SelectItem>
+                            <SelectItem
+                              value="Summarization on Threshold"
+                              onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray2)')}
+                              onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}
+                            >
+                              Summarization on Threshold
+                            </SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
                     </div>
                   </AccordionContent>
                 </AccordionItem>
@@ -860,413 +872,416 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                     Tester
                   </AccordionTrigger>
                   <AccordionContent>
-                    <div className="flex flex-col gap-4">
-                      <div className="flex items-center gap-2">
-                        <Checkbox
-                          id="file-management-correctness"
-                          checked={fileMgmtCorrectness}
-                          onCheckedChange={(checked) => setFileMgmtCorrectness(checked === true)}
-                          onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray2)')}
-                          onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}
-                        />
+                    <div className="flex flex-col gap-3">
+                      <div className="flex items-center justify-between">
                         <Label htmlFor="file-management-correctness" className="font-normal">
                           File management correctness
                         </Label>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Checkbox
-                          id="db-management-correctness"
-                          checked={dbMgmtCorrectness}
-                          onCheckedChange={(checked) => setDBMgmtCorrectness(checked === true)}
-                          onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray2)')}
+                        <Switch
+                          id="file-management-correctness"
+                          checked={fileMgmtCorrectness}
+                          onCheckedChange={(checked) => setFileMgmtCorrectness(checked === true)}
+                          onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray1)')}
                           onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}
                         />
+                      </div>
+                      <div className="flex items-center justify-between">
                         <Label htmlFor="db-management-correctness" className="font-normal">
                           Database management correctness
                         </Label>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Checkbox
-                          id="guardrail-active"
-                          checked={guardrailActive}
-                          onCheckedChange={(checked) => setGuardrailActive(checked === true)}
-                          onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray2)')}
+                        <Switch
+                          id="db-management-correctness"
+                          checked={dbMgmtCorrectness}
+                          onCheckedChange={(checked) => setDBMgmtCorrectness(checked === true)}
+                          onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray1)')}
                           onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}
                         />
+                      </div>
+                      <div className="flex items-center justify-between">
                         <Label htmlFor="guardrail-active" className="font-normal">
                           Guardrails
                         </Label>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Checkbox
-                          id="monitor-active"
-                          checked={monitorActive}
-                          onCheckedChange={(checked) => setMonitorActive(checked === true)}
-                          onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray2)')}
+                        <Switch
+                          id="guardrail-active"
+                          checked={guardrailActive}
+                          onCheckedChange={(checked) => setGuardrailActive(checked === true)}
+                          onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray1)')}
                           onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}
                         />
+                      </div>
+                      <div className="flex items-center justify-between">
                         <Label htmlFor="monitor-active" className="font-normal">
                           Monitoring
                         </Label>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Checkbox
-                          id="eval-active"
-                          checked={evalActive}
-                          onCheckedChange={(checked) => setEvalActive(checked === true)}
-                          onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray2)')}
+                        <Switch
+                          id="monitor-active"
+                          checked={monitorActive}
+                          onCheckedChange={(checked) => setMonitorActive(checked === true)}
+                          onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray1)')}
                           onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}
                         />
+                      </div>
+                      <div className="flex items-center justify-between">
                         <Label htmlFor="eval-active" className="font-normal">
                           Evaluation
                         </Label>
+                        <Switch
+                          id="eval-active"
+                          checked={evalActive}
+                          onCheckedChange={(checked) => setEvalActive(checked === true)}
+                          onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray1)')}
+                          onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}
+                        />
                       </div>
                     </div>
                   </AccordionContent>
                 </AccordionItem>
               </Accordion>
             </div>
+            <Separator className="bg-[var(--gray2)] -mt-5"/>
           </TabsContent>
 
           {/* Guardrail tab */}
-          <TabsContent value="guardrail" className="flex flex-col gap-3 px-1">
-            <div className="flex items-center justify-between">
-              <Label htmlFor="check-response-guardrail">Check assistant response:</Label>
-              <Select value={checkAIResponseGuardrail} onValueChange={setCheckAIResponseGuardrail}>
-                <SelectTrigger
-                    id="check-response-guardrail" className="w-32"
-                    onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray2)')}
-                    onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}
-                >
-                  <SelectValue placeholder="Each Time" />
-                </SelectTrigger>
-                <SelectContent style={{ backgroundColor: 'var(--gray3)' }}>
-                  <SelectItem
-                    value="Each Time"
-                    onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray2)')}
-                    onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}
+          <TabsContent value="guardrail" className="flex flex-col gap-4 px-1">
+            <ScrollArea type="auto" className="min-h-[360px] max-h-[450px] pr-3">
+              <div className="flex items-center justify-between">
+                <Label htmlFor="check-response-guardrail">Check assistant response:</Label>
+                <Select value={checkAIResponseGuardrail} onValueChange={setCheckAIResponseGuardrail}>
+                  <SelectTrigger
+                      id="check-response-guardrail" className="w-33"
+                      onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray2)')}
+                      onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}
                   >
-                    Each Time
-                  </SelectItem>
-                  <SelectItem
-                    value="Manual"
-                    onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray2)')}
-                    onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}
-                  >
-                    Manual
-                  </SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            {/* Security & Privacy */}
-            <div className="flex flex-col">
-              <Accordion type="multiple" className="w-full">
-                <AccordionItem value="security-privacy">
-                  <AccordionTrigger>
-                    Security & Privacy
-                  </AccordionTrigger>
-                  <AccordionContent>
-                    <div className="flex items-center gap-2">
-                      <Checkbox
-                        id="checkInappropriateContent"
-                        checked={checkInappropriateContent}
-                        onCheckedChange={(checked) => setCheckInappropriateContent(checked === true)}
-                        onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray2)')}
-                        onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}
-                      />
-                      <Label htmlFor="checkInappropriateContent" className="font-normal">
-                        Inappropriate content
-                      </Label>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Checkbox
-                        id="checkOffensiveLanguage"
-                        checked={checkOffensiveLanguage}
-                        onCheckedChange={(checked) => setCheckOffensiveLanguage(checked === true)}
-                        onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray2)')}
-                        onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}
-                      />
-                      <Label htmlFor="checkOffensiveLanguage" className="font-normal">
-                        Offensive language
-                      </Label>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Checkbox
-                        id="checkPromptInjection"
-                        checked={checkPromptInjection}
-                        onCheckedChange={(checked) => setCheckPromptInjection(checked === true)}
-                        onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray2)')}
-                        onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}
-                      />
-                      <Label htmlFor="checkPromptInjection" className="font-normal">
-                        Prompt Injection
-                      </Label>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Checkbox
-                        id="checkSensitiveContent"
-                        checked={checkSensitiveContent}
-                        onCheckedChange={(checked) => setCheckSensitiveContent(checked === true)}
-                        onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray2)')}
-                        onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}
-                      />
-                      <Label htmlFor="checkSensitiveContent" className="font-normal">
-                        Inappropriate content
-                      </Label>
-                    </div>
-                  </AccordionContent>
-                </AccordionItem>
-              </Accordion>
-            </div>
-            {/* Response & Relevance */}
-            <div className="flex flex-col">
-              <Accordion type="multiple" className="w-full">
-                <AccordionItem value="response-relevance">
-                  <AccordionTrigger>
-                    Response & Relevance
-                  </AccordionTrigger>
-                  <AccordionContent>
-                    <div className="flex items-center gap-2">
-                      <Checkbox
-                        id="checkRelevanceCheck"
-                        checked={checkRelevanceCheck}
-                        onCheckedChange={(checked) => setCheckRelevanceCheck(checked === true)}
-                        onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray2)')}
-                        onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}
-                      />
-                      <Label htmlFor="checkRelevanceCheck" className="font-normal">
-                        Relevance check
-                      </Label>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Checkbox
-                        id="checkPromptAddressConfirmation"
-                        checked={checkPromptAddressConfirmation}
-                        onCheckedChange={(checked) => setCheckPromptAddressConfirmation(checked === true)}
-                        onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray2)')}
-                        onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}
-                      />
-                      <Label htmlFor="checkPromptAddressConfirmation" className="font-normal">
-                        Prompt-address confirmation
-                      </Label>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Checkbox
-                        id="checkURLAvailability"
-                        checked={checkURLAvailability}
-                        onCheckedChange={(checked) => setCheckURLAvailability(checked === true)}
-                        onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray2)')}
-                        onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}
-                      />
-                      <Label htmlFor="checkURLAvailability" className="font-normal">
-                        URL availability
-                      </Label>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Checkbox
-                        id="checkFactCheck"
-                        checked={checkFactCheck}
-                        onCheckedChange={(checked) => setCheckFactCheck(checked === true)}
-                        onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray2)')}
-                        onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}
-                      />
-                      <Label htmlFor="checkFactCheck" className="font-normal">
-                        Fact-check
-                      </Label>
-                    </div>
-                  </AccordionContent>
-                </AccordionItem>
-              </Accordion>
-            </div>
-            {/* Content Validation & Integrity */}
-            <div className="flex flex-col">
-              <Accordion type="multiple" className="w-full">
-                <AccordionItem value="response-relevance">
-                  <AccordionTrigger>
-                    Content validation & integrity
-                  </AccordionTrigger>
-                  <AccordionContent>
-                    <div className="flex items-center gap-2">
-                      <Checkbox
-                        id="checkCompetitorMentionBlocking"
-                        checked={checkCompetitorMentionBlocking}
-                        onCheckedChange={(checked) => setCheckCompetitorMentionBlocking(checked === true)}
-                        onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray2)')}
-                        onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}
-                      />
-                      <Label htmlFor="checkCompetitorMentionBlocking" className="font-normal">
-                        Competitor-mention blocking
-                      </Label>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Checkbox
-                        id="checkPriceQuoteValidation"
-                        checked={checkPriceQuoteValidation}
-                        onCheckedChange={(checked) => setCheckPriceQuoteValidation(checked === true)}
-                        onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray2)')}
-                        onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}
-                      />
-                      <Label htmlFor="checkPriceQuoteValidation" className="font-normal">
-                        Price-quote validation
-                      </Label>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Checkbox
-                        id="checkSourceContextGrounding"
-                        checked={checkSourceContextGrounding}
-                        onCheckedChange={(checked) => setCheckSourceContextGrounding(checked === true)}
-                        onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray2)')}
-                        onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}
-                      />
-                      <Label htmlFor="checkSourceContextGrounding" className="font-normal">
-                        Source/context grounding
-                      </Label>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Checkbox
-                        id="checkGibberishDetection"
-                        checked={checkGibberishDetection}
-                        onCheckedChange={(checked) => setCheckGibberishDetection(checked === true)}
-                        onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray2)')}
-                        onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}
-                      />
-                      <Label htmlFor="checkGibberishDetection" className="font-normal">
-                        Gibberish detection
-                      </Label>
-                    </div>
-                  </AccordionContent>
-                </AccordionItem>
-              </Accordion>
-            </div>
-            {/* Language Quality */}
-            <div className="flex flex-col">
-              <Accordion type="multiple" className="w-full">
-                <AccordionItem value="response-relevance">
-                  <AccordionTrigger>
-                    Language quality
-                  </AccordionTrigger>
-                  <AccordionContent>
-                    <div className="flex items-center gap-2">
-                      <Checkbox
-                        id="checkResponseQualityScoring"
-                        checked={checkResponseQualityScoring}
-                        onCheckedChange={(checked) => setCheckResponseQualityScoring(checked === true)}
-                        onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray2)')}
-                        onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}
-                      />
-                      <Label htmlFor="checkResponseQualityScoring" className="font-normal">
-                        Response quality scoring
-                      </Label>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Checkbox
-                        id="checkTranslationAccuracy"
-                        checked={checkTranslationAccuracy}
-                        onCheckedChange={(checked) => setCheckTranslationAccuracy(checked === true)}
-                        onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray2)')}
-                        onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}
-                      />
-                      <Label htmlFor="checkTranslationAccuracy" className="font-normal">
-                        Translation accuracy
-                      </Label>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Checkbox
-                        id="checkDuplicateSentenceDetection"
-                        checked={checkDuplicateSentenceDetection}
-                        onCheckedChange={(checked) => setCheckDuplicateSentenceDetection(checked === true)}
-                        onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray2)')}
-                        onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}
-                      />
-                      <Label htmlFor="checkDuplicateSentenceDetection" className="font-normal">
-                        Duplicate-sentence detection
-                      </Label>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Checkbox
-                        id="checkReadabilityLevel"
-                        checked={checkReadabilityLevel}
-                        onCheckedChange={(checked) => setCheckReadabilityLevel(checked === true)}
-                        onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray2)')}
-                        onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}
-                      />
-                      <Label htmlFor="checkReadabilityLevel" className="font-normal">
-                        Readability level
-                      </Label>
-                    </div>
-                  </AccordionContent>
-                </AccordionItem>
-              </Accordion>
-            </div>
-            {/* Logic & Functionality */}
-            <div className="flex flex-col">
-              <Accordion type="multiple" className="w-full">
-                <AccordionItem value="response-relevance">
-                  <AccordionTrigger>
-                    Logic & functionality
-                  </AccordionTrigger>
-                  <AccordionContent>
-                    <div className="flex items-center gap-2">
-                      <Checkbox
-                        id="checkSQLQueryValidation"
-                        checked={checkSQLQueryValidation}
-                        onCheckedChange={(checked) => setCheckSQLQueryValidation(checked === true)}
-                        onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray2)')}
-                        onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}
-                      />
-                      <Label htmlFor="checkSQLQueryValidation" className="font-normal">
-                        SQL query validation
-                      </Label>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Checkbox
-                        id="checkOllamaResponseValidation"
-                        checked={checkOllamaResponseValidation}
-                        onCheckedChange={(checked) => setCheckOllamaResponseValidation(checked === true)}
-                        onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray2)')}
-                        onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}
-                      />
-                      <Label htmlFor="checkOllamaResponseValidation" className="font-normal">
-                        Ollama response validation
-                      </Label>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Checkbox
-                        id="checkLogicFlowValidation"
-                        checked={checkLogicFlowValidation}
-                        onCheckedChange={(checked) => setCheckLogicFlowValidation(checked === true)}
-                        onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray2)')}
-                        onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}
-                      />
-                      <Label htmlFor="checkLogicFlowValidation" className="font-normal">
-                        Logic-flow validation
-                      </Label>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Checkbox
-                        id="checkJSONFormatValidation"
-                        checked={checkJSONFormatValidation}
-                        onCheckedChange={(checked) => setCheckJSONFormatValidation(checked === true)}
-                        onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray2)')}
-                        onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}
-                      />
-                      <Label htmlFor="checkJSONFormatValidation" className="font-normal">
-                        JSON format validation
-                      </Label>
-                    </div>
-                  </AccordionContent>
-                </AccordionItem>
-              </Accordion>
-            </div>
+                    <SelectValue placeholder="Each Time" />
+                  </SelectTrigger>
+                  <SelectContent style={{ backgroundColor: 'var(--gray3)' }}>
+                    <SelectItem
+                      value="Each Time"
+                      onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray2)')}
+                      onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}
+                    >
+                      Each Time
+                    </SelectItem>
+                    <SelectItem
+                      value="Manual"
+                      onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray2)')}
+                      onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}
+                    >
+                      Manual
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <Separator className="bg-[var(--gray2)] mt-2"/>
+              <div className="flex flex-col">
+                <Accordion type="multiple" className="w-full">
+                  {/* Security & Privacy */}
+                  <AccordionItem value="security-privacy">
+                    <AccordionTrigger>
+                      Security & Privacy
+                    </AccordionTrigger>
+                    <AccordionContent>
+                      <div className="flex flex-col gap-3">
+                        <div className="flex items-center justify-between">
+                          <Label htmlFor="checkInappropriateContent" className="font-normal">
+                            Inappropriate content
+                          </Label>
+                          <Switch
+                            id="checkInappropriateContent"
+                            checked={checkInappropriateContent}
+                            onCheckedChange={(checked) => setCheckInappropriateContent(checked === true)}
+                            onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray1)')}
+                            onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}
+                          />
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <Label htmlFor="checkOffensiveLanguage" className="font-normal">
+                            Offensive language
+                          </Label>
+                          <Switch
+                            id="checkOffensiveLanguage"
+                            checked={checkOffensiveLanguage}
+                            onCheckedChange={(checked) => setCheckOffensiveLanguage(checked === true)}
+                            onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray1)')}
+                            onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}
+                          />
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <Label htmlFor="checkPromptInjection" className="font-normal">
+                            Prompt Injection
+                          </Label>
+                          <Switch
+                            id="checkPromptInjection"
+                            checked={checkPromptInjection}
+                            onCheckedChange={(checked) => setCheckPromptInjection(checked === true)}
+                            onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray1)')}
+                            onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}
+                          />
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <Label htmlFor="checkSensitiveContent" className="font-normal">
+                            Inappropriate content
+                          </Label>
+                          <Switch
+                            id="checkSensitiveContent"
+                            checked={checkSensitiveContent}
+                            onCheckedChange={(checked) => setCheckSensitiveContent(checked === true)}
+                            onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray1)')}
+                            onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}
+                          />
+                        </div>
+                      </div>
+                    </AccordionContent>
+                  </AccordionItem>
+
+                  {/* Response & Relevance */}
+                  <AccordionItem value="response-relevance">
+                    <AccordionTrigger>
+                      Response & Relevance
+                    </AccordionTrigger>
+                    <AccordionContent>
+                      <div className="flex flex-col gap-3">
+                        <div className="flex items-center justify-between">
+                          <Label htmlFor="checkRelevanceCheck" className="font-normal">
+                            Relevance check
+                          </Label>
+                          <Switch
+                            id="checkRelevanceCheck"
+                            checked={checkRelevanceCheck}
+                            onCheckedChange={(checked) => setCheckRelevanceCheck(checked === true)}
+                            onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray1)')}
+                            onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}
+                          />
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <Label htmlFor="checkPromptAddressConfirmation" className="font-normal">
+                            Prompt-address confirmation
+                          </Label>
+                          <Switch
+                            id="checkPromptAddressConfirmation"
+                            checked={checkPromptAddressConfirmation}
+                            onCheckedChange={(checked) => setCheckPromptAddressConfirmation(checked === true)}
+                            onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray1)')}
+                            onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}
+                          />
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <Label htmlFor="checkURLAvailability" className="font-normal">
+                            URL availability
+                          </Label>
+                          <Switch
+                            id="checkURLAvailability"
+                            checked={checkURLAvailability}
+                            onCheckedChange={(checked) => setCheckURLAvailability(checked === true)}
+                            onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray1)')}
+                            onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}
+                          />
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <Label htmlFor="checkFactCheck" className="font-normal">
+                            Fact-check
+                          </Label>
+                          <Switch
+                            id="checkFactCheck"
+                            checked={checkFactCheck}
+                            onCheckedChange={(checked) => setCheckFactCheck(checked === true)}
+                            onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray1)')}
+                            onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}
+                          />
+                        </div>
+                      </div>
+                    </AccordionContent>
+                  </AccordionItem>
+
+                  {/* Content Validation & Integrity */}
+                  <AccordionItem value="content-validation-integrity">
+                    <AccordionTrigger>
+                      Content validation & integrity
+                    </AccordionTrigger>
+                    <AccordionContent>
+                      <div className="flex flex-col gap-3">
+                        <div className="flex items-center justify-between">
+                          <Label htmlFor="checkCompetitorMentionBlocking" className="font-normal">
+                            Competitor-mention blocking
+                          </Label>
+                          <Switch
+                            id="checkCompetitorMentionBlocking"
+                            checked={checkCompetitorMentionBlocking}
+                            onCheckedChange={(checked) => setCheckCompetitorMentionBlocking(checked === true)}
+                            onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray1)')}
+                            onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}
+                          />
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <Label htmlFor="checkPriceQuoteValidation" className="font-normal">
+                            Price-quote validation
+                          </Label>
+                          <Switch
+                            id="checkPriceQuoteValidation"
+                            checked={checkPriceQuoteValidation}
+                            onCheckedChange={(checked) => setCheckPriceQuoteValidation(checked === true)}
+                            onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray1)')}
+                            onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}
+                          />
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <Label htmlFor="checkSourceContextGrounding" className="font-normal">
+                            Source/context grounding
+                          </Label>
+                          <Switch
+                            id="checkSourceContextGrounding"
+                            checked={checkSourceContextGrounding}
+                            onCheckedChange={(checked) => setCheckSourceContextGrounding(checked === true)}
+                            onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray1)')}
+                            onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}
+                          />
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <Label htmlFor="checkGibberishDetection" className="font-normal">
+                            Gibberish detection
+                          </Label>
+                          <Switch
+                            id="checkGibberishDetection"
+                            checked={checkGibberishDetection}
+                            onCheckedChange={(checked) => setCheckGibberishDetection(checked === true)}
+                            onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray1)')}
+                            onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}
+                          />
+                        </div>
+                      </div>
+                    </AccordionContent>
+                  </AccordionItem>
+
+                  {/* Language Quality */}
+                  <AccordionItem value="language-quality">
+                    <AccordionTrigger>
+                      Language quality
+                    </AccordionTrigger>
+                    <AccordionContent>
+                      <div className="flex flex-col gap-3">
+                        <div className="flex items-center justify-between">
+                          <Label htmlFor="checkResponseQualityScoring" className="font-normal">
+                            Response quality scoring
+                          </Label>
+                          <Switch
+                            id="checkResponseQualityScoring"
+                            checked={checkResponseQualityScoring}
+                            onCheckedChange={(checked) => setCheckResponseQualityScoring(checked === true)}
+                            onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray1)')}
+                            onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}
+                          />
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <Label htmlFor="checkTranslationAccuracy" className="font-normal">
+                            Translation accuracy
+                          </Label>
+                          <Switch
+                            id="checkTranslationAccuracy"
+                            checked={checkTranslationAccuracy}
+                            onCheckedChange={(checked) => setCheckTranslationAccuracy(checked === true)}
+                            onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray1)')}
+                            onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}
+                          />
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <Label htmlFor="checkDuplicateSentenceDetection" className="font-normal">
+                            Duplicate-sentence detection
+                          </Label>
+                          <Switch
+                            id="checkDuplicateSentenceDetection"
+                            checked={checkDuplicateSentenceDetection}
+                            onCheckedChange={(checked) => setCheckDuplicateSentenceDetection(checked === true)}
+                            onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray1)')}
+                            onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}
+                          />
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <Label htmlFor="checkReadabilityLevel" className="font-normal">
+                            Readability level
+                          </Label>
+                          <Switch
+                            id="checkReadabilityLevel"
+                            checked={checkReadabilityLevel}
+                            onCheckedChange={(checked) => setCheckReadabilityLevel(checked === true)}
+                            onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray1)')}
+                            onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}
+                          />
+                        </div>
+                      </div>
+                    </AccordionContent>
+                  </AccordionItem>
+
+                  {/* Logic & Functionality */}
+                  <AccordionItem value="logic-functionality">
+                    <AccordionTrigger>
+                      Logic & functionality
+                    </AccordionTrigger>
+                    <AccordionContent>
+                      <div className="flex flex-col gap-3">
+                        <div className="flex items-center justify-between">
+                          <Label htmlFor="checkSQLQueryValidation" className="font-normal">
+                            SQL query validation
+                          </Label>
+                          <Switch
+                            id="checkSQLQueryValidation"
+                            checked={checkSQLQueryValidation}
+                            onCheckedChange={(checked) => setCheckSQLQueryValidation(checked === true)}
+                            onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray1)')}
+                            onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}
+                          />
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <Label htmlFor="checkOllamaResponseValidation" className="font-normal">
+                            Ollama response validation
+                          </Label>
+                          <Switch
+                            id="checkOllamaResponseValidation"
+                            checked={checkOllamaResponseValidation}
+                            onCheckedChange={(checked) => setCheckOllamaResponseValidation(checked === true)}
+                            onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray1)')}
+                            onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}
+                          />
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <Label htmlFor="checkLogicFlowValidation" className="font-normal">
+                            Logic-flow validation
+                          </Label>
+                          <Switch
+                            id="checkLogicFlowValidation"
+                            checked={checkLogicFlowValidation}
+                            onCheckedChange={(checked) => setCheckLogicFlowValidation(checked === true)}
+                            onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray1)')}
+                            onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}
+                          />
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <Label htmlFor="checkJSONFormatValidation" className="font-normal">
+                            JSON format validation
+                          </Label>
+                          <Switch
+                            id="checkJSONFormatValidation"
+                            checked={checkJSONFormatValidation}
+                            onCheckedChange={(checked) => setCheckJSONFormatValidation(checked === true)}
+                            onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray1)')}
+                            onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}
+                          />
+                        </div>
+                      </div>
+                    </AccordionContent>
+                  </AccordionItem>
+                </Accordion>
+              </div>
+              <Separator className="bg-[var(--gray2)]"/>
+            </ScrollArea>
           </TabsContent>
 
           {/* Monitoring & Evaluation tab */}
-          <TabsContent value="monitor_eval" className="flex flex-col gap-3 px-1">
+          <TabsContent value="monitor_eval" className="flex flex-col gap-4 px-1">
             <div className="flex items-center justify-between">
               <Label htmlFor="check-response-monitor-eval">Check assistant response:</Label>
               <Select value={checkAIResponseMonitorEval} onValueChange={setCheckAIResponseMonitorEval}>
                 <SelectTrigger
-                    id="check-response-monitor-eval" className="w-32"
+                    id="check-response-monitor-eval" className="w-33"
                     onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray2)')}
                     onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}
                 >
@@ -1290,126 +1305,129 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                 </SelectContent>
               </Select>
             </div>
-            {/* Monitoring */}
-            <div className="flex flex-col">
+            <Separator className="bg-[var(--gray2)] -mb-3"/>
+            <div className="flex flex-col -translate-y-1.25">
               <Accordion type="multiple" className="w-full">
+                {/* Monitoring */}
                 <AccordionItem value="monitoring">
                   <AccordionTrigger>
                     Monitoring
                   </AccordionTrigger>
                   <AccordionContent>
-                    <div className="flex items-center gap-2">
-                      <Checkbox
-                        id="checkQualityTrends"
-                        checked={checkQualityTrends}
-                        onCheckedChange={(checked) => setCheckQualityTrends(checked === true)}
-                        onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray2)')}
-                        onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}
-                      />
-                      <Label htmlFor="checkQualityTrends" className="font-normal">
-                        Quality trends
-                      </Label>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Checkbox
-                        id="checkLatency"
-                        checked={checkLatency}
-                        onCheckedChange={(checked) => setCheckLatency(checked === true)}
-                        onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray2)')}
-                        onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}
-                      />
-                      <Label htmlFor="checkLatency" className="font-normal">
-                        Latency
-                      </Label>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Checkbox
-                        id="checkCost"
-                        checked={checkCost}
-                        onCheckedChange={(checked) => setCheckCost(checked === true)}
-                        onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray2)')}
-                        onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}
-                      />
-                      <Label htmlFor="checkCost" className="font-normal">
-                        Cost
-                      </Label>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Checkbox
-                        id="checkModelDataDrift"
-                        checked={checkModelDataDrift}
-                        onCheckedChange={(checked) => setCheckModelDataDrift(checked === true)}
-                        onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray2)')}
-                        onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}
-                      />
-                      <Label htmlFor="checkModelDataDrift" className="font-normal">
-                        Model/data drift
-                      </Label>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Checkbox
-                        id="checkSensitivecheckUserFeedbackContent"
-                        checked={checkUserFeedback}
-                        onCheckedChange={(checked) => setCheckUserFeedback(checked === true)}
-                        onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray2)')}
-                        onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}
-                      />
-                      <Label htmlFor="checkUserFeedback" className="font-normal">
-                        User feedback
-                      </Label>
+                    <div className="flex flex-col gap-3">
+                      <div className="flex items-center justify-between">
+                        <Label htmlFor="checkQualityTrends" className="font-normal">
+                          Quality trends
+                        </Label>
+                        <Switch
+                          id="checkQualityTrends"
+                          checked={checkQualityTrends}
+                          onCheckedChange={(checked) => setCheckQualityTrends(checked === true)}
+                          onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray1)')}
+                          onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}
+                        />
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <Label htmlFor="checkLatency" className="font-normal">
+                          Latency
+                        </Label>
+                        <Switch
+                          id="checkLatency"
+                          checked={checkLatency}
+                          onCheckedChange={(checked) => setCheckLatency(checked === true)}
+                          onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray1)')}
+                          onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}
+                        />
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <Label htmlFor="checkCost" className="font-normal">
+                          Cost
+                        </Label>
+                        <Switch
+                          id="checkCost"
+                          checked={checkCost}
+                          onCheckedChange={(checked) => setCheckCost(checked === true)}
+                          onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray1)')}
+                          onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}
+                        />
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <Label htmlFor="checkModelDataDrift" className="font-normal">
+                          Model/data drift
+                        </Label>
+                        <Switch
+                          id="checkModelDataDrift"
+                          checked={checkModelDataDrift}
+                          onCheckedChange={(checked) => setCheckModelDataDrift(checked === true)}
+                          onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray1)')}
+                          onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}
+                        />
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <Label htmlFor="checkUserFeedback" className="font-normal">
+                          User feedback
+                        </Label>
+                        <Switch
+                          id="checkSensitivecheckUserFeedbackContent"
+                          checked={checkUserFeedback}
+                          onCheckedChange={(checked) => setCheckUserFeedback(checked === true)}
+                          onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray1)')}
+                          onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}
+                        />
+                      </div>
                     </div>
                   </AccordionContent>
                 </AccordionItem>
-              </Accordion>
-            </div>
-            {/* Evaluation */}
-            <div className="flex flex-col">
-              <Accordion type="multiple" className="w-full">
+
+                {/* Evaluation */}
                 <AccordionItem value="evaluation">
                   <AccordionTrigger>
                     Evaluation
                   </AccordionTrigger>
                   <AccordionContent>
-                    <div className="flex items-center gap-2">
-                      <Checkbox
-                        id="checkAccuracy"
-                        checked={checkAccuracy}
-                        onCheckedChange={(checked) => setCheckAccuracy(checked === true)}
-                        onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray2)')}
-                        onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}
-                      />
-                      <Label htmlFor="checkAccuracy" className="font-normal">
-                        Accuracy
-                      </Label>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Checkbox
-                        id="checkHallucinationRate"
-                        checked={checkHallucinationRate}
-                        onCheckedChange={(checked) => setCheckHallucinationRate(checked === true)}
-                        onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray2)')}
-                        onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}
-                      />
-                      <Label htmlFor="checkHallucinationRate" className="font-normal">
-                        Hallucination rate
-                      </Label>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Checkbox
-                        id="checkRegression"
-                        checked={checkRegression}
-                        onCheckedChange={(checked) => setCheckRegression(checked === true)}
-                        onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray2)')}
-                        onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}
-                      />
-                      <Label htmlFor="checkRegression" className="font-normal">
-                        Regression
-                      </Label>
+                    <div className="flex flex-col gap-3">
+                      <div className="flex items-center justify-between">
+                        <Label htmlFor="checkAccuracy" className="font-normal">
+                          Accuracy
+                        </Label>
+                        <Switch
+                          id="checkAccuracy"
+                          checked={checkAccuracy}
+                          onCheckedChange={(checked) => setCheckAccuracy(checked === true)}
+                          onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray1)')}
+                          onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}
+                        />
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <Label htmlFor="checkHallucinationRate" className="font-normal">
+                          Hallucination rate
+                        </Label>
+                        <Switch
+                          id="checkHallucinationRate"
+                          checked={checkHallucinationRate}
+                          onCheckedChange={(checked) => setCheckHallucinationRate(checked === true)}
+                          onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray1)')}
+                          onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}
+                        />
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <Label htmlFor="checkRegression" className="font-normal">
+                          Regression
+                        </Label>
+                        <Switch
+                          id="checkRegression"
+                          checked={checkRegression}
+                          onCheckedChange={(checked) => setCheckRegression(checked === true)}
+                          onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray1)')}
+                          onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}
+                        />
+                      </div>
                     </div>
                   </AccordionContent>
                 </AccordionItem>
               </Accordion>
             </div>
+            <Separator className="bg-[var(--gray2)] -mt-5"/>
           </TabsContent>
         </Tabs>
 

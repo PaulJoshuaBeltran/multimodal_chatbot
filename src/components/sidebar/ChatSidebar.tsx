@@ -6,7 +6,6 @@ import { useUser } from '@clerk/nextjs'
 import ConversationList from '@/src/components/sidebar/ConversationList'
 import ModelSelect from '@/src/components/sidebar/ModelSelect'
 import { Button } from '../ui/button'
-import { Separator } from '../ui/separator'
 import { ScrollArea } from '../ui/scroll-area'
 import {
   DropdownMenu,
@@ -66,8 +65,6 @@ export function ChatSidebar({
         <span className="font-bold text-lg truncate">Multimodal Chatbot</span>
       </div>
 
-      <Separator />
-
       {/* Nav actions */}
       <div className="flex flex-col gap-1 p-2">
         <Button
@@ -107,8 +104,6 @@ export function ChatSidebar({
         </Button>
       </div>
 
-      <Separator />
-
       {/* Model selector */}
       <div className="px-3 py-2">
         <ModelSelect
@@ -118,8 +113,6 @@ export function ChatSidebar({
           refreshToken={modelsRefresh}
         />
       </div>
-
-      <Separator />
 
       {/* Conversation list */}
       <ScrollArea type="auto" className="flex-1 px-2 min-h-0">
@@ -136,8 +129,6 @@ export function ChatSidebar({
           conversations={conversations}
         />
       </ScrollArea>
-
-      <Separator />
 
       {/* Footer: Settings + Account */}
       <div className="p-2">
