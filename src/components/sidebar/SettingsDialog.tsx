@@ -196,7 +196,7 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
           </TabsList>
 
           {/* Account tab */}
-          <TabsContent value="account" className="flex flex-col gap-4 px-1">
+          <TabsContent value="account" className="flex flex-col gap-4 px-1 pr-5">
             <div className="flex items-center justify-between mt-2">
               <Label>Username</Label>
               <Label>{username}</Label>
@@ -231,7 +231,7 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
           </TabsContent>
 
           {/* General tab */}
-          <TabsContent value="general" className="flex flex-col gap-4 px-1">
+          <TabsContent value="general" className="flex flex-col gap-4 px-1 pr-5">
             <div className="flex items-center justify-between">
               <Label htmlFor="theme-select">Theme</Label>
               <Select value={theme} onValueChange={setTheme}>
@@ -338,7 +338,7 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
           </TabsContent>
 
           {/* Subscription tab */}
-          <TabsContent value="subscription" className="flex flex-col gap-3 px-1">
+          <TabsContent value="subscription" className="flex flex-col gap-3 px-1 pr-5">
             <div
               className="flex flex-col gap-3 rounded-lg border p-4"
               style={{ backgroundColor: 'var(--gray2)' }}
@@ -381,7 +381,7 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
           </TabsContent>
 
           {/* Chat tab */}
-          <TabsContent value="chat" className="flex flex-col gap-4 px-1">
+          <TabsContent value="chat" className="flex flex-col gap-4 px-1 pr-5">
             <div className="flex items-center mt-2">
               <Label className="w-82.5 shrink-0">Font size</Label>
               <NumericUpDown
@@ -461,115 +461,117 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
 
           {/* System Prompt tab */}
           <TabsContent value="system_prompt" className="flex flex-col gap-4 px-1">
-            <div className="flex flex-col gap-3 py-2">
-              <Label htmlFor="system-prompt">System settings</Label>
-              <Textarea
-                id="system-prompt"
-                rows={6}
-                placeholder="You are a helpful assistant…"
-                value={systemPrompt}
-                onChange={(e) => setSystemPrompt(e.target.value)}
-                onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray2)')}
-                onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}
-              />
-              <Separator className="bg-[var(--gray2)] -mb-3"/>
-              <div className="flex flex-col">
-                {/* Context length — separate from the collapsible accordion since it
-                affects VRAM at load time, not just generation behaviour */}
-                <Accordion type="multiple" className="w-full">
-                  <AccordionItem value="context-window">
-                    <AccordionTrigger>
-                      Context Window
-                    </AccordionTrigger>
-                    <AccordionContent>
-                      <div className="flex flex-col gap-3 px-1">
-                        <div className="flex items-center justify-between">
-                          <Label className="w-82.5 shrink-0">Context length:</Label>
-                          <Select
-                            value={String(numCtx)}
-                            onValueChange={(v) => setNumCtx(Number(v))}
-                          >
-                            <SelectTrigger className="flex-1 bg-[var(--gray3)] border-white hover:bg-[var(--gray2)]">
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {NUM_CTX_OPTIONS.map((n) => (
-                                <SelectItem
-                                  key={n}
-                                  value={String(n)}
-                                  style = {{ backgroundColor: 'var(--gray3)' }}
-                                  onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray2)')}
-                                  onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray3)')}
-                                >
-                                  {formatCtx(n)} tokens
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
+            <ScrollArea type="auto" className="min-h-[360px] max-h-[450px] pr-5">
+              <div className="flex flex-col gap-3 py-2">
+                <Label htmlFor="system-prompt">System settings</Label>
+                <Textarea
+                  id="system-prompt"
+                  rows={6}
+                  placeholder="You are a helpful assistant…"
+                  value={systemPrompt}
+                  onChange={(e) => setSystemPrompt(e.target.value)}
+                  onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray2)')}
+                  onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}
+                />
+                <Separator className="bg-[var(--gray2)] -mb-3"/>
+                <div className="flex flex-col">
+                  {/* Context length — separate from the collapsible accordion since it
+                  affects VRAM at load time, not just generation behaviour */}
+                  <Accordion type="multiple" className="w-full">
+                    <AccordionItem value="context-window">
+                      <AccordionTrigger>
+                        Context Window
+                      </AccordionTrigger>
+                      <AccordionContent>
+                        <div className="flex flex-col gap-3 px-1">
+                          <div className="flex items-center justify-between">
+                            <Label className="w-82.5 shrink-0">Context length:</Label>
+                            <Select
+                              value={String(numCtx)}
+                              onValueChange={(v) => setNumCtx(Number(v))}
+                            >
+                              <SelectTrigger className="flex-1 bg-[var(--gray3)] border-white hover:bg-[var(--gray2)]">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {NUM_CTX_OPTIONS.map((n) => (
+                                  <SelectItem
+                                    key={n}
+                                    value={String(n)}
+                                    style = {{ backgroundColor: 'var(--gray3)' }}
+                                    onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray2)')}
+                                    onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray3)')}
+                                  >
+                                    {formatCtx(n)} tokens
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          <div className="flex items-center justify-between">
+                            <Label className="w-82.5 shrink-0">Max reply tokens:</Label>
+                            <NumericUpDown
+                              className="flex-1 bg-[var(--gray3)] border-white hover:bg-[var(--gray2)]"
+                              value={maxReplyTokens}
+                              min={64}
+                              max={numCtx}
+                              step={64}
+                              onValueChange={setMaxReplyTokens}
+                            />
+                          </div>
                         </div>
-                        <div className="flex items-center justify-between">
-                          <Label className="w-82.5 shrink-0">Max reply tokens:</Label>
-                          <NumericUpDown
-                            className="flex-1 bg-[var(--gray3)] border-white hover:bg-[var(--gray2)]"
-                            value={maxReplyTokens}
-                            min={64}
-                            max={numCtx}
-                            step={64}
-                            onValueChange={setMaxReplyTokens}
-                          />
+                      </AccordionContent>
+                    </AccordionItem>
+                    <AccordionItem value="more-prompt-settings">
+                      <AccordionTrigger>
+                        More Settings (Think {thinkingQuality})
+                      </AccordionTrigger>
+                      <AccordionContent>
+                        <div className="flex flex-col gap-3">
+                          <div className="flex items-center">
+                            <Label className="w-82.5 shrink-0">Temperature ({temperature}):</Label>
+                            <NumericUpDown
+                              className="flex-1 bg-[var(--gray3)] border-white hover:bg-[var(--gray2)]"
+                              value={temperature}
+                              min={0}
+                              max={2}
+                              step={0.1}
+                              onValueChange={setTemperature}
+                            />
+                          </div>
+                          <div className="flex items-center">
+                            <Label className="w-82.5 shrink-0">Top-P ({topP}):</Label>
+                            <NumericUpDown
+                              className="flex-1 bg-[var(--gray3)] border-white hover:bg-[var(--gray2)]"
+                              value={topP}
+                              min={0}
+                              max={1}
+                              step={0.1}
+                              onValueChange={setTopP}
+                            />
+                          </div>
+                          <div className="flex items-center">
+                            <Label className="w-82.5 shrink-0">Top-K:</Label>
+                            <NumericUpDown
+                              className="flex-1 bg-[var(--gray3)] border-white hover:bg-[var(--gray2)]"
+                              value={topK}
+                              min={0}
+                              step={1}
+                              onValueChange={setTopK}
+                            />
+                          </div>
                         </div>
-                      </div>
-                    </AccordionContent>
-                  </AccordionItem>
-                  <AccordionItem value="more-prompt-settings">
-                    <AccordionTrigger>
-                      More Settings (Think {thinkingQuality})
-                    </AccordionTrigger>
-                    <AccordionContent>
-                      <div className="flex flex-col gap-3">
-                        <div className="flex items-center">
-                          <Label className="w-82.5 shrink-0">Temperature ({temperature}):</Label>
-                          <NumericUpDown
-                            className="flex-1 bg-[var(--gray3)] border-white hover:bg-[var(--gray2)]"
-                            value={temperature}
-                            min={0}
-                            max={2}
-                            step={0.1}
-                            onValueChange={setTemperature}
-                          />
-                        </div>
-                        <div className="flex items-center">
-                          <Label className="w-82.5 shrink-0">Top-P ({topP}):</Label>
-                          <NumericUpDown
-                            className="flex-1 bg-[var(--gray3)] border-white hover:bg-[var(--gray2)]"
-                            value={topP}
-                            min={0}
-                            max={1}
-                            step={0.1}
-                            onValueChange={setTopP}
-                          />
-                        </div>
-                        <div className="flex items-center">
-                          <Label className="w-82.5 shrink-0">Top-K:</Label>
-                          <NumericUpDown
-                            className="flex-1 bg-[var(--gray3)] border-white hover:bg-[var(--gray2)]"
-                            value={topK}
-                            min={0}
-                            step={1}
-                            onValueChange={setTopK}
-                          />
-                        </div>
-                      </div>
-                    </AccordionContent>
-                  </AccordionItem>
-                </Accordion>
+                      </AccordionContent>
+                    </AccordionItem>
+                  </Accordion>
+                </div>
+                <Separator className="bg-[var(--gray2)] -mt-3"/>
               </div>
-              <Separator className="bg-[var(--gray2)] -mt-3"/>
-            </div>
+            </ScrollArea>
           </TabsContent>
 
           {/* RAG tab */}
-          <TabsContent value="rag" className="flex flex-col gap-4 px-1">
+          <TabsContent value="rag" className="flex flex-col gap-4 px-1 pr-5">
             <Separator className="bg-[var(--gray2)] -mb-3"/>
             <div className="flex flex-col ">
               <Accordion type="multiple" className="w-full -translate-y-1.25">
@@ -631,7 +633,7 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
           </TabsContent>
 
           {/* Toolcall tab */}
-          <TabsContent value="toolcall" className="flex flex-col gap-4 px-1">
+          <TabsContent value="toolcall" className="flex flex-col gap-4 px-1 pr-5">
             <Separator className="bg-[var(--gray2)] -mb-3"/>
             <div className="flex flex-col -translate-y-1.25">
               <Accordion type="multiple" className="w-full">
@@ -777,7 +779,7 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
           </TabsContent>
 
           {/* LLM Engineering tab */}
-          <TabsContent value="llm_engineering" className="flex flex-col gap-4 px-1">
+          <TabsContent value="llm_engineering" className="flex flex-col gap-4 px-1 pr-5">
             <Separator className="bg-[var(--gray2)] -mb-3"/>
             <div className="flex flex-col  -translate-y-1.25">
               <Accordion type="multiple" className="w-full">
@@ -943,7 +945,7 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
 
           {/* Guardrail tab */}
           <TabsContent value="guardrail" className="flex flex-col gap-4 px-1">
-            <ScrollArea type="auto" className="min-h-[360px] max-h-[450px] pr-3">
+            <ScrollArea type="auto" className="min-h-[360px] max-h-[450px] pr-5">
               <div className="flex items-center justify-between">
                 <Label htmlFor="check-response-guardrail">Check assistant response:</Label>
                 <Select value={checkAIResponseGuardrail} onValueChange={setCheckAIResponseGuardrail}>
@@ -1276,7 +1278,7 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
           </TabsContent>
 
           {/* Monitoring & Evaluation tab */}
-          <TabsContent value="monitor_eval" className="flex flex-col gap-4 px-1">
+          <TabsContent value="monitor_eval" className="flex flex-col gap-4 px-1 pr-5">
             <div className="flex items-center justify-between">
               <Label htmlFor="check-response-monitor-eval">Check assistant response:</Label>
               <Select value={checkAIResponseMonitorEval} onValueChange={setCheckAIResponseMonitorEval}>
@@ -1431,7 +1433,7 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
           </TabsContent>
         </Tabs>
 
-        <div className="flex justify-end gap-2 pt-2">
+        <div className="flex justify-end gap-2 pt-2 pr-2">
           <Button
             onClick={() => onOpenChange(false)}
             onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray2)')}
