@@ -28,7 +28,7 @@ export function MonitorEvalTab({
 }: MonitorEvalTabProps
 ){
     return (
-        <TabsContent value="monitor_eval" className="flex flex-col gap-4 px-1 pr-5">
+        <TabsContent value="monitor_eval" className="flex flex-col gap-4 px-1 pr-6">
             <div className="flex items-center justify-between">
               <Label htmlFor="check-response-monitor-eval">Check assistant response:</Label>
               <Select value={checkAIResponseMonitorEval} onValueChange={setCheckAIResponseMonitorEval}>
@@ -57,8 +57,8 @@ export function MonitorEvalTab({
                 </SelectContent>
               </Select>
             </div>
-            <Separator className="bg-[var(--gray2)] -mb-3"/>
-            <div className="flex flex-col -translate-y-1.25">
+            <Separator className="bg-[var(--gray2)] mt-2 -translate-y-4"/>
+            <div className="flex flex-col -translate-y-8">
               <Accordion type="multiple" className="w-full">
                 {/* Monitoring */}
                 <AccordionItem value="monitoring">
@@ -179,7 +179,7 @@ export function MonitorEvalTab({
                 </AccordionItem>
               </Accordion>
             </div>
-            <Separator className="bg-[var(--gray2)] -mt-5"/>
+            <Separator className="bg-[var(--gray2)] -translate-y-12"/>
         </TabsContent>
     )
 }
