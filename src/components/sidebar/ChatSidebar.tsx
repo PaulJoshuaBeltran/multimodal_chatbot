@@ -15,6 +15,7 @@ import {
   DropdownMenuTrigger,
 } from '../ui/dropdown-menu'
 import {
+  Brain,
   MessageSquarePlus,
   Search,
   Settings,
@@ -23,6 +24,7 @@ import {
   UserX,
   MoreVertical,
   Wrench,
+  ToolCase
 } from 'lucide-react'
 import { ChatSidebarProps } from '@/src/types/props'
 import { SettingsDialog } from '@/src/components/sidebar/SettingsDialog'
@@ -40,6 +42,7 @@ export function ChatSidebar({
   onSelectConversation,
   onNewConversation,
   onSearch,
+  onViewRAG,
   onViewTools,
   onModelChange,
   onManageModels,
@@ -75,7 +78,7 @@ export function ChatSidebar({
           onClick={onNewConversation}
         >
           <MessageSquarePlus className="w-4 h-4" />
-          New conversation
+          New Conversation
         </Button>
 
         <Button
@@ -86,9 +89,23 @@ export function ChatSidebar({
           onClick={onSearch}
         >
           <Search className="w-4 h-4" />
-          Search messages
+          Search Messages
         </Button>
 
+        <Button
+          variant="ghost"
+          className="justify-start gap-2 text-sm font-normal text-white hover:text-white"
+          style={currentView === 'rag' ? { backgroundColor: 'var(--gray1)' } : {}}
+          onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray1)')}
+          onMouseLeave={(e) => {
+            if (currentView !== 'rag') e.currentTarget.style.backgroundColor = ''
+          }}
+          onClick={onViewRAG}
+        >
+          <Brain className="w-4 h-4" />
+          Manage RAG Data
+        </Button>
+        
         <Button
           variant="ghost"
           className="justify-start gap-2 text-sm font-normal text-white hover:text-white"
@@ -100,7 +117,7 @@ export function ChatSidebar({
           onClick={onViewTools}
         >
           <Wrench className="w-4 h-4" />
-          Tools
+          Tool Call
         </Button>
       </div>
 

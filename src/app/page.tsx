@@ -3,7 +3,7 @@
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { useAuth, useClerk } from '@clerk/nextjs'
-import MessageList from '@/src/components/main/MessageList'
+import MessageList from '@/src/components/tabs/MessageList'
 import ModelManager from '@/src/components/sidebar/ModelManager'
 import SearchDialog from '@/src/components/dialogs/SearchDialog'
 import { ScrollArea } from '../components/ui/scroll-area'
@@ -18,7 +18,8 @@ import type {
 
 import { ChatSidebar } from '../components/sidebar/ChatSidebar'
 import { ChatInput } from '../components/main/ChatInput'
-import { ToolList } from '../components/main/ToolList'
+import { RAGList } from '../components/tabs/KnowledgeManagement'
+import { ToolList } from '../components/tabs/ToolList'
 import { NewConversationDialog, DeactivateAlertDialog, AddModelDialog } from '../components/dialogs/OtherDialogs'
 import { SystemPromptDialog } from '../components/dialogs/SystemPromptDialog'
 import { HttpError } from '../models/http_error'
@@ -51,7 +52,7 @@ export default function Page() {
   const [showModelManager, setShowModelManager] = useState(false)
   const [showAddModelOpen, setShowAddModelOpen] = useState(false)
   const [isSearchOpen, setIsSearchOpen] = useState(false)
-  const [currentView, setCurrentView] = useState<'chat' | 'tools'>('chat')
+  const [currentView, setCurrentView] = useState<'chat' | 'rag' | 'tools' | 'toolcall'>('chat')
 
   // Dialog open states
   const [newConvOpen, setNewConvOpen] = useState(false)
@@ -502,6 +503,7 @@ export default function Page() {
         onSelectConversation={loadMessages}
         onNewConversation={() => { setNewConvOpen(true); setCurrentView('chat') }}
         onSearch={() => { setIsSearchOpen(true); setCurrentView('chat') }}
+        onViewRAG={() => setCurrentView('rag')}
         onViewTools={() => setCurrentView('tools')}
         onModelChange={(model) => setSelectedModel(model)}
         onManageModels={() => { setShowModelManager(true); setCurrentView('chat') }}
@@ -515,7 +517,7 @@ export default function Page() {
         className="flex-1 flex flex-col min-w-0 min-h-0 relative"
         style={{ backgroundColor: 'var(--gray3)' }}
       >
-        {currentView === 'chat' ? (
+        {currentView === 'chat' && (
           <>
             <ScrollArea
               type="auto"
@@ -553,8 +555,12 @@ export default function Page() {
               historyMessages={messages}
             />
           </>
-        ) : (
-          <ToolList />
+        )}
+        {currentView === 'rag' && (
+          <RAGList/>
+        )}
+        {currentView === 'tools' && (
+          <ToolList/>
         )}
       </main>
 

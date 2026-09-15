@@ -32,12 +32,13 @@ export interface ChatSidebarProps {
   token: string | null
   conversations: Conversation[]
   selectedConv: string | null
-  currentView: 'chat' | 'tools'
+  currentView: 'chat' | 'rag' | 'tools' | 'toolcall'
   selectedModel: AiModel | null
   modelsRefresh: number
   onSelectConversation: (id: string) => void
   onNewConversation: () => void
   onSearch: () => void
+  onViewRAG: () => void
   onViewTools: () => void
   onModelChange: (m: AiModel | null) => void
   onManageModels: () => void
