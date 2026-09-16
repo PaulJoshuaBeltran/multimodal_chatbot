@@ -35,6 +35,12 @@ export const MOCK_KNOWLEDGE = [
   { id: 'knowledge-4', name: 'Image Vectorizer',   description: 'Translates pixel layouts into relational coordinate systems.',      category: 'Vision'     , createdAt: '09/14/2026 4:43:00PM', updatedAt: '09/15/2026 4:43:00PM'},
   { id: 'knowledge-5', name: 'Time-Zone Engine',   description: 'Normalizes chronological structures across spatial zones.',         category: 'Utility'    , createdAt: '09/14/2026 4:43:00PM', updatedAt: '09/15/2026 4:43:00PM'},
   { id: 'knowledge-6', name: 'Currency Evaluator', description: 'Fetches real-time financial conversions and spot prices.',          category: 'Finance'    , createdAt: '09/14/2026 4:43:00PM', updatedAt: '09/15/2026 4:43:00PM'},
+  { id: 'knowledge-7', name: 'Web Search 1',         description: 'Queries search engines for live web information.',                  category: 'Information', createdAt: '09/14/2026 4:43:00PM', updatedAt: '09/15/2026 4:43:00PM'},
+  { id: 'knowledge-8', name: 'Python Sandbox 1',     description: 'Executes untrusted mathematical and algorithmic scripts securely.', category: 'Runtime'    , createdAt: '09/14/2026 4:43:00PM', updatedAt: '09/15/2026 4:43:00PM'},
+  { id: 'knowledge-9', name: 'Document Parser 1',    description: 'Extracts structural semantics from text, PDF, and CSV payloads.',   category: 'Data'       , createdAt: '09/14/2026 4:43:00PM', updatedAt: '09/15/2026 4:43:00PM'},
+  { id: 'knowledge-10', name: 'Image Vectorizer 1',   description: 'Translates pixel layouts into relational coordinate systems.',      category: 'Vision'     , createdAt: '09/14/2026 4:43:00PM', updatedAt: '09/15/2026 4:43:00PM'},
+  { id: 'knowledge-11', name: 'Time-Zone Engine 1',   description: 'Normalizes chronological structures across spatial zones.',         category: 'Utility'    , createdAt: '09/14/2026 4:43:00PM', updatedAt: '09/15/2026 4:43:00PM'},
+  { id: 'knowledge-12', name: 'Currency Evaluator 1', description: 'Fetches real-time financial conversions and spot prices.',          category: 'Finance'    , createdAt: '09/14/2026 4:43:00PM', updatedAt: '09/15/2026 4:43:00PM'},
 ]
 
 const ROWS_PER_PAGE_OPTIONS = [4, 8, 10, 20]
@@ -74,7 +80,7 @@ export function RAGList() {
     'knowledge-3': true,
   })
   const [knowledgePage, setknowledgePage] = useState(1)
-  const [knowledgeS_PER_PAGE, setknowledgePerPage] = useState(4)
+  const [knowledgeS_PER_PAGE, setknowledgePerPage] = useState(10)
   const [sortField, setSortField] = useState<SortField>('name')
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc')
   const [dialogOpen, setDialogOpen] = useState(false)

@@ -31,6 +31,15 @@ export function ScrollArea({
         <ScrollAreaPrimitive.Thumb className="flex-1 rounded-[10px] relative bg-foreground/25 hover:bg-foreground/40 transition-colors before:content-[''] before:absolute before:top-1/2 before:left-1/2 before:-translate-x-1/2 before:-translate-y-1/2 before:w-full before:h-full before:min-w-[44px] before:min-h-[44px]" />
       </ScrollAreaPrimitive.Scrollbar>
       <ScrollAreaPrimitive.Corner className="bg-muted" />
+
+      <ScrollAreaPrimitive.Scrollbar
+        orientation="horizontal"
+        className="flex select-none touch-none p-0.5 bg-foreground/5 transition-colors duration-[160ms] ease-out h-2.5 w-full flex-col"
+      >
+        <ScrollAreaPrimitive.Thumb className="flex-1 rounded-[10px] relative bg-foreground/25 hover:bg-foreground/40 transition-colors before:content-[''] before:absolute before:top-1/2 before:left-1/2 before:-translate-x-1/2 before:-translate-y-1/2 before:w-full before:h-full before:min-w-[44px] before:min-h-[44px]" />
+      </ScrollAreaPrimitive.Scrollbar>
+
+      <ScrollAreaPrimitive.Corner className="bg-muted" />
     </ScrollAreaPrimitive.Root>
   )
 }
