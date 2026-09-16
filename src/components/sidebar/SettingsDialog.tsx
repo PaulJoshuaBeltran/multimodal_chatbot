@@ -10,25 +10,11 @@ import {
   DialogDescription,
 } from '../ui/dialog'
 import { Button } from '../ui/button'
-import { Label } from '../ui/label'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '../ui/select'
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '../ui/tabs'
-import { Sparkles, Loader2, Check } from 'lucide-react'
+import { Tabs, TabsList, TabsTrigger } from '../ui/tabs'
 import { SettingsDialogProps } from '@/src/types/props'
-import { Textarea } from '../ui/textarea'
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '../ui/accordion'
-import { NumericUpDown } from '../ui/numeric-updown'
 
 import 'dotenv/config'
 import { Separator } from '../ui/separator'
-import { Switch } from '../ui/switch'
-import { ScrollArea } from '../ui/scroll-area'
 
 import { AccountTab } from '../settings/account'
 import { GeneralTab } from '../settings/general'

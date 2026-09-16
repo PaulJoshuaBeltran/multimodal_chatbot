@@ -24,7 +24,6 @@ import {
   UserX,
   MoreVertical,
   Wrench,
-  ToolCase
 } from 'lucide-react'
 import { ChatSidebarProps } from '@/src/types/props'
 import { SettingsDialog } from '@/src/components/sidebar/SettingsDialog'

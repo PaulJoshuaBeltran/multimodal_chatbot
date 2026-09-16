@@ -1,0 +1,1 @@
+export type SortField = 'name' | 'category' | 'createdAt' | 'updatedAt'

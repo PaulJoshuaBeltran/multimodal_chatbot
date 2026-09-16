@@ -14,6 +14,14 @@ import { AlertTriangle, Plus, Search } from 'lucide-react'
 import { AiModel, OllamaInstalledModel } from '@/src/types/msg_conversation_model'
 import { ScrollArea } from '../ui/scroll-area'
 import { Separator } from '../ui/separator'
+import {
+  Select as KSelect,
+  SelectContent as KSelectContent,
+  SelectItem as KSelectItem,
+  SelectTrigger as KSelectTrigger,
+  SelectValue as KSelectValue,
+} from '../ui/select'
+import { KnowledgeFormData, KNOWLEDGE_CATEGORY_OPTIONS } from '@/src/types/dialog'
 
 // ── NewConversationDialog ─────────────────────────────────────────────────────
 export function NewConversationDialog({
@@ -442,6 +450,146 @@ export function DeleteMessageDialog({
             onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}
           >
             Cancel
+          </Button>
+        </div>
+      </DialogContent>
+    </Dialog>
+  )
+}
+
+// ── AddEditKnowledgeDialog ──────────────────────────────────────────────────
+export function AddEditKnowledgeDialog({
+  open,
+  mode,
+  initialData,
+  onOpenChange,
+  onSave,
+}: {
+  open: boolean
+  mode: 'add' | 'edit'
+  initialData?: KnowledgeFormData
+  onOpenChange: (open: boolean) => void
+  onSave?: (data: KnowledgeFormData) => void
+}) {
+  const emptyForm: KnowledgeFormData = { name: '', description: '', category: '' }
+
+  const [form, setForm] = useState<KnowledgeFormData>(initialData ?? emptyForm)
+  const [saving, setSaving] = useState(false)
+
+  // Resync form contents whenever the dialog is (re)opened, mirroring
+  // AddModelDialog's prevOpen pattern instead of a useEffect.
+  const [prevOpen, setPrevOpen] = useState(open)
+  if (open !== prevOpen) {
+    setPrevOpen(open)
+    if (open) setForm(initialData ?? emptyForm)
+  }
+
+  const isValid = form.name.trim().length > 0 && form.category.trim().length > 0
+
+  function update<K extends keyof KnowledgeFormData>(key: K, value: KnowledgeFormData[K]) {
+    setForm((prev) => ({ ...prev, [key]: value }))
+  }
+
+  async function handleSave() {
+    if (!isValid) {
+      toast.add({
+        title: "ERROR",
+        description: "Name and category are required.",
+      })
+      return
+    }
+    setSaving(true)
+    try {
+      // Intentionally not wired to any backend or table state yet —
+      // caller decides what (if anything) happens with the data.
+      onSave?.(form)
+      toast.add({
+        title: "SUCCESS",
+        description: mode === 'add' ? `${form.name} added` : `${form.name} updated`,
+      })
+      onOpenChange(false)
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent
+        className="sm:max-w-xl max-h-[85vh] flex flex-col overflow-hidden"
+        style={{ backgroundColor: 'var(--gray3)', borderColor: 'var(--gray3)' }}
+      >
+        <DialogHeader>
+          <DialogTitle>{mode === 'add' ? 'Add knowledge' : 'Edit knowledge'}</DialogTitle>
+          <DialogDescription>
+            {mode === 'add'
+              ? 'Define a new knowledge entry for the RAG data table.'
+              : 'Update the details for this knowledge entry.'}
+          </DialogDescription>
+        </DialogHeader>
+
+        <ScrollArea type="auto" className="flex-1 min-h-0 pr-1">
+          <div className="flex flex-col gap-4 py-1 pr-3">
+            <div className="grid gap-1.5">
+              <Label htmlFor="knowledge-name">Name</Label>
+              <Input
+                id="knowledge-name"
+                placeholder="e.g. Web Search"
+                value={form.name}
+                onChange={(e) => update('name', e.target.value)}
+                style={{ backgroundColor: 'var(--gray3)' }}
+              />
+            </div>
+
+            <div className="grid gap-1.5">
+              <Label htmlFor="knowledge-description">Description</Label>
+              <Textarea
+                id="knowledge-description"
+                placeholder="What does this knowledge source do?"
+                value={form.description}
+                onChange={(e) => update('description', e.target.value)}
+                style={{ backgroundColor: 'var(--gray3)' }}
+                rows={4}
+              />
+            </div>
+
+            <div className="grid gap-1.5">
+              <Label htmlFor="knowledge-category">Category</Label>
+              <KSelect value={form.category} onValueChange={(v) => update('category', v)}>
+                <KSelectTrigger
+                  id="knowledge-category"
+                  className="bg-[var(--gray3)] border-white hover:bg-[var(--gray2)]"
+                >
+                  <KSelectValue placeholder="Select a category" />
+                </KSelectTrigger>
+                <KSelectContent>
+                  {KNOWLEDGE_CATEGORY_OPTIONS.map((option) => (
+                    <KSelectItem
+                      key={option}
+                      value={option}
+                      style={{ backgroundColor: 'var(--gray3)' }}
+                      onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray2)')}
+                      onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray3)')}
+                    >
+                      {option}
+                    </KSelectItem>
+                  ))}
+                </KSelectContent>
+              </KSelect>
+            </div>
+          </div>
+        </ScrollArea>
+
+        <div className="flex justify-end gap-2 pt-2">
+          <Button
+            variant="ghost"
+            onClick={() => onOpenChange(false)}
+            style={{ backgroundColor: 'var(--gray3)' }}
+          >
+            Cancel
+          </Button>
+          <Button onClick={handleSave} disabled={saving || !isValid} style={{ backgroundColor: 'var(--gray3)' }}>
+            {saving ? (mode === 'add' ? 'Adding…' : 'Saving…') : mode === 'add' ? 'Add' : 'Save changes'}
           </Button>
         </div>
       </DialogContent>
