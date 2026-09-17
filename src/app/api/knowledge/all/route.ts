@@ -1,0 +1,49 @@
+// src/app/api/knowledge/route.ts
+import { NextResponse } from "next/server";
+import { prisma } from "@/lib/prisma";
+import pinecone from "@/lib/pinecone";
+
+// List all documents from Pinecone and MongoDB
+export async function GET() {
+  const doc = await prisma.knowledgeDocument.findMany({
+      orderBy: { createdAt: "desc" },
+    }
+  );
+
+  if (!doc) {
+    return NextResponse.json({ error: "Document not found" }, { status: 404 });
+  }
+
+  const index = pinecone.index({ host: process.env.PINECONE_HOST_NAME || "" });
+
+  // Pull chunk IDs by prefix, then fetch the actual records for preview/metadata
+  const ids: string[] = [];
+  let paginationToken: string | undefined;
+  do {
+    const page = await index.listPaginated({
+      paginationToken,
+    });
+    ids.push(...(page.vectors ?? []).map((v) => v.id!));
+    paginationToken = page.pagination?.next;
+  } while (paginationToken);
+
+  let chunks: { id: string; chunkIndex: number; preview: string }[] = [];
+
+  if (ids.length) {
+    // const fetched  = await index.fetch(ids);
+    const fetched  = await index.fetch({ ids: ids.map((id) => id) });
+
+    chunks = fetched.records
+      ? Object.values(fetched.records).map((record) => ({
+          id: record.id,
+          chunkIndex: (record.metadata?.chunkIndex as number) ?? 0,
+          preview: ((record.metadata?.text as string) ?? ""),
+        }))
+      : [];
+    chunks.sort((a, b) => a.chunkIndex - b.chunkIndex);
+  }
+
+  return NextResponse.json({
+    documents: doc,
+  });
+}

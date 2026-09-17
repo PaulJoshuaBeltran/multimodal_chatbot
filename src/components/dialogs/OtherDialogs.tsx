@@ -14,14 +14,8 @@ import { AlertTriangle, Plus, Search } from 'lucide-react'
 import { AiModel, OllamaInstalledModel } from '@/src/types/msg_conversation_model'
 import { ScrollArea } from '../ui/scroll-area'
 import { Separator } from '../ui/separator'
-import {
-  Select as KSelect,
-  SelectContent as KSelectContent,
-  SelectItem as KSelectItem,
-  SelectTrigger as KSelectTrigger,
-  SelectValue as KSelectValue,
-} from '../ui/select'
-import { KnowledgeFormData, KNOWLEDGE_CATEGORY_OPTIONS } from '@/src/types/dialog'
+
+import { KnowledgeFormData } from '@/src/types/dialog'
 
 // ── NewConversationDialog ─────────────────────────────────────────────────────
 export function NewConversationDialog({
@@ -205,8 +199,8 @@ export function AddModelDialog({
 
   const loadInstalled = useCallback(async (query?: string) => {
     const url = query
-      ? `/api/models/ollama-all?q=${encodeURIComponent(query)}`
-      : '/api/models/ollama-all'
+      ? `/api/models/ollamaAll?q=${encodeURIComponent(query)}`
+      : '/api/models/ollamaAll'
     const res = await fetch(url)
     if (!res.ok) {
       const err = await res.json().catch(() => ({ error: 'Unknown' }))
@@ -471,7 +465,7 @@ export function AddEditKnowledgeDialog({
   onOpenChange: (open: boolean) => void
   onSave?: (data: KnowledgeFormData) => void
 }) {
-  const emptyForm: KnowledgeFormData = { name: '', description: '', category: '' }
+  const emptyForm: KnowledgeFormData = { description: '', category: '' }
 
   const [form, setForm] = useState<KnowledgeFormData>(initialData ?? emptyForm)
   const [saving, setSaving] = useState(false)
@@ -484,7 +478,7 @@ export function AddEditKnowledgeDialog({
     if (open) setForm(initialData ?? emptyForm)
   }
 
-  const isValid = form.name.trim().length > 0 && form.category.trim().length > 0
+  const isValid = form.description.trim().length > 0 && form.category.trim().length > 0
 
   function update<K extends keyof KnowledgeFormData>(key: K, value: KnowledgeFormData[K]) {
     setForm((prev) => ({ ...prev, [key]: value }))
@@ -505,7 +499,8 @@ export function AddEditKnowledgeDialog({
       onSave?.(form)
       toast.add({
         title: "SUCCESS",
-        description: mode === 'add' ? `${form.name} added` : `${form.name} updated`,
+        description: mode === 'add' ? `ADDED: ${form.description.slice(0,20)}...`
+                                    : `UPDATED: ${form.description.slice(0,20)}...`,
       })
       onOpenChange(false)
     } finally {
@@ -531,17 +526,6 @@ export function AddEditKnowledgeDialog({
         <ScrollArea type="auto" className="flex-1 min-h-0 pr-1">
           <div className="flex flex-col gap-4 py-1 pr-3">
             <div className="grid gap-1.5">
-              <Label htmlFor="knowledge-name">Name</Label>
-              <Input
-                id="knowledge-name"
-                placeholder="e.g. Web Search"
-                value={form.name}
-                onChange={(e) => update('name', e.target.value)}
-                style={{ backgroundColor: 'var(--gray3)' }}
-              />
-            </div>
-
-            <div className="grid gap-1.5">
               <Label htmlFor="knowledge-description">Description</Label>
               <Textarea
                 id="knowledge-description"
@@ -555,27 +539,13 @@ export function AddEditKnowledgeDialog({
 
             <div className="grid gap-1.5">
               <Label htmlFor="knowledge-category">Category</Label>
-              <KSelect value={form.category} onValueChange={(v) => update('category', v)}>
-                <KSelectTrigger
-                  id="knowledge-category"
-                  className="bg-[var(--gray3)] border-white hover:bg-[var(--gray2)]"
-                >
-                  <KSelectValue placeholder="Select a category" />
-                </KSelectTrigger>
-                <KSelectContent>
-                  {KNOWLEDGE_CATEGORY_OPTIONS.map((option) => (
-                    <KSelectItem
-                      key={option}
-                      value={option}
-                      style={{ backgroundColor: 'var(--gray3)' }}
-                      onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray2)')}
-                      onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray3)')}
-                    >
-                      {option}
-                    </KSelectItem>
-                  ))}
-                </KSelectContent>
-              </KSelect>
+              <Input
+                id="knowledge-category"
+                placeholder="e.g. Web Search"
+                value={form.category}
+                onChange={(e) => update('description', e.target.value)}
+                style={{ backgroundColor: 'var(--gray3)' }}
+              />
             </div>
           </div>
         </ScrollArea>

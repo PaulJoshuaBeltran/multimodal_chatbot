@@ -1,4 +1,4 @@
-// src/lib/uploads.ts
+// lib/uploads.ts
 import { MIME_TYPES, UploadValidationError } from '@/src/types/file_upload'
 import { fileType } from '@/src/types/msg_conversation_model'
 import path from 'path'

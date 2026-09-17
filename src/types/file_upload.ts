@@ -1,3 +1,4 @@
+// src/types/file_upload.ts
 export const MIME_TYPES: Record<string, string> = {
   '.png':   'image/png',
   '.jpg':   'image/jpeg', '.jpeg': 'image/jpeg',

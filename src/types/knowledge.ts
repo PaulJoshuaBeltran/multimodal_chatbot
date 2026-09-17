@@ -1,3 +1,4 @@
+// src/types/knowledge.ts
 export interface KnowledgeChunk {
     id: string;
     values: number[];

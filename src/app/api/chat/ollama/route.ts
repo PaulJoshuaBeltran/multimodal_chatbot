@@ -148,7 +148,7 @@ export async function POST(req: Request) {
       },
     })
 
-    console.log(`OLLAMA options ${JSON.stringify(options)} ${num_ctx} ${num_predict}`)
+    // console.log(`OLLAMA options ${JSON.stringify(options)} ${num_ctx} ${num_predict}`)
 
     return new Response(readable, { headers: { 'Content-Type': 'text/plain; charset=utf-8' } })
   } catch (err: unknown) {

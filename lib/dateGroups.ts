@@ -1,4 +1,4 @@
-// src/lib/dateGroups.ts
+// lib/dateGroups.ts
 import { DateGroup, DateGroupLabel } from "@/src/types/date_group"
 
 function getGroupLabel(date: Date, now: Date): DateGroupLabel {

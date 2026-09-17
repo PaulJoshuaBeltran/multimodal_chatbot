@@ -1,3 +1,4 @@
+// src/types/settings.ts
 export interface AccountTabProps{
     username: string
     email: string

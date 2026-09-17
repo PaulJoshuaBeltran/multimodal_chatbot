@@ -1,3 +1,4 @@
+// src/types/rag.ts
 import { Attachment } from "./msg_conversation_model";
 
 export type IncomingMessage = {

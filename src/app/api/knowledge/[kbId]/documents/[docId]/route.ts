@@ -1,3 +1,4 @@
+// src/app/api/knowledge/[kbId]/documents/[docId]/route.ts
 import { deleteDocumentChunks, upsertDocumentChunks } from "@/lib/pinecone";
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";

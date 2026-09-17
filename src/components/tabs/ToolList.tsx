@@ -28,24 +28,24 @@ import { ToolFormData } from '@/src/types/dialog'
 import { SortField } from '@/src/types/tabs'
 
 export const MOCK_KNOWLEDGE = [
-  { id: 'tool-1', name: 'Web Search',         description: 'Queries search engines for live web information.',                  category: 'Information', createdAt: '09/14/2026 4:43:00PM', updatedAt: '09/15/2026 4:43:00PM'},
-  { id: 'tool-2', name: 'Python Sandbox',     description: 'Executes untrusted mathematical and algorithmic scripts securely.', category: 'Runtime'    , createdAt: '09/14/2026 4:43:00PM', updatedAt: '09/15/2026 4:43:00PM'},
-  { id: 'tool-3', name: 'Document Parser',    description: 'Extracts structural semantics from text, PDF, and CSV payloads.',   category: 'Data'       , createdAt: '09/14/2026 4:43:00PM', updatedAt: '09/15/2026 4:43:00PM'},
-  { id: 'tool-4', name: 'Image Vectorizer',   description: 'Translates pixel layouts into relational coordinate systems.',      category: 'Vision'     , createdAt: '09/14/2026 4:43:00PM', updatedAt: '09/15/2026 4:43:00PM'},
-  { id: 'tool-5', name: 'Time-Zone Engine',   description: 'Normalizes chronological structures across spatial zones.',         category: 'Utility'    , createdAt: '09/14/2026 4:43:00PM', updatedAt: '09/15/2026 4:43:00PM'},
-  { id: 'tool-6', name: 'Currency Evaluator', description: 'Fetches real-time financial conversions and spot prices.',          category: 'Finance'    , createdAt: '09/14/2026 4:43:00PM', updatedAt: '09/15/2026 4:43:00PM'},
-  { id: 'tool-7', name: 'Web Search 1',         description: 'Queries search engines for live web information.',                  category: 'Information', createdAt: '09/14/2026 4:43:00PM', updatedAt: '09/15/2026 4:43:00PM'},
-  { id: 'tool-8', name: 'Python Sandbox 1',     description: 'Executes untrusted mathematical and algorithmic scripts securely.', category: 'Runtime'    , createdAt: '09/14/2026 4:43:00PM', updatedAt: '09/15/2026 4:43:00PM'},
-  { id: 'tool-9', name: 'Document Parser 1',    description: 'Extracts structural semantics from text, PDF, and CSV payloads.',   category: 'Data'       , createdAt: '09/14/2026 4:43:00PM', updatedAt: '09/15/2026 4:43:00PM'},
-  { id: 'tool-10', name: 'Image Vectorizer 1',   description: 'Translates pixel layouts into relational coordinate systems.',      category: 'Vision'     , createdAt: '09/14/2026 4:43:00PM', updatedAt: '09/15/2026 4:43:00PM'},
-  { id: 'tool-11', name: 'Time-Zone Engine 1',   description: 'Normalizes chronological structures across spatial zones.',         category: 'Utility'    , createdAt: '09/14/2026 4:43:00PM', updatedAt: '09/15/2026 4:43:00PM'},
-  { id: 'tool-12', name: 'Currency Evaluator 1', description: 'Fetches real-time financial conversions and spot prices.',          category: 'Finance'    , createdAt: '09/14/2026 4:43:00PM', updatedAt: '09/15/2026 4:43:00PM'},
+  { id: 'tool-1', description: 'Queries search engines for live web information.',                  category: 'Information', createdAt: '09/14/2026 4:43:00PM', updatedAt: '09/15/2026 4:43:00PM'},
+  { id: 'tool-2', description: 'Executes untrusted mathematical and algorithmic scripts securely.', category: 'Runtime'    , createdAt: '09/14/2026 4:43:00PM', updatedAt: '09/15/2026 4:43:00PM'},
+  { id: 'tool-3', description: 'Extracts structural semantics from text, PDF, and CSV payloads.',   category: 'Data'       , createdAt: '09/14/2026 4:43:00PM', updatedAt: '09/15/2026 4:43:00PM'},
+  { id: 'tool-4', description: 'Translates pixel layouts into relational coordinate systems.',      category: 'Vision'     , createdAt: '09/14/2026 4:43:00PM', updatedAt: '09/15/2026 4:43:00PM'},
+  { id: 'tool-5', description: 'Normalizes chronological structures across spatial zones.',         category: 'Utility'    , createdAt: '09/14/2026 4:43:00PM', updatedAt: '09/15/2026 4:43:00PM'},
+  { id: 'tool-6', description: 'Fetches real-time financial conversions and spot prices.',          category: 'Finance'    , createdAt: '09/14/2026 4:43:00PM', updatedAt: '09/15/2026 4:43:00PM'},
+  { id: 'tool-7', description: 'Queries search engines for live web information.',                  category: 'Information', createdAt: '09/14/2026 4:43:00PM', updatedAt: '09/15/2026 4:43:00PM'},
+  { id: 'tool-8', description: 'Executes untrusted mathematical and algorithmic scripts securely.', category: 'Runtime'    , createdAt: '09/14/2026 4:43:00PM', updatedAt: '09/15/2026 4:43:00PM'},
+  { id: 'tool-9', description: 'Extracts structural semantics from text, PDF, and CSV payloads.',   category: 'Data'       , createdAt: '09/14/2026 4:43:00PM', updatedAt: '09/15/2026 4:43:00PM'},
+  { id: 'tool-10', description: 'Translates pixel layouts into relational coordinate systems.',      category: 'Vision'     , createdAt: '09/14/2026 4:43:00PM', updatedAt: '09/15/2026 4:43:00PM'},
+  { id: 'tool-11', description: 'Normalizes chronological structures across spatial zones.',         category: 'Utility'    , createdAt: '09/14/2026 4:43:00PM', updatedAt: '09/15/2026 4:43:00PM'},
+  { id: 'tool-12', description: 'Fetches real-time financial conversions and spot prices.',          category: 'Finance'    , createdAt: '09/14/2026 4:43:00PM', updatedAt: '09/15/2026 4:43:00PM'},
 ]
 
 const ROWS_PER_PAGE_OPTIONS = [4, 8, 10, 20]
 
 const SORT_FIELD_OPTIONS: { value: SortField; label: string }[] = [
-  { value: 'name', label: 'Name' },
+  { value: 'description', label: 'Name' },
   { value: 'category', label: 'Category' },
   { value: 'createdAt', label: 'Created At' },
   { value: 'updatedAt', label: 'Updated At' },
@@ -80,7 +80,7 @@ export function ToolList() {
   })
   const [toolPage, settoolPage] = useState(1)
   const [toolS_PER_PAGE, settoolPerPage] = useState(10)
-  const [sortField, setSortField] = useState<SortField>('name')
+  const [sortField, setSortField] = useState<SortField>('description')
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc')
   const [dialogOpen, setDialogOpen] = useState(false)
   const [dialogMode, setDialogMode] = useState<'add' | 'edit'>('add')
@@ -101,7 +101,6 @@ export function ToolList() {
     setDialogMode('edit')
     setDialogInitialData({
       id: target.id,
-      name: target.name,
       description: target.description,
       category: target.category,
     })
@@ -185,7 +184,7 @@ export function ToolList() {
           Add
         </Button>
 
-        {hasSelection ? (
+        {hasSelection && (
           <>
             <Button
               className="hover:border-white mr-1"
@@ -209,17 +208,6 @@ export function ToolList() {
               Delete Selected
             </Button>
           </>
-        ) : (
-          <Button
-            className="hover:border-white bg-[var(--red3)] mr-1"
-            size="sm"
-            // onClick={() => settoolPage((p) => Math.max(p - 1, 1))}
-            onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--red2)')}
-            onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'var(--red3)')}
-          >
-            <Trash className="h-8 w-8 mr-1" />
-            Delete All
-          </Button>
         )}
 
         {/* Sort by field */}
@@ -268,9 +256,6 @@ export function ToolList() {
               <TableHead className="hidden w-0 p-0">
                 <Checkbox className="mr-2" checked={false}></Checkbox>
               </TableHead>
-              <TableHead className="w-[100px]">
-                <Checkbox className="mr-2" checked={false}></Checkbox>
-              </TableHead>
               <TableHead className="w-[200px] font-medium">Tool Name</TableHead>
               <TableHead> Description</TableHead>
               <TableHead className="w-[120px]">Category</TableHead>
@@ -301,7 +286,7 @@ export function ToolList() {
                   </TableCell>
                   <TableCell className="font-semibold align-middle py-4">
                     <label htmlFor={tool.id} className="cursor-pointer block">
-                      {tool.name}
+                      {tool.description}
                     </label>
                   </TableCell>
                   <TableCell className={`align-middle py-4 ${isSelected ? '' : 'text-muted-foreground'}`}>
