@@ -21,7 +21,6 @@ import { ChatInput } from '../components/main/ChatInput'
 import { RAGList } from '../components/tabs/KnowledgeManagement'
 import { ToolList } from '../components/tabs/ToolList'
 import { NewConversationDialog, DeactivateAlertDialog, AddModelDialog } from '../components/dialogs/OtherDialogs'
-import { SystemPromptDialog } from '../components/dialogs/SystemPromptDialog'
 import { HttpError } from '../models/http_error'
 import { LoginSignup } from '../components/main/LoginSignup'
 
@@ -40,9 +39,16 @@ export default function Page() {
   const abortRef = useRef<AbortController | null>(null)
   const [systemPrompt, setSystemPrompt] = useState('')
 
-  // AI generation paramaters
-  const [temperature, setTemperature] = useState([0.3])
-  const [topP, setTopP] = useState([0.5])
+  const [settingsOpen, setSettingsOpen] = useState(false)
+  const [settingsTab, setSettingsTab] = useState('account')
+  function openSettings(tab: string) {
+    setSettingsTab(tab)
+    setSettingsOpen(true)
+  }
+
+  // AI generation parameters
+  const [temperature, setTemperature] = useState(0.3)
+  const [topP, setTopP] = useState(0.5)
   const [topK, setTopK] = useState(5)
   const [numCtx, setNumCtx] = useState(8192)
   const [numPredict, setNumPredict] = useState(2048)
@@ -56,7 +62,6 @@ export default function Page() {
 
   // Dialog open states
   const [newConvOpen, setNewConvOpen] = useState(false)
-  const [systemPromptOpen, setSystemPromptOpen] = useState(false)
   const [deactivateAlertOpen, setDeactivateAlertOpen] = useState(false)
 
   // Data fetching
@@ -213,8 +218,8 @@ export default function Page() {
         messages: context,
         conversationId: selectedConv,
         systemPrompt,
-        temperature: temperature[0],
-        topP: topP[0],
+        temperature: temperature,
+        topP: topP,
         topK,
         signal: controller.signal,
         onToken: (text) => {
@@ -311,8 +316,8 @@ export default function Page() {
         messages: contextMessages,
         conversationId: selectedConv,
         systemPrompt,
-        temperature: temperature[0],
-        topP: topP[0],
+        temperature: temperature,
+        topP: topP,
         topK,
         numCtx,
         numPredict,
@@ -415,8 +420,8 @@ export default function Page() {
         messages: context,
         conversationId: selectedConv,
         systemPrompt,
-        temperature: temperature[0],
-        topP: topP[0],
+        temperature: temperature,
+        topP: topP,
         topK,
         signal: abortRef.current.signal,
         onToken: (chunk) => {
@@ -510,6 +515,20 @@ export default function Page() {
         onRefreshConversations={() => { fetchConversations(); setMessages([]); }}
         onLogout={() => {signOut(); setMessages([]); }}
         onDeactivate={() => setDeactivateAlertOpen(true)}
+        settingsOpen={settingsOpen}
+        setSettingsOpen={setSettingsOpen}
+        settingsTab={settingsTab}
+        onOpenSettings={openSettings}
+        temperature={temperature}
+        setTemperature={setTemperature}
+        topP={topP}
+        setTopP={setTopP}
+        topK={topK}
+        setTopK={setTopK}
+        numCtx={numCtx}
+        setNumCtx={setNumCtx}
+        numPredict={numPredict}
+        setNumPredict={setNumPredict}
       />
 
       {/* Main content */}
@@ -547,7 +566,7 @@ export default function Page() {
               onInputChange={setInput}
               onSend={send}
               onStop={stop}
-              onOpenSystemPrompt={() => setSystemPromptOpen(true)}
+              onOpenSystemPrompt={() => openSettings('system_prompt')}
               attachment={pendingAttachment}
               onAttachmentChange={setPendingAttachment}
               numCtx={numCtx}
@@ -601,24 +620,6 @@ export default function Page() {
         isOpen={isSearchOpen}
         onClose={() => setIsSearchOpen(false)}
         onSelectResult={handleSelectSearchResult}
-      />
-
-      <SystemPromptDialog
-        key={systemPromptOpen ? 'open' : 'closed'}
-        open={systemPromptOpen}
-        onOpenChange={setSystemPromptOpen}
-        value={systemPrompt}
-        onChange={setSystemPrompt}
-        temperature={temperature}
-        setTemperature={setTemperature}
-        topP={topP}
-        setTopP={setTopP}
-        topK={topK}
-        setTopK={setTopK}
-        numCtx={numCtx}
-        setNumCtx={setNumCtx}
-        numPredict={numPredict}
-        setNumPredict={setNumPredict}
       />
     </div>
   )

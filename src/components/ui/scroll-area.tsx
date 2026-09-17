@@ -24,6 +24,7 @@ export function ScrollArea({
       >
         {children}
       </ScrollAreaPrimitive.Viewport>
+      
       <ScrollAreaPrimitive.Scrollbar
         orientation="vertical"
         className="flex select-none touch-none p-0.5 bg-foreground/5 transition-colors duration-[160ms] ease-out h-full w-2.5 data-[orientation=horizontal]:h-2.5 data-[orientation=horizontal]:w-full data-[orientation=horizontal]:flex-col"

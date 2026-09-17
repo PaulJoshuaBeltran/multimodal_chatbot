@@ -45,6 +45,20 @@ export interface ChatSidebarProps {
   onRefreshConversations: () => void
   onLogout: () => void
   onDeactivate: () => void
+  settingsOpen: boolean
+  setSettingsOpen: (settingsOpen: boolean) => void
+  onOpenSettings: (tab: string) => void
+  settingsTab: string
+  temperature: number
+  setTemperature: (temperature: number) => void
+  topP: number
+  setTopP: (topP: number) => void
+  topK: number
+  setTopK: (topK: number) => void
+  numCtx: number
+  setNumCtx: (numCtx: number) => void
+  numPredict: number
+  setNumPredict: (numPredict: number) => void
 }
 
 export interface DeactivateAlertDialogProps {
@@ -115,21 +129,22 @@ export interface SystemPromptDialogProps {
   onOpenChange: (open: boolean) => void
   value: string
   onChange: (v: string) => void
-  temperature: number[]
-  setTemperature: (v: number[]) => void
-  topP: number[]
-  setTopP: (v: number[]) => void
-  topK: number
-  setTopK: (v: number) => void
-  numCtx: number
-  setNumCtx: (n: number) => void
-  numPredict: number
-  setNumPredict: (n: number) => void
 }
 
 export interface SettingsDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
+  activeTab: string
+  temperature: number
+  setTemperature: (temperature: number) => void
+  topP: number
+  setTopP: (topP: number) => void
+  topK: number
+  setTopK: (topK: number) => void
+  numCtx: number
+  setNumCtx: (numCtx: number) => void
+  numPredict: number
+  setNumPredict: (numPredict: number) => void
 }
 
 export interface ImagePreviewDialogProps {

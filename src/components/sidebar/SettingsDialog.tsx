@@ -1,7 +1,7 @@
 // src/components/dialogs/SettingsDialog.tsx
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import {
   Dialog,
   DialogContent,
@@ -13,7 +13,6 @@ import { Button } from '../ui/button'
 import { Tabs, TabsList, TabsTrigger } from '../ui/tabs'
 import { SettingsDialogProps } from '@/src/types/props'
 
-import 'dotenv/config'
 import { Separator } from '../ui/separator'
 
 import { AccountTab } from '../settings/account'
@@ -35,7 +34,23 @@ async function subscribeToPlus() {
   window.location.href = data.url
 }
 
-export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
+export function SettingsDialog({
+  open,
+  onOpenChange,
+  activeTab,
+  temperature,
+  setTemperature,
+  topP,
+  setTopP,
+  topK,
+  setTopK,
+  numCtx,
+  setNumCtx,
+  numPredict,
+  setNumPredict
+}: SettingsDialogProps) {
+  const [tab, setTab] = useState(activeTab)
+
   // Account
   const [username, setUsername] = useState('(username)')
   const [email, setEmail] = useState('(email)')
@@ -78,11 +93,6 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
   }
   
   const [systemPrompt, setSystemPrompt] = useState('')
-  const [numCtx, setNumCtx] = useState(2048)
-  const [maxReplyTokens, setMaxReplyTokens] = useState(2048)
-  const [temperature, setTemperature] = useState(0.3)
-  const [topP, setTopP] = useState(0.3)
-  const [topK, setTopK] = useState(0.3)
   const thinkingQuality = getThinkingQuality(temperature, topP, topK)
 
   // RAG
@@ -151,7 +161,7 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
   const [checkRegression, setCheckRegression] = useState(true)
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={(isOpen) => onOpenChange(isOpen)}>
       <DialogContent
         className="sm:max-w-2xl"
         style={{ backgroundColor: 'var(--gray3)' }}
@@ -166,7 +176,12 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
 
         <Separator className="bg-[var(--gray2)] -mt-2"/>
 
-        <Tabs defaultValue="account" orientation="vertical" className="min-h-[360px]">
+        <Tabs
+          defaultValue={activeTab}
+          onValueChange={setTab}
+          orientation="vertical"
+          className="min-h-[360px]"
+        >
           <TabsList className="w-40 shrink-0">
             <TabsTrigger value="account">Account</TabsTrigger>
             <TabsTrigger value="general">General</TabsTrigger>
@@ -215,14 +230,14 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
           <SystemPromptTab
             systemPrompt={systemPrompt}
             numCtx={numCtx}
-            maxReplyTokens={maxReplyTokens}
+            maxReplyTokens={numPredict}
             thinkingQuality={thinkingQuality}
             temperature={temperature}
-            topP={temperature}
+            topP={topP}
             topK={topK}
             setSystemPrompt={setSystemPrompt}
             setNumCtx={setNumCtx}
-            setMaxReplyTokens={setMaxReplyTokens}
+            setMaxReplyTokens={setNumPredict}
             setTemperature={setTemperature}
             setTopP={setTopP}
             setTopK={setTopK}

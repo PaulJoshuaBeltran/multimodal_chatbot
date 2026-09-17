@@ -48,9 +48,21 @@ export function ChatSidebar({
   onRefreshConversations,
   onLogout,
   onDeactivate,
+  settingsOpen,
+  setSettingsOpen,
+  settingsTab,
+  onOpenSettings,
+  temperature,
+  setTemperature,
+  topP,
+  setTopP,
+  topK,
+  setTopK,
+  numCtx,
+  setNumCtx,
+  numPredict,
+  setNumPredict
 }: Omit<ChatSidebarProps, 'token'>) {
-
-  const [settingsOpen, setSettingsOpen] = useState(false)
   const { user } = useUser()
   const userName = user?.fullName || user?.firstName || 'User Account'
 
@@ -151,7 +163,7 @@ export function ChatSidebar({
         <Button
           variant="ghost"
           className="w-full justify-start gap-2 text-sm font-normal text-white hover:text-white"
-          onClick={() => setSettingsOpen(true)}
+          onClick={() => onOpenSettings('account')}
           onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray1)')}
           onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}
         >
@@ -203,7 +215,21 @@ export function ChatSidebar({
         </DropdownMenu>
       </div>
 
-      <SettingsDialog open={settingsOpen} onOpenChange={setSettingsOpen} />
+      <SettingsDialog
+        open={settingsOpen}
+        onOpenChange={setSettingsOpen}
+        activeTab={settingsTab}
+        temperature={temperature}
+        setTemperature={setTemperature}
+        topP={topP}
+        setTopP={setTopP}
+        topK={topK}
+        setTopK={setTopK}
+        numCtx={numCtx}
+        setNumCtx={setNumCtx}
+        numPredict={numPredict}
+        setNumPredict={setNumPredict}
+      />
     </aside>
   )
 }

@@ -31,7 +31,7 @@ export async function POST(req: NextRequest, { params }: { params: { kbId: strin
   return NextResponse.json({ id: doc.id, status: "ready" });
 }
 
-// List all documents from MongoDB
+// List all documents from MongoDB given kbId (namespace)
 export async function GET(_req: NextRequest, { params }: { params: { kbId: string } }) {
   const { kbId } = await params;
   const docs = await prisma.knowledgeDocument.findMany({
