@@ -1,5 +1,5 @@
 // src/app/api/messages/route.ts
-import { prisma } from '@/lib/prisma'
+import { prisma } from '@/lib/pineconeMongo/prisma'
 import { getLocalUser } from '@/lib/getLocalUser'
 import type { Prisma } from '@/src/app/generated/prisma/client'
 

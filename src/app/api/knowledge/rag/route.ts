@@ -1,7 +1,7 @@
 // src/app/api/chat/rag/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { ollamaEmbed } from "@/lib/ollama";
-import pinecone from "@/lib/pinecone";
+import pinecone from "@/lib/pineconeMongo/pinecone";
 import { rerank } from "@/lib/huggingFace";
 
 // Pinecone RAG API route and HF BGE Reranking wrapped in langchain

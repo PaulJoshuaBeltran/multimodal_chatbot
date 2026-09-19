@@ -1,6 +1,6 @@
 // lib/pinecone.ts
 import { Pinecone } from "@pinecone-database/pinecone";
-import { ollamaEmbed } from "./ollama";
+import { ollamaEmbed } from "../ollama";
 
 const pinecone = new Pinecone({
   apiKey: process.env.PINECONE_API_KEY || "",

@@ -1,5 +1,5 @@
 // src/app/api/webhooks/clerk/route.ts
-import { prisma } from '@/lib/prisma'
+import { prisma } from '@/lib/pineconeMongo/prisma'
 import { verifyWebhook } from '@clerk/nextjs/webhooks'
 import { NextRequest } from 'next/server'
 

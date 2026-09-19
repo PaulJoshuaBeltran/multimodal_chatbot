@@ -1,5 +1,5 @@
 // src/app/api/messages/[id]/route.ts
-import { prisma } from '@/lib/prisma'
+import { prisma } from '@/lib/pineconeMongo/prisma'
 import { getLocalUser } from '@/lib/getLocalUser'
 
 export const runtime = 'nodejs'

@@ -1,7 +1,7 @@
-// src/components/main/knowledgeList.tsx
+// src/components/main/KnowledgeManagement.tsx
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Button } from '../ui/button'
 import { ScrollArea } from '../ui/scroll-area'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../ui/table'
@@ -18,29 +18,23 @@ import {
   Brain,
   ChevronLeft,
   ChevronRight,
+  Eye,
   Plus,
   RotateCw,
   SquarePen,
   Trash,
 } from 'lucide-react'
 import { KnowledgeFormData } from '@/src/types/dialog'
-import { AddEditKnowledgeDialog } from '../dialogs/OtherDialogs'
+import { KnowledgeDocument } from '@/src/types/knowledge'
+import { PreviewKnowledgeDialog, AddEditKnowledgeDialog, DeleteKnowledgeDialog } from '../dialogs/OtherDialogs'
 import { SortField } from '@/src/types/tabs'
-
-export const MOCK_KNOWLEDGE = [
-  { id: 'knowledge-1', description: 'Queries search engines for live web information.',                  category: 'Information', createdAt: '09/14/2026 4:43:00PM', updatedAt: '09/15/2026 4:43:00PM'},
-  { id: 'knowledge-2', description: 'Executes untrusted mathematical and algorithmic scripts securely.', category: 'Runtime'    , createdAt: '09/14/2026 4:43:00PM', updatedAt: '09/15/2026 4:43:00PM'},
-  { id: 'knowledge-3', description: 'Extracts structural semantics from text, PDF, and CSV payloads.',   category: 'Data'       , createdAt: '09/14/2026 4:43:00PM', updatedAt: '09/15/2026 4:43:00PM'},
-  { id: 'knowledge-4', description: 'Translates pixel layouts into relational coordinate systems.',      category: 'Vision'     , createdAt: '09/14/2026 4:43:00PM', updatedAt: '09/15/2026 4:43:00PM'},
-  { id: 'knowledge-5', description: 'Normalizes chronological structures across spatial zones.',         category: 'Utility'    , createdAt: '09/14/2026 4:43:00PM', updatedAt: '09/15/2026 4:43:00PM'},
-  { id: 'knowledge-6', description: 'Fetches real-time financial conversions and spot prices.',          category: 'Finance'    , createdAt: '09/14/2026 4:43:00PM', updatedAt: '09/15/2026 4:43:00PM'},
-  { id: 'knowledge-7', description: 'Queries search engines for live web information.',                  category: 'Information', createdAt: '09/14/2026 4:43:00PM', updatedAt: '09/15/2026 4:43:00PM'},
-  { id: 'knowledge-8', description: 'Executes untrusted mathematical and algorithmic scripts securely.', category: 'Runtime'    , createdAt: '09/14/2026 4:43:00PM', updatedAt: '09/15/2026 4:43:00PM'},
-  { id: 'knowledge-9', description: 'Extracts structural semantics from text, PDF, and CSV payloads.',   category: 'Data'       , createdAt: '09/14/2026 4:43:00PM', updatedAt: '09/15/2026 4:43:00PM'},
-  { id: 'knowledge-10', description: 'Translates pixel layouts into relational coordinate systems.',      category: 'Vision'     , createdAt: '09/14/2026 4:43:00PM', updatedAt: '09/15/2026 4:43:00PM'},
-  { id: 'knowledge-11', description: 'Normalizes chronological structures across spatial zones.',         category: 'Utility'    , createdAt: '09/14/2026 4:43:00PM', updatedAt: '09/15/2026 4:43:00PM'},
-  { id: 'knowledge-12', description: 'Fetches real-time financial conversions and spot prices.',          category: 'Finance'    , createdAt: '09/14/2026 4:43:00PM', updatedAt: '09/15/2026 4:43:00PM'},
-]
+import { toast } from '@/src/components/ui/toast'
+import {
+  fetchKnowledgeDocuments,
+  createKnowledgeDocument,
+  updateKnowledgeDocument,
+  deleteKnowledgeDocument,
+} from '@/lib/pineconeMongo/knowledgeApi'
 
 const ROWS_PER_PAGE_OPTIONS = [4, 8, 10, 20]
 
@@ -51,10 +45,35 @@ const SORT_FIELD_OPTIONS: { value: SortField; label: string }[] = [
   { value: 'updatedAt', label: 'Updated At' },
 ]
 
-// Builds a compact page-number sequence with ellipses, e.g. 1 … 4 5 6 … 12
+function getSortValue(doc: KnowledgeDocument, field: SortField): string | number {
+  switch (field) {
+    case 'description':
+      return doc.title
+    case 'category':
+      return doc.kbId
+    case 'createdAt':
+      return new Date(doc.createdAt).getTime()
+    case 'updatedAt':
+      return new Date(doc.updatedAt).getTime()
+  }
+}
+
+function statusClasses(status: string) {
+  switch (status) {
+    case 'ready':
+      return 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30'
+    case 'processing':
+      return 'bg-amber-500/15 text-amber-400 border-amber-500/30'
+    case 'failed':
+      return 'bg-red-500/15 text-red-400 border-red-500/30'
+    default:
+      return 'bg-secondary text-secondary-foreground border-border'
+  }
+}
+
 function getPageNumbers(current: number, total: number): (number | 'ellipsis')[] {
   const pages: (number | 'ellipsis')[] = []
-  const delta = 1 // pages to show on either side of current
+  const delta = 1
 
   const range = new Set<number>()
   range.add(1)
@@ -74,17 +93,68 @@ function getPageNumbers(current: number, total: number): (number | 'ellipsis')[]
 }
 
 export function RAGList() {
-  const [selectedknowledges, setSelectedknowledges] = useState<Record<string, boolean>>({
-    'knowledge-1': true,
-    'knowledge-3': true,
-  })
-  const [knowledgePage, setknowledgePage] = useState(1)
-  const [knowledgeS_PER_PAGE, setknowledgePerPage] = useState(10)
+  const [documents, setDocuments] = useState<KnowledgeDocument[]>([])
+  const [loading, setLoading] = useState(true)
+  const [deleting, setDeleting] = useState(false)
+
+  const [selectedIds, setSelectedIds] = useState<Record<string, boolean>>({})
+  const [knowledgePage, setKnowledgePage] = useState(1)
+  const [knowledgePerPage, setKnowledgePerPage] = useState(10)
   const [sortField, setSortField] = useState<SortField>('description')
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc')
+
+  const [previewDialogOpen, setPreviewDialogOpen] = useState(false)
+  const [previewDoc, setPreviewDoc] = useState<KnowledgeDocument | null>(null)
   const [dialogOpen, setDialogOpen] = useState(false)
   const [dialogMode, setDialogMode] = useState<'add' | 'edit'>('add')
   const [dialogInitialData, setDialogInitialData] = useState<KnowledgeFormData | undefined>(undefined)
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+
+  async function refresh() {
+    setLoading(true)
+    try {
+      const docs = await fetchKnowledgeDocuments()
+      setDocuments(docs)
+      setSelectedIds({})
+    } catch (e) {
+      toast.add({
+        title: "ERROR",
+        description: e instanceof Error ? e.message : 'Failed to load knowledge',
+      })
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    let cancelled = false
+
+    ;(async () => {
+      try {
+        const docs = await fetchKnowledgeDocuments()
+        if (cancelled) return
+        setDocuments(docs)
+      } catch (e) {
+        if (cancelled) return
+        toast.add({
+          title: "ERROR",
+          description: e instanceof Error ? e.message : 'Failed to load knowledge',
+        })
+      } finally {
+        if (!cancelled) setLoading(false)
+      }
+    })()
+
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
+  function openPreviewDialog(doc: KnowledgeDocument, e: React.MouseEvent) {
+    e.stopPropagation() // don't trigger row selection
+    setPreviewDoc(doc)
+    setPreviewDialogOpen(true)
+  }
 
   const openAddDialog = () => {
     setDialogMode('add')
@@ -93,71 +163,127 @@ export function RAGList() {
   }
 
   const openEditDialog = () => {
-    const selectedIds = Object.entries(selectedknowledges)
+    const selectedIdList = Object.entries(selectedIds)
       .filter(([, v]) => v)
       .map(([id]) => id)
-    const target = MOCK_KNOWLEDGE.find((k) => k.id === selectedIds[0])
+    const target = documents.find((d) => d.id === selectedIdList[0])
     if (!target) return
     setDialogMode('edit')
     setDialogInitialData({
       id: target.id,
-      description: target.description,
-      category: target.category,
+      description: target.title,
+      category: target.kbId,
+      content: target.chunks
+        .slice()
+        .sort((a, b) => a.chunkIndex - b.chunkIndex)
+        .map((c) => c.preview)
+        .join('\n\n'),
     })
     setDialogOpen(true)
   }
 
-  const hasSelection = Object.values(selectedknowledges).some(Boolean)
-
-  const sortedKnowledge = useMemo(() => {
-    const copy = [...MOCK_KNOWLEDGE]
-    copy.sort((a, b) => {
-      let cmp: number
-      if (sortField === 'createdAt' || sortField === 'updatedAt') {
-        cmp = new Date(a[sortField]).getTime() - new Date(b[sortField]).getTime()
-      } else {
-        cmp = a[sortField].localeCompare(b[sortField])
+  async function handleDialogSave(data: KnowledgeFormData) {
+    try {
+      if (dialogMode === 'add') {
+        await createKnowledgeDocument(data.category, data.description, data.content ?? '')
+        toast.add({ title: "SUCCESS", description: `ADDED: ${data.description.slice(0, 20)}...` })
+      } else if (data.id) {
+        await updateKnowledgeDocument(data.category, data.id, data.description, data.content ?? '')
+        toast.add({ title: "SUCCESS", description: `UPDATED: ${data.description.slice(0, 20)}...` })
       }
+      await refresh()
+    } catch (e) {
+      toast.add({
+        title: "ERROR",
+        description: e instanceof Error ? e.message : 'Failed to save knowledge',
+      })
+      throw e // keeps the dialog open on failure
+    }
+  }
+
+  function openDeleteDialog() {
+    if (!hasSelection) return
+    setDeleteDialogOpen(true)
+  }
+
+  async function confirmDeleteSelected() {
+    const ids = Object.entries(selectedIds).filter(([, v]) => v).map(([id]) => id)
+    if (ids.length === 0) {
+      setDeleteDialogOpen(false)
+      return
+    }
+    setDeleting(true)
+    try {
+      const results = await Promise.allSettled(
+        ids.map((id) => {
+          const doc = documents.find((d) => d.id === id)
+          if (!doc) return Promise.resolve()
+          return deleteKnowledgeDocument(doc.kbId, doc.id)
+        })
+      )
+      const failed = results.filter((r) => r.status === 'rejected').length
+      if (failed > 0) {
+        toast.add({ title: "ERROR", description: `${failed} of ${ids.length} item(s) failed to delete` })
+      } else {
+        toast.add({ title: "SUCCESS", description: `Deleted ${ids.length} item(s)` })
+      }
+    } finally {
+      setDeleting(false)
+      setDeleteDialogOpen(false)
+      await refresh()
+    }
+  }
+
+  const hasSelection = Object.values(selectedIds).some(Boolean)
+
+  const sortedDocuments = useMemo(() => {
+    const copy = [...documents]
+    copy.sort((a, b) => {
+      const av = getSortValue(a, sortField)
+      const bv = getSortValue(b, sortField)
+      const cmp =
+        typeof av === 'number' && typeof bv === 'number' ? av - bv : String(av).localeCompare(String(bv))
       return sortDirection === 'asc' ? cmp : -cmp
     })
     return copy
-  }, [sortField, sortDirection])
+  }, [documents, sortField, sortDirection])
 
-  const totalPages = Math.ceil(sortedKnowledge.length / knowledgeS_PER_PAGE)
-  const paginatedknowledges = sortedKnowledge.slice(
-    (knowledgePage - 1) * knowledgeS_PER_PAGE,
-    knowledgePage * knowledgeS_PER_PAGE
+  const totalPages = Math.max(1, Math.ceil(sortedDocuments.length / knowledgePerPage))
+
+  const currentPage = Math.min(knowledgePage, totalPages)
+
+  const paginatedDocuments = sortedDocuments.slice(
+    (currentPage - 1) * knowledgePerPage,
+    currentPage * knowledgePerPage
   )
 
-  const toggleknowledge = (knowledgeId: string) =>
-    setSelectedknowledges((prev) => ({ ...prev, [knowledgeId]: !prev[knowledgeId] }))
+  const toggleDoc = (docId: string) =>
+    setSelectedIds((prev) => ({ ...prev, [docId]: !prev[docId] }))
 
   const handleRowsPerPageChange = (value: string) => {
-    setknowledgePerPage(Number(value))
-    setknowledgePage(1) // reset to first page so the view doesn't land out of bounds
+    setKnowledgePerPage(Number(value))
+    setKnowledgePage(1)
   }
 
   const handleSortFieldChange = (value: string) => {
     setSortField(value as SortField)
-    setknowledgePage(1)
+    setKnowledgePage(1)
   }
 
   const toggleSortDirection = () => {
     setSortDirection((d) => (d === 'asc' ? 'desc' : 'asc'))
-    setknowledgePage(1)
+    setKnowledgePage(1)
   }
 
-  const pageNumbers = getPageNumbers(knowledgePage, totalPages)
+  const pageNumbers = getPageNumbers(currentPage, totalPages)
 
   return (
     <div className="flex-1 flex flex-col min-h-0 p-8 overflow-hidden max-w-5xl w-full mx-auto justify-start">
-      {/* Header */}
       <h1 className="text-2xl font-semibold tracking-tight flex items-center gap-2">
         <Brain className="w-5 h-5 text-primary" />
         RAG Data Management
       </h1>
 
-      {/* Menu Buttons */}
       <div
         className="flex items-center pt-4 mb-2"
         style={{ backgroundColor: 'var(--gray3)' }}
@@ -165,14 +291,15 @@ export function RAGList() {
         <Button
           className="hover:border-white mr-1"
           size="sm"
-          // onClick={() => setknowledgePage((p) => Math.max(p - 1, 1))}
+          onClick={refresh}
+          disabled={loading}
           onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray2)')}
           onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray3)')}
         >
-          <RotateCw className="h-8 w-8 mr-1" />
+          <RotateCw className={`h-8 w-8 mr-1 ${loading ? 'animate-spin' : ''}`} />
           Refresh
         </Button>
-        
+
         <Button
           className="hover:border-white mr-1"
           size="sm"
@@ -200,17 +327,17 @@ export function RAGList() {
             <Button
               className="hover:border-white bg-[var(--red3)] mr-1"
               size="sm"
-              // onClick={() => setknowledgePage((p) => Math.max(p - 1, 1))}
+              onClick={openDeleteDialog}
+              disabled={deleting}
               onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--red2)')}
               onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'var(--red3)')}
             >
               <Trash className="h-8 w-8 mr-1" />
-              Delete Selected
+              {deleting ? 'Deleting…' : 'Delete Selected'}
             </Button>
           </>
         )}
 
-        {/* Sort by field */}
         <div className="flex items-center gap-1 ml-1">
           <Select value={sortField} onValueChange={handleSortFieldChange}>
             <SelectTrigger className="h-8 w-[140px] bg-[var(--gray3)] border-white hover:bg-[var(--gray2)]">
@@ -248,116 +375,145 @@ export function RAGList() {
         </div>
       </div>
 
-      {/* Table */}
       <ScrollArea type="auto" className="flex-1 min-h-0 border border-border rounded-xl bg-card">
         <Table>
           <TableHeader className="bg-muted/50 sticky top-0 z-10">
             <TableRow>
-              <TableHead className="w-[120px]">ID</TableHead>
-              <TableHead> Knowledge Description</TableHead>
+              <TableHead className="w-[160px]">ID</TableHead>
+              <TableHead>Title</TableHead>
+              <TableHead className="w-[90px]">Preview</TableHead>
               <TableHead className="w-[120px]">Category</TableHead>
-              <TableHead className="w-[120px]">CreatedAt</TableHead>
-              <TableHead className="w-[120px]">UpdatedAt</TableHead>
+              <TableHead className="w-[100px]">Status</TableHead>
+              <TableHead className="w-[140px]">CreatedAt</TableHead>
+              <TableHead className="w-[140px]">UpdatedAt</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {paginatedknowledges.map((knowledge) => {
-              const isSelected = !!selectedknowledges[knowledge.id]
-              return (
-                <TableRow
-                  key={knowledge.id}
-                  onClick={() => toggleknowledge(knowledge.id)}
-                  className={`cursor-pointer transition-colors ${
-                    isSelected ? 'bg-white text-black hover:bg-white' : 'hover:bg-muted/40'
-                  }`}
-                >
-                  <TableCell className="align-middle py-4">
-                    {knowledge.id}
-                  </TableCell>
-                  <TableCell className={`align-middle py-4 ${isSelected ? '' : 'text-muted-foreground'}`}>
-                    {knowledge.description}
-                  </TableCell>
-                  <TableCell className="align-middle py-4">
-                    <span className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium bg-secondary text-secondary-foreground border border-border">
-                      {knowledge.category}
-                    </span>
-                  </TableCell>
-                  <TableCell className="align-middle py-4">
-                    {knowledge.createdAt}
-                  </TableCell>
-                  <TableCell className="align-middle py-4">
-                    {knowledge.updatedAt}
-                  </TableCell>
-                </TableRow>
-              )
-            })}
+            {loading ? (
+              <TableRow>
+                <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
+                  Loading…
+                </TableCell>
+              </TableRow>
+            ) : paginatedDocuments.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
+                  No knowledge entries yet.
+                </TableCell>
+              </TableRow>
+            ) : (
+              paginatedDocuments.map((doc) => {
+                const isSelected = !!selectedIds[doc.id]
+                return (
+                  <TableRow
+                    key={doc.id}
+                    onClick={() => toggleDoc(doc.id)}
+                    className={`cursor-pointer transition-colors ${
+                      isSelected ? 'bg-white text-black hover:bg-white' : 'hover:bg-muted/40'
+                    }`}
+                  >
+                    <TableCell className="align-middle py-4 font-mono text-xs">
+                      {doc.id}
+                    </TableCell>
+                    <TableCell className={`align-middle py-4 ${isSelected ? '' : 'text-muted-foreground'}`}>
+                      {doc.title}
+                    </TableCell>
+                    <TableCell className="align-middle py-4">
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={(e) => openPreviewDialog(doc, e)}
+                        style={{ backgroundColor: 'var(--gray3)' }}
+                        onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray2)')}
+                        onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray3)')}
+                      >
+                        <Eye className="h-4 w-4" />
+                      </Button>
+                    </TableCell>
+                    <TableCell className="align-middle py-4">
+                      <span className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium bg-secondary text-secondary-foreground border border-border">
+                        {doc.kbId}
+                      </span>
+                    </TableCell>
+                    <TableCell className="align-middle py-4">
+                      <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium border ${statusClasses(doc.status)}`}>
+                        {doc.status}
+                      </span>
+                    </TableCell>
+                    <TableCell className="align-middle py-4">
+                      {new Date(doc.createdAt).toLocaleString()}
+                    </TableCell>
+                    <TableCell className="align-middle py-4">
+                      {new Date(doc.updatedAt).toLocaleString()}
+                    </TableCell>
+                  </TableRow>
+                )
+              })
+            )}
           </TableBody>
         </Table>
       </ScrollArea>
 
-      {/* Pagination */}
       <div
         className="flex items-center justify-between border-t border-border pt-4 mt-4"
         style={{ backgroundColor: 'var(--gray3)' }}
       >
         <span className="text-sm text-muted-foreground">
-          Page <strong>{knowledgePage}</strong> of {totalPages} ({sortedKnowledge.length} elements
+          Page <strong>{currentPage}</strong> of {totalPages} ({sortedDocuments.length} elements
           total)
         </span>
 
-        <div className="flex items-center space-x-2">
-          <Button
-            className="hover:border-white"
-            size="sm"
-            onClick={() => setknowledgePage((p) => Math.max(p - 1, 1))}
-            disabled={knowledgePage === 1}
-            onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray2)')}
-            onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray3)')}
-          >
-            <ChevronLeft className="h-8 w-8 mr-1" />
-            Previous
-          </Button>
+        <Button
+          className="hover:border-white"
+          size="sm"
+          onClick={() => setKnowledgePage((p) => Math.max(Math.min(p, totalPages) - 1, 1))}
+          disabled={currentPage === 1}
+          onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray2)')}
+          onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray3)')}
+        >
+          <ChevronLeft className="h-8 w-8 mr-1" />
+          Previous
+        </Button>
 
-          <div className="flex items-center">
-            {pageNumbers.map((page, idx) =>
-              page === 'ellipsis' ? (
-                <span
-                  key={`ellipsis-${idx}`}
-                  className="px-1 text-sm text-muted-foreground select-none"
-                >
-                  …
-                </span>
-              ) : (
-                <Button
-                  key={page}
-                  size="sm"
-                  className="h-8 w-8 hover:border-white"
-                  onClick={() => setknowledgePage(page)}
-                  style={page === knowledgePage ? undefined : { backgroundColor: 'var(--gray3)' }}
-                  onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray2)')}
-                  onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray3)')}
-                >
-                  {page}
-                </Button>
-              )
-            )}
-          </div>
-
-          <Button
-            className="hover:border-white"
-            size="sm"
-            onClick={() => setknowledgePage((p) => Math.min(p + 1, totalPages))}
-            disabled={knowledgePage === totalPages}
-            onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray2)')}
-            onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray3)')}
-          >
-            Next
-            <ChevronRight className="h-8 w-8 ml-1" />
-          </Button>
+        <div className="flex items-center">
+          {pageNumbers.map((page, idx) =>
+            page === 'ellipsis' ? (
+              <span
+                key={`ellipsis-${idx}`}
+                className="px-1 text-sm text-muted-foreground select-none"
+              >
+                …
+              </span>
+            ) : (
+              <Button
+                key={page}
+                size="sm"
+                className="h-8 w-8 hover:border-white"
+                onClick={() => setKnowledgePage(page)}
+                style={page === currentPage ? undefined : { backgroundColor: 'var(--gray3)' }}
+                onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray2)')}
+                onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray3)')}
+              >
+                {page}
+              </Button>
+            )
+          )}
         </div>
 
+        <Button
+          className="hover:border-white"
+          size="sm"
+          onClick={() => setKnowledgePage((p) => Math.min(p + 1, totalPages))}
+          disabled={currentPage === totalPages}
+          onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray2)')}
+          onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray3)')}
+        >
+          Next
+          <ChevronRight className="h-8 w-8 ml-1" />
+        </Button>
+
         <div className="flex items-center gap-1">
-          <Select value={String(knowledgeS_PER_PAGE)} onValueChange={handleRowsPerPageChange}>
+          <Select value={String(knowledgePerPage)} onValueChange={handleRowsPerPageChange}>
             <SelectTrigger className="h-8 w-[70px] flex-1 bg-[var(--gray3)] border-white hover:bg-[var(--gray2)]">
               <SelectValue />
             </SelectTrigger>
@@ -379,15 +535,27 @@ export function RAGList() {
         </div>
       </div>
 
+      <PreviewKnowledgeDialog
+        open={previewDialogOpen}
+        title={previewDoc?.title ?? ''}
+        chunks={previewDoc?.chunks ?? []}
+        onOpenChange={setPreviewDialogOpen}
+      />
+
       <AddEditKnowledgeDialog
         open={dialogOpen}
         mode={dialogMode}
         initialData={dialogInitialData}
         onOpenChange={setDialogOpen}
-        onSave={(data) => {
-          // Deliberately not applied to MOCK_KNOWLEDGE/table state per spec.
-          console.log('knowledge saved (not persisted):', data)
-        }}
+        onSave={handleDialogSave}
+      />
+
+      <DeleteKnowledgeDialog
+        count={Object.values(selectedIds).filter(Boolean).length}
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        onConfirm={confirmDeleteSelected}
+        deleting={deleting}
       />
     </div>
   )

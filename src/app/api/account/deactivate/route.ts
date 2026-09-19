@@ -1,5 +1,5 @@
 // src/app/api/account/deactivate/route.ts
-import { prisma } from '@/lib/prisma'
+import { prisma } from '@/lib/pineconeMongo/prisma'
 import { auth, clerkClient } from '@clerk/nextjs/server'
 
 export const runtime = 'nodejs'

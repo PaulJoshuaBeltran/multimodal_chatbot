@@ -1,7 +1,7 @@
 // src/app/api/knowledge/[kbId]/documents/route.ts
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
-import { upsertDocumentChunks } from "@/lib/pinecone";
+import { prisma } from "@/lib/pineconeMongo/prisma";
+import { upsertDocumentChunks } from "@/lib/pineconeMongo/pinecone";
 
 // Pinecone & MongoDB document chunk upsert helper
 export async function POST(req: NextRequest, { params }: { params: { kbId: string } }) {
@@ -29,14 +29,4 @@ export async function POST(req: NextRequest, { params }: { params: { kbId: strin
   }
 
   return NextResponse.json({ id: doc.id, status: "ready" });
-}
-
-// List all documents from MongoDB given kbId (namespace)
-export async function GET(_req: NextRequest, { params }: { params: { kbId: string } }) {
-  const { kbId } = await params;
-  const docs = await prisma.knowledgeDocument.findMany({
-    where: { kbId: kbId },
-    orderBy: { createdAt: "desc" },
-  });
-  return NextResponse.json(docs);
 }

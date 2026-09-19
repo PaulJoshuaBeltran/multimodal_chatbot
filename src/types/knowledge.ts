@@ -1,11 +1,16 @@
 // src/types/knowledge.ts
 export interface KnowledgeChunk {
-    id: string;
-    values: number[];
-    metadata: {
-        documentId: string;
-        title: string;
-        chunkIndex: number;
-        text: string;
-    };
+  id: string
+  chunkIndex: number
+  preview: string
+}
+
+export interface KnowledgeDocument {
+  id: string
+  kbId: string
+  title: string
+  status: string
+  createdAt: string
+  updatedAt: string
+  chunks: KnowledgeChunk[]
 }

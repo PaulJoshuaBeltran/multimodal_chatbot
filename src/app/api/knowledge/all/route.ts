@@ -1,49 +1,86 @@
 // src/app/api/knowledge/route.ts
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
-import pinecone from "@/lib/pinecone";
+import { prisma } from "@/lib/pineconeMongo/prisma";
+import pinecone from "@/lib/pineconeMongo/pinecone";
 
-// List all documents from Pinecone and MongoDB
+interface Chunk {
+  id: string;
+  chunkIndex: number;
+  preview: string;
+}
+
+interface ChunkMetadata {
+  chunkIndex?: number;
+  text?: string;
+}
+
+const FETCH_BATCH_SIZE = 1000;
+
 export async function GET() {
-  const doc = await prisma.knowledgeDocument.findMany({
-      orderBy: { createdAt: "desc" },
-    }
-  );
+  const docs = await prisma.knowledgeDocument.findMany({
+    orderBy: { createdAt: "desc" },
+  });
 
-  if (!doc) {
-    return NextResponse.json({ error: "Document not found" }, { status: 404 });
+  if (!docs.length) {
+    return NextResponse.json({ documents: [] });
   }
 
   const index = pinecone.index({ host: process.env.PINECONE_HOST_NAME || "" });
 
-  // Pull chunk IDs by prefix, then fetch the actual records for preview/metadata
-  const ids: string[] = [];
-  let paginationToken: string | undefined;
-  do {
-    const page = await index.listPaginated({
-      paginationToken,
-    });
-    ids.push(...(page.vectors ?? []).map((v) => v.id!));
-    paginationToken = page.pagination?.next;
-  } while (paginationToken);
+  // 1. Discover all namespaces
+  const stats = await index.describeIndexStats();
+  const namespaceNames = Object.keys(stats.namespaces ?? {});
 
-  let chunks: { id: string; chunkIndex: number; preview: string }[] = [];
+  const chunksByDocId = new Map<string, Chunk[]>();
 
-  if (ids.length) {
-    // const fetched  = await index.fetch(ids);
-    const fetched  = await index.fetch({ ids: ids.map((id) => id) });
+  // 2. List + fetch within EACH namespace
+  for (const ns of namespaceNames) {
+    const nsIndex = index.namespace(ns);
 
-    chunks = fetched.records
-      ? Object.values(fetched.records).map((record) => ({
+    const idsInNamespace: string[] = [];
+    let paginationToken: string | undefined;
+    do {
+      const page = await nsIndex.listPaginated({ paginationToken });
+      idsInNamespace.push(...(page.vectors ?? []).map((v) => v.id!));
+      paginationToken = page.pagination?.next;
+    } while (paginationToken);
+
+    if (!idsInNamespace.length) continue;
+
+    for (let i = 0; i < idsInNamespace.length; i += FETCH_BATCH_SIZE) {
+      const batchIds = idsInNamespace.slice(i, i + FETCH_BATCH_SIZE);
+      const fetched = await nsIndex.fetch({ ids: batchIds });
+
+      for (const record of Object.values(fetched.records ?? {})) {
+        const [mongoDocId, chunkIndexStr] = record.id.split("::");
+        const metadata = record.metadata as ChunkMetadata | undefined;
+
+        const chunk: Chunk = {
           id: record.id,
-          chunkIndex: (record.metadata?.chunkIndex as number) ?? 0,
-          preview: ((record.metadata?.text as string) ?? ""),
-        }))
-      : [];
-    chunks.sort((a, b) => a.chunkIndex - b.chunkIndex);
+          chunkIndex: metadata?.chunkIndex ?? Number(chunkIndexStr) ?? 0,
+          preview: metadata?.text ?? "",
+        };
+
+        const existing = chunksByDocId.get(mongoDocId) ?? [];
+        existing.push(chunk);
+        chunksByDocId.set(mongoDocId, existing);
+      }
+    }
   }
 
-  return NextResponse.json({
-    documents: doc,
+  // 3. Match to Prisma docs
+  const documents = docs.map((doc) => {
+    const chunks = (chunksByDocId.get(doc.id) ?? []).sort(
+      (a, b) => a.chunkIndex - b.chunkIndex
+    );
+    return { id: doc.id,
+      title: doc.title,
+      kbId: doc.kbId,
+      status: doc.status,
+      createdAt: doc.createdAt,
+      updatedAt: doc.updatedAt,
+      chunks};
   });
+
+  return NextResponse.json({ documents });
 }

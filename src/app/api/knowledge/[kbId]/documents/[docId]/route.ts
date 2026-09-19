@@ -1,8 +1,8 @@
 // src/app/api/knowledge/[kbId]/documents/[docId]/route.ts
-import { deleteDocumentChunks, upsertDocumentChunks } from "@/lib/pinecone";
+import { deleteDocumentChunks, upsertDocumentChunks } from "@/lib/pineconeMongo/pinecone";
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
-import pinecone from "@/lib/pinecone";
+import { prisma } from "@/lib/pineconeMongo/prisma";
+import pinecone from "@/lib/pineconeMongo/pinecone";
 
 // List all documents from Pinecone and MongoDB
 export async function GET(
