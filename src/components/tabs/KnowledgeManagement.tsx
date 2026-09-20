@@ -26,7 +26,6 @@ import {
 } from 'lucide-react'
 import { KnowledgeFormData } from '@/src/types/dialog'
 import { KnowledgeDocument } from '@/src/types/knowledge'
-import { PreviewKnowledgeDialog, AddEditKnowledgeDialog, DeleteKnowledgeDialog } from '../dialogs/OtherDialogs'
 import { SortField } from '@/src/types/tabs'
 import { toast } from '@/src/components/ui/toast'
 import {
@@ -35,11 +34,12 @@ import {
   updateKnowledgeDocument,
   deleteKnowledgeDocument,
 } from '@/lib/pineconeMongo/knowledgeApi'
+import { AddEditKnowledgeDialog, DeleteKnowledgeDialog, PreviewKnowledgeDialog } from '../dialogs/KnowledgeDialog'
 
 const ROWS_PER_PAGE_OPTIONS = [4, 8, 10, 20]
 
 const SORT_FIELD_OPTIONS: { value: SortField; label: string }[] = [
-  { value: 'description', label: 'Description' },
+  { value: 'title', label: 'Title' },
   { value: 'category', label: 'Category' },
   { value: 'createdAt', label: 'Created At' },
   { value: 'updatedAt', label: 'Updated At' },
@@ -47,10 +47,10 @@ const SORT_FIELD_OPTIONS: { value: SortField; label: string }[] = [
 
 function getSortValue(doc: KnowledgeDocument, field: SortField): string | number {
   switch (field) {
-    case 'description':
+    case 'title':
       return doc.title
     case 'category':
-      return doc.kbId
+      return doc.category
     case 'createdAt':
       return new Date(doc.createdAt).getTime()
     case 'updatedAt':
@@ -100,7 +100,7 @@ export function RAGList() {
   const [selectedIds, setSelectedIds] = useState<Record<string, boolean>>({})
   const [knowledgePage, setKnowledgePage] = useState(1)
   const [knowledgePerPage, setKnowledgePerPage] = useState(10)
-  const [sortField, setSortField] = useState<SortField>('description')
+  const [sortField, setSortField] = useState<SortField>('title')
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc')
 
   const [previewDialogOpen, setPreviewDialogOpen] = useState(false)
@@ -171,8 +171,8 @@ export function RAGList() {
     setDialogMode('edit')
     setDialogInitialData({
       id: target.id,
-      description: target.title,
-      category: target.kbId,
+      title: target.title,
+      category: target.category,
       content: target.chunks
         .slice()
         .sort((a, b) => a.chunkIndex - b.chunkIndex)
@@ -185,11 +185,11 @@ export function RAGList() {
   async function handleDialogSave(data: KnowledgeFormData) {
     try {
       if (dialogMode === 'add') {
-        await createKnowledgeDocument(data.category, data.description, data.content ?? '')
-        toast.add({ title: "SUCCESS", description: `ADDED: ${data.description.slice(0, 20)}...` })
+        await createKnowledgeDocument(data.title, data.content ?? '', data.category)
+        toast.add({ title: "SUCCESS", description: `ADDED: ${data.title.slice(0, 20)}...` })
       } else if (data.id) {
-        await updateKnowledgeDocument(data.category, data.id, data.description, data.content ?? '')
-        toast.add({ title: "SUCCESS", description: `UPDATED: ${data.description.slice(0, 20)}...` })
+        await updateKnowledgeDocument(data.id, data.title, data.content ?? '', data.category)
+        toast.add({ title: "SUCCESS", description: `UPDATED: ${data.title.slice(0, 20)}...` })
       }
       await refresh()
     } catch (e) {
@@ -214,13 +214,7 @@ export function RAGList() {
     }
     setDeleting(true)
     try {
-      const results = await Promise.allSettled(
-        ids.map((id) => {
-          const doc = documents.find((d) => d.id === id)
-          if (!doc) return Promise.resolve()
-          return deleteKnowledgeDocument(doc.kbId, doc.id)
-        })
-      )
+      const results = await Promise.allSettled(ids.map((id) => deleteKnowledgeDocument(id)))
       const failed = results.filter((r) => r.status === 'rejected').length
       if (failed > 0) {
         toast.add({ title: "ERROR", description: `${failed} of ${ids.length} item(s) failed to delete` })
@@ -432,7 +426,7 @@ export function RAGList() {
                     </TableCell>
                     <TableCell className="align-middle py-4">
                       <span className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium bg-secondary text-secondary-foreground border border-border">
-                        {doc.kbId}
+                        {doc.category}
                       </span>
                     </TableCell>
                     <TableCell className="align-middle py-4">

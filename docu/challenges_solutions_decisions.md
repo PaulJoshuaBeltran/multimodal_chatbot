@@ -13,5 +13,13 @@ The pattern across multiple GitHub issues matches yours almost exactly: gemma4:e
 - solution: use other compatible model like gemma4:12b
 
 5. Ollama doesnt seem to have a document reader (like plain binary file)
-- make script that extracts text, image, and formatting as a fallback if a model or tool cant read document
-- will change it to langchain/langgraph document reader if doable
+- Used langchain document reader but since some file format results to bundler errors, fallback is a file reader script
+- I chose langchain for it possible more compatibility with langgraph orchestration
+
+6. MongoDB will include pinecone data
+- Pinecone's list pagination can appear inconsistent because the underlying serverless indexes are eventually consistent and rely on lexicographical sorting (bitwise "C" collation) which shifts if records are added, updated, or deleted during traversal.
+- Why Inconsistencies Happen
+-- Eventual Consistency: New or recently upserted records may not instantly appear in ongoing pagination sequences or might show up with a slight delay.
+-- Concurrent Writes: If records are added or removed while you are iterating through pages using pagination_token, the sorting positions can shift forward or backward, causing items to be skipped or repeated.
+-- Empty Token Edge Cases: Pages containing fewer results than the limit or returning empty tokens can sometimes trick pagination loops if you don't explicitly track the next field state.
+- from my experience it's ~5 mins

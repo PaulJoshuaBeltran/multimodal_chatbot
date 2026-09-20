@@ -13,28 +13,28 @@ export async function fetchKnowledgeDocuments(): Promise<KnowledgeDocument[]> {
   return (data.documents ?? []) as KnowledgeDocument[]
 }
 
-export async function createKnowledgeDocument(kbId: string, title: string, text: string) {
-  const res = await fetch(`/api/knowledge/${encodeURIComponent(kbId)}/documents`, {
+export async function createKnowledgeDocument(title: string, text: string, category: string) {
+  const res = await fetch('/api/knowledge/documents', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ title, text }),
+    body: JSON.stringify({ title, text, category }),
   })
   if (!res.ok) throw new Error(await parseError(res, `Create failed (${res.status})`))
   return res.json()
 }
 
-export async function updateKnowledgeDocument(kbId: string, docId: string, title: string, text: string) {
-  const res = await fetch(`/api/knowledge/${encodeURIComponent(kbId)}/documents/${docId}`, {
+export async function updateKnowledgeDocument(id: string, title: string, text: string, category: string) {
+  const res = await fetch(`/api/knowledge/documents/${id}`, {
     method: 'PATCH',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ title, text }),
+    body: JSON.stringify({ title, text, category }),
   })
   if (!res.ok) throw new Error(await parseError(res, `Update failed (${res.status})`))
   return res.json()
 }
 
-export async function deleteKnowledgeDocument(kbId: string, docId: string) {
-  const res = await fetch(`/api/knowledge/${encodeURIComponent(kbId)}/documents/${docId}`, {
+export async function deleteKnowledgeDocument(id: string) {
+  const res = await fetch(`/api/knowledge/documents/${id}`, {
     method: 'DELETE',
   })
   if (!res.ok) throw new Error(await parseError(res, `Delete failed (${res.status})`))

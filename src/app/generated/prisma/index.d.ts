@@ -5394,8 +5394,8 @@ export namespace Prisma {
 
   export type KnowledgeDocumentMinAggregateOutputType = {
     id: string | null
-    kbId: string | null
     title: string | null
+    category: string | null
     status: string | null
     chunkCount: number | null
     createdAt: Date | null
@@ -5404,8 +5404,8 @@ export namespace Prisma {
 
   export type KnowledgeDocumentMaxAggregateOutputType = {
     id: string | null
-    kbId: string | null
     title: string | null
+    category: string | null
     status: string | null
     chunkCount: number | null
     createdAt: Date | null
@@ -5414,8 +5414,8 @@ export namespace Prisma {
 
   export type KnowledgeDocumentCountAggregateOutputType = {
     id: number
-    kbId: number
     title: number
+    category: number
     status: number
     chunkCount: number
     createdAt: number
@@ -5434,8 +5434,8 @@ export namespace Prisma {
 
   export type KnowledgeDocumentMinAggregateInputType = {
     id?: true
-    kbId?: true
     title?: true
+    category?: true
     status?: true
     chunkCount?: true
     createdAt?: true
@@ -5444,8 +5444,8 @@ export namespace Prisma {
 
   export type KnowledgeDocumentMaxAggregateInputType = {
     id?: true
-    kbId?: true
     title?: true
+    category?: true
     status?: true
     chunkCount?: true
     createdAt?: true
@@ -5454,8 +5454,8 @@ export namespace Prisma {
 
   export type KnowledgeDocumentCountAggregateInputType = {
     id?: true
-    kbId?: true
     title?: true
+    category?: true
     status?: true
     chunkCount?: true
     createdAt?: true
@@ -5551,8 +5551,8 @@ export namespace Prisma {
 
   export type KnowledgeDocumentGroupByOutputType = {
     id: string
-    kbId: string
     title: string
+    category: string
     status: string
     chunkCount: number | null
     createdAt: Date
@@ -5580,8 +5580,8 @@ export namespace Prisma {
 
   export type KnowledgeDocumentSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
-    kbId?: boolean
     title?: boolean
+    category?: boolean
     status?: boolean
     chunkCount?: boolean
     createdAt?: boolean
@@ -5592,23 +5592,23 @@ export namespace Prisma {
 
   export type KnowledgeDocumentSelectScalar = {
     id?: boolean
-    kbId?: boolean
     title?: boolean
+    category?: boolean
     status?: boolean
     chunkCount?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }
 
-  export type KnowledgeDocumentOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "kbId" | "title" | "status" | "chunkCount" | "createdAt" | "updatedAt", ExtArgs["result"]["knowledgeDocument"]>
+  export type KnowledgeDocumentOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "title" | "category" | "status" | "chunkCount" | "createdAt" | "updatedAt", ExtArgs["result"]["knowledgeDocument"]>
 
   export type $KnowledgeDocumentPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "KnowledgeDocument"
     objects: {}
     scalars: $Extensions.GetPayloadResult<{
       id: string
-      kbId: string
       title: string
+      category: string
       status: string
       chunkCount: number | null
       createdAt: Date
@@ -6006,8 +6006,8 @@ export namespace Prisma {
    */
   interface KnowledgeDocumentFieldRefs {
     readonly id: FieldRef<"KnowledgeDocument", 'String'>
-    readonly kbId: FieldRef<"KnowledgeDocument", 'String'>
     readonly title: FieldRef<"KnowledgeDocument", 'String'>
+    readonly category: FieldRef<"KnowledgeDocument", 'String'>
     readonly status: FieldRef<"KnowledgeDocument", 'String'>
     readonly chunkCount: FieldRef<"KnowledgeDocument", 'Int'>
     readonly createdAt: FieldRef<"KnowledgeDocument", 'DateTime'>
@@ -6414,8 +6414,8 @@ export namespace Prisma {
 
   export const KnowledgeDocumentScalarFieldEnum: {
     id: 'id',
-    kbId: 'kbId',
     title: 'title',
+    category: 'category',
     status: 'status',
     chunkCount: 'chunkCount',
     createdAt: 'createdAt',
@@ -6766,8 +6766,8 @@ export namespace Prisma {
     OR?: KnowledgeDocumentWhereInput[]
     NOT?: KnowledgeDocumentWhereInput | KnowledgeDocumentWhereInput[]
     id?: StringFilter<"KnowledgeDocument"> | string
-    kbId?: StringFilter<"KnowledgeDocument"> | string
     title?: StringFilter<"KnowledgeDocument"> | string
+    category?: StringFilter<"KnowledgeDocument"> | string
     status?: StringFilter<"KnowledgeDocument"> | string
     chunkCount?: IntNullableFilter<"KnowledgeDocument"> | number | null
     createdAt?: DateTimeFilter<"KnowledgeDocument"> | Date | string
@@ -6776,8 +6776,8 @@ export namespace Prisma {
 
   export type KnowledgeDocumentOrderByWithRelationInput = {
     id?: SortOrder
-    kbId?: SortOrder
     title?: SortOrder
+    category?: SortOrder
     status?: SortOrder
     chunkCount?: SortOrder
     createdAt?: SortOrder
@@ -6789,8 +6789,8 @@ export namespace Prisma {
     AND?: KnowledgeDocumentWhereInput | KnowledgeDocumentWhereInput[]
     OR?: KnowledgeDocumentWhereInput[]
     NOT?: KnowledgeDocumentWhereInput | KnowledgeDocumentWhereInput[]
-    kbId?: StringFilter<"KnowledgeDocument"> | string
     title?: StringFilter<"KnowledgeDocument"> | string
+    category?: StringFilter<"KnowledgeDocument"> | string
     status?: StringFilter<"KnowledgeDocument"> | string
     chunkCount?: IntNullableFilter<"KnowledgeDocument"> | number | null
     createdAt?: DateTimeFilter<"KnowledgeDocument"> | Date | string
@@ -6799,8 +6799,8 @@ export namespace Prisma {
 
   export type KnowledgeDocumentOrderByWithAggregationInput = {
     id?: SortOrder
-    kbId?: SortOrder
     title?: SortOrder
+    category?: SortOrder
     status?: SortOrder
     chunkCount?: SortOrder
     createdAt?: SortOrder
@@ -6817,8 +6817,8 @@ export namespace Prisma {
     OR?: KnowledgeDocumentScalarWhereWithAggregatesInput[]
     NOT?: KnowledgeDocumentScalarWhereWithAggregatesInput | KnowledgeDocumentScalarWhereWithAggregatesInput[]
     id?: StringWithAggregatesFilter<"KnowledgeDocument"> | string
-    kbId?: StringWithAggregatesFilter<"KnowledgeDocument"> | string
     title?: StringWithAggregatesFilter<"KnowledgeDocument"> | string
+    category?: StringWithAggregatesFilter<"KnowledgeDocument"> | string
     status?: StringWithAggregatesFilter<"KnowledgeDocument"> | string
     chunkCount?: IntNullableWithAggregatesFilter<"KnowledgeDocument"> | number | null
     createdAt?: DateTimeWithAggregatesFilter<"KnowledgeDocument"> | Date | string
@@ -7079,8 +7079,8 @@ export namespace Prisma {
 
   export type KnowledgeDocumentCreateInput = {
     id?: string
-    kbId: string
     title: string
+    category: string
     status: string
     chunkCount?: number | null
     createdAt?: Date | string
@@ -7089,8 +7089,8 @@ export namespace Prisma {
 
   export type KnowledgeDocumentUncheckedCreateInput = {
     id?: string
-    kbId: string
     title: string
+    category: string
     status: string
     chunkCount?: number | null
     createdAt?: Date | string
@@ -7098,8 +7098,8 @@ export namespace Prisma {
   }
 
   export type KnowledgeDocumentUpdateInput = {
-    kbId?: StringFieldUpdateOperationsInput | string
     title?: StringFieldUpdateOperationsInput | string
+    category?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     chunkCount?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -7107,8 +7107,8 @@ export namespace Prisma {
   }
 
   export type KnowledgeDocumentUncheckedUpdateInput = {
-    kbId?: StringFieldUpdateOperationsInput | string
     title?: StringFieldUpdateOperationsInput | string
+    category?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     chunkCount?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -7117,8 +7117,8 @@ export namespace Prisma {
 
   export type KnowledgeDocumentCreateManyInput = {
     id?: string
-    kbId: string
     title: string
+    category: string
     status: string
     chunkCount?: number | null
     createdAt?: Date | string
@@ -7126,8 +7126,8 @@ export namespace Prisma {
   }
 
   export type KnowledgeDocumentUpdateManyMutationInput = {
-    kbId?: StringFieldUpdateOperationsInput | string
     title?: StringFieldUpdateOperationsInput | string
+    category?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     chunkCount?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -7135,8 +7135,8 @@ export namespace Prisma {
   }
 
   export type KnowledgeDocumentUncheckedUpdateManyInput = {
-    kbId?: StringFieldUpdateOperationsInput | string
     title?: StringFieldUpdateOperationsInput | string
+    category?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     chunkCount?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -7461,8 +7461,8 @@ export namespace Prisma {
 
   export type KnowledgeDocumentCountOrderByAggregateInput = {
     id?: SortOrder
-    kbId?: SortOrder
     title?: SortOrder
+    category?: SortOrder
     status?: SortOrder
     chunkCount?: SortOrder
     createdAt?: SortOrder
@@ -7475,8 +7475,8 @@ export namespace Prisma {
 
   export type KnowledgeDocumentMaxOrderByAggregateInput = {
     id?: SortOrder
-    kbId?: SortOrder
     title?: SortOrder
+    category?: SortOrder
     status?: SortOrder
     chunkCount?: SortOrder
     createdAt?: SortOrder
@@ -7485,8 +7485,8 @@ export namespace Prisma {
 
   export type KnowledgeDocumentMinOrderByAggregateInput = {
     id?: SortOrder
-    kbId?: SortOrder
     title?: SortOrder
+    category?: SortOrder
     status?: SortOrder
     chunkCount?: SortOrder
     createdAt?: SortOrder

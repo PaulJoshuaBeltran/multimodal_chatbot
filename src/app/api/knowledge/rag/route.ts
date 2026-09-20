@@ -1,4 +1,4 @@
-// src/app/api/chat/rag/route.ts
+// src/app/api/knowledge/rag/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { ollamaEmbed } from "@/lib/ollama";
 import pinecone from "@/lib/pineconeMongo/pinecone";
@@ -6,10 +6,12 @@ import { rerank } from "@/lib/huggingFace";
 
 // Pinecone RAG API route and HF BGE Reranking wrapped in langchain
 export async function POST(req: NextRequest) {
-  const { kbId, query, topK = 2 } = await req.json();
+  const { query, topK } = await req.json();
 
   const [queryVector] = await ollamaEmbed([query]);
-  const index = pinecone.index({ host: process.env.PINECONE_HOST_NAME || "" }).namespace(kbId);
+
+  const index = pinecone.index({ host: process.env.PINECONE_HOST_NAME || "" })
+                        .namespace(process.env.PINECONE_NAMESPACE || "");
 
   const results = await index.query({
     vector: queryVector,
@@ -29,5 +31,5 @@ export async function POST(req: NextRequest) {
     rerankScore: r.score,
   }));
 
-  return NextResponse.json({ similaritySearch, rerankedMatches });
+  return NextResponse.json({ results, similaritySearch, rerankedMatches });
 }

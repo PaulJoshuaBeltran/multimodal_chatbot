@@ -1,18 +1,7 @@
-// src/app/api/knowledge/route.ts
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/pineconeMongo/prisma";
 import pinecone from "@/lib/pineconeMongo/pinecone";
-
-interface Chunk {
-  id: string;
-  chunkIndex: number;
-  preview: string;
-}
-
-interface ChunkMetadata {
-  chunkIndex?: number;
-  text?: string;
-}
+import { ChunkMetadata, KnowledgeChunk } from "@/src/types/knowledge";
 
 const FETCH_BATCH_SIZE = 1000;
 
@@ -25,61 +14,53 @@ export async function GET() {
     return NextResponse.json({ documents: [] });
   }
 
-  const index = pinecone.index({ host: process.env.PINECONE_HOST_NAME || "" });
+  const index = pinecone
+    .index({ host: process.env.PINECONE_HOST_NAME || "" })
+    .namespace(process.env.PINECONE_NAMESPACE || "");
 
-  // 1. Discover all namespaces
-  const stats = await index.describeIndexStats();
-  const namespaceNames = Object.keys(stats.namespaces ?? {});
+  const chunksByDocId = new Map<string, KnowledgeChunk[]>();
 
-  const chunksByDocId = new Map<string, Chunk[]>();
+  const idsInNamespace: string[] = [];
+  let paginationToken: string | undefined;
+  do {
+    const page = await index.listPaginated({ paginationToken });
+    idsInNamespace.push(...(page.vectors ?? []).map((v) => v.id!));
+    paginationToken = page.pagination?.next;
+  } while (paginationToken);
 
-  // 2. List + fetch within EACH namespace
-  for (const ns of namespaceNames) {
-    const nsIndex = index.namespace(ns);
+  for (let i = 0; i < idsInNamespace.length; i += FETCH_BATCH_SIZE) {
+    const batchIds = idsInNamespace.slice(i, i + FETCH_BATCH_SIZE);
+    const fetched = await index.fetch({ ids: batchIds });
 
-    const idsInNamespace: string[] = [];
-    let paginationToken: string | undefined;
-    do {
-      const page = await nsIndex.listPaginated({ paginationToken });
-      idsInNamespace.push(...(page.vectors ?? []).map((v) => v.id!));
-      paginationToken = page.pagination?.next;
-    } while (paginationToken);
+    for (const record of Object.values(fetched.records ?? {})) {
+      const [mongoDocId, chunkIndexStr] = record.id.split("::");
+      const metadata = record.metadata as ChunkMetadata | undefined;
 
-    if (!idsInNamespace.length) continue;
+      const chunk: KnowledgeChunk = {
+        id: record.id,
+        chunkIndex: metadata?.chunkIndex ?? Number(chunkIndexStr) ?? 0,
+        preview: metadata?.text ?? "",
+      };
 
-    for (let i = 0; i < idsInNamespace.length; i += FETCH_BATCH_SIZE) {
-      const batchIds = idsInNamespace.slice(i, i + FETCH_BATCH_SIZE);
-      const fetched = await nsIndex.fetch({ ids: batchIds });
-
-      for (const record of Object.values(fetched.records ?? {})) {
-        const [mongoDocId, chunkIndexStr] = record.id.split("::");
-        const metadata = record.metadata as ChunkMetadata | undefined;
-
-        const chunk: Chunk = {
-          id: record.id,
-          chunkIndex: metadata?.chunkIndex ?? Number(chunkIndexStr) ?? 0,
-          preview: metadata?.text ?? "",
-        };
-
-        const existing = chunksByDocId.get(mongoDocId) ?? [];
-        existing.push(chunk);
-        chunksByDocId.set(mongoDocId, existing);
-      }
+      const existing = chunksByDocId.get(mongoDocId) ?? [];
+      existing.push(chunk);
+      chunksByDocId.set(mongoDocId, existing);
     }
   }
 
-  // 3. Match to Prisma docs
   const documents = docs.map((doc) => {
     const chunks = (chunksByDocId.get(doc.id) ?? []).sort(
       (a, b) => a.chunkIndex - b.chunkIndex
     );
-    return { id: doc.id,
+    return {
+      id: doc.id,
       title: doc.title,
-      kbId: doc.kbId,
+      category: doc.category,
       status: doc.status,
       createdAt: doc.createdAt,
       updatedAt: doc.updatedAt,
-      chunks};
+      chunks,
+    };
   });
 
   return NextResponse.json({ documents });

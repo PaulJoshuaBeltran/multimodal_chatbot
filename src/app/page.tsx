@@ -20,9 +20,10 @@ import { ChatSidebar } from '../components/sidebar/ChatSidebar'
 import { ChatInput } from '../components/main/ChatInput'
 import { RAGList } from '../components/tabs/KnowledgeManagement'
 import { ToolList } from '../components/tabs/ToolList'
-import { NewConversationDialog, DeactivateAlertDialog, AddModelDialog } from '../components/dialogs/OtherDialogs'
 import { HttpError } from '../models/http_error'
 import { LoginSignup } from '../components/main/LoginSignup'
+import { AddModelDialog, DeactivateAlertDialog } from '../components/dialogs/OtherDialogs'
+import { NewConversationDialog } from '../components/dialogs/ConversationDialog'
 
 // Page
 export default function Page() {

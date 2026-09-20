@@ -5,7 +5,7 @@ import React, { useEffect, useState, useCallback } from 'react'
 import MessageBubble from './MessageBubble'
 import type { Message } from '@/src/types/msg_conversation_model'
 import { toast } from "@/src/components/ui/toast"
-import { DeleteMessageDialog, EditMessageDialog } from '../dialogs/OtherDialogs'
+import { DeleteMessageDialog, EditMessageDialog } from '../dialogs/MessageDialog'
 
 function formatDateLabel(date: Date): string {
   const today = new Date()

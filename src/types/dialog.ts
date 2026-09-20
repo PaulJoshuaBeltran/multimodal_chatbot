@@ -1,7 +1,7 @@
 // src/types/dialog.ts
 export type KnowledgeFormData = {
   id?: string
-  description: string
+  title: string
   category: string
   content?: string
 }

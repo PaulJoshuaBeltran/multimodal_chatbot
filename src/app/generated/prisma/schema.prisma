@@ -69,8 +69,8 @@ model AiModel {
 
 model KnowledgeDocument {
   id         String   @id @default(auto()) @map("_id") @db.ObjectId
-  kbId       String
   title      String
+  category   String
   status     String // processing | ready | failed
   chunkCount Int?
   createdAt  DateTime @default(now())

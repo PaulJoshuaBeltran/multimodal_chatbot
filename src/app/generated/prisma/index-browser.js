@@ -152,8 +152,8 @@ exports.Prisma.AiModelScalarFieldEnum = {
 
 exports.Prisma.KnowledgeDocumentScalarFieldEnum = {
   id: 'id',
-  kbId: 'kbId',
   title: 'title',
+  category: 'category',
   status: 'status',
   chunkCount: 'chunkCount',
   createdAt: 'createdAt',

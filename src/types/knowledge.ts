@@ -7,10 +7,15 @@ export interface KnowledgeChunk {
 
 export interface KnowledgeDocument {
   id: string
-  kbId: string
   title: string
+  category: string
   status: string
   createdAt: string
   updatedAt: string
   chunks: KnowledgeChunk[]
+}
+
+export interface ChunkMetadata {
+  chunkIndex?: number;
+  text?: string;
 }

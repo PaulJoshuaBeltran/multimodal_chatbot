@@ -21,19 +21,21 @@ export function chunkText(text: string, size = 800, overlap = 100): string[] {
 
 // Pinecone document chunk upsert helper
 export async function upsertDocumentChunks({
-  kbId,
   documentId,
   text,
   title,
+  category,
 }: {
-  kbId: string;
   documentId: string;
   text: string;
   title: string;
+  category: string;
 }) {
   const chunks = chunkText(text);
   const vectors = await ollamaEmbed(chunks);
-  const index = pinecone.index({ host: process.env.PINECONE_HOST_NAME || "" }).namespace(kbId);
+  const index = pinecone
+    .index({ host: process.env.PINECONE_HOST_NAME || "" })
+    .namespace(process.env.PINECONE_NAMESPACE || "");
 
   await index.upsert({
     records: chunks.map((chunk, i) => ({
@@ -42,18 +44,21 @@ export async function upsertDocumentChunks({
       metadata: {
         documentId,
         title,
+        category,
         chunkIndex: i,
-        text: chunk
+        text: chunk,
       },
-    }))
+    })),
   });
 
   return chunks.length;
 }
 
 // Pinecone document chunk delete helper
-export async function deleteDocumentChunks(kbId: string, documentId: string) {
-  const index = pinecone.index({ host: process.env.PINECONE_HOST_NAME || "" }).namespace(kbId);
+export async function deleteDocumentChunks(documentId: string) {
+  const index = pinecone
+    .index({ host: process.env.PINECONE_HOST_NAME || "" })
+    .namespace(process.env.PINECONE_NAMESPACE || "");
   const ids: string[] = [];
   let paginationToken: string | undefined;
 
@@ -66,12 +71,6 @@ export async function deleteDocumentChunks(kbId: string, documentId: string) {
     paginationToken = page.pagination?.next;
   } while (paginationToken);
 
-  console.log(`Delete ids: ${ids.join(", ")}`);
-
-  if (ids.length) {
-    console.log(`test ${ids.length}`)
-  }
-
-  if (ids.length) await index.deleteMany({ ids:ids.map((id) => id) });
+  if (ids.length) await index.deleteMany({ ids });
   return ids.length;
 }
