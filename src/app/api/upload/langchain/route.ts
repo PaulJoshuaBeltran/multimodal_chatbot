@@ -8,7 +8,6 @@ import { ALLOWED_EXT, FileType } from '@/src/types/file_upload'
 const UPLOAD_DIR = path.join(process.cwd(), 'data', '.uploads')
 
 export async function POST(req: Request) {
-  console.log('content-type:', req.headers.get('content-type'))
   try {
     const formData = await req.formData()
     const file = formData.get('file')
@@ -31,6 +30,7 @@ export async function POST(req: Request) {
     const buffer = Buffer.from(await file.arrayBuffer())
     await writeFile(serverPath, buffer)
 
+    console.log(`${serverPath} ${ext as FileType}`)
     const rawDocs = await readDocument(serverPath, ext as FileType)
     const chunkedDocs = await splitChunkDocument(rawDocs || [])
 

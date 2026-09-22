@@ -5,7 +5,7 @@ import { uploadPathFromUrl } from '@/lib/uploads'
 import type { ProcessedMessage } from '@/src/types/msg_conversation_model'
 import { IncomingMessage } from '@/src/types/rag'
 
-async function loadImageBase64(url: string): Promise<string | null> {
+export async function loadImageBase64(url: string): Promise<string | null> {
   try {
     const filePath = uploadPathFromUrl(url)
     console.log('Loading image from:', filePath, '| raw url was:', url)

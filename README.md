@@ -28,15 +28,15 @@ The system is orchestrated with LangGraph/LangChain, served by Ollama (with Hugg
 | LangChain                                           | Document loaders, chunking/splitting, chain and tool interfaces                                     |
 | LangGraph                                           | Orchestrates conversation flow, RAG retrieval, and tool-call routing as a state graph               |
 | LangSmith                                           | Evaluation and tracing — tracks LLM runs for offline scoring                                        |
-| RAGAS                                               | RAG-specific evaluation metrics (faithfulness, relevance, hallucination)                            |
 | Promptfoo                                           | Prompt/model regression testing in CI                                                               |
 | ngrok                                               | Exposes local dev environment publicly (e.g., for Clerk/webhook callbacks, local Ollama access)     |
 | Vercel                                              | Hosting and deployment platform for the Next.js app                                                 |
+| GitHub Actions                                      | (Near future) CI/CD pipeline — tests and evaluation gating before deploy                            |
 | Nginx / Redis                                       | (Future) Rate limiting for LLM and tool-call endpoints                                              |
+| RAGAS                                               | (Future) RAG-specific evaluation metrics (faithfulness, relevance, hallucination)                   |
 | NeMo Guardrails / Guardrails AI / Llama Guard       | (Future) Dedicated guardrails frameworks to replace custom inline validators at scale               |
 | Vault / Doppler                                     | (Future) Secrets management                                                                         |
 | Kafka-style event bus                               | (Future) Async event handling for scaling beyond single-tenant use                                  |
-| GitHub Actions                                      | (Near future) CI/CD pipeline — tests and evaluation gating before deploy                            |
 
 ## 3. Features
 ### 3.1 User Management
