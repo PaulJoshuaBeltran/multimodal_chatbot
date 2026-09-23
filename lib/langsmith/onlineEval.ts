@@ -6,8 +6,7 @@ import { ollama } from "@/lib/ollama";
 import type { RagInputType } from "@/lib/langgraph/chatPromptRag";
 import { FileType } from '@/src/types/file_upload'
 
-const client = new Client(); // reads LANGCHAIN_API_KEY / LANGCHAIN_ENDPOINT
-                             // reads LANGSMITH_API_KEY / LANGSMITH_ENDPOINT
+const client = new Client(); // reads LANGSMITH_API_KEY / LANGSMITH_ENDPOINT
 
 interface GraphInput {
   query: string;
@@ -22,6 +21,17 @@ interface GraphOutput {
   context: string;
   isFallback: boolean;
   guardrailFlags?: string[];
+}
+
+type FeedbackResults = [
+  { key: string; score: number } | null,
+  { key: string; score: number } | null,
+  { key: string; score: number; value: { flags: string[] } } | null
+];
+
+interface FinalResult {
+  promptResult: GraphOutput;
+  feedbackResult: FeedbackResults;
 }
 
 // ---------- Individual online evaluators (all reference-free) ----------
@@ -68,10 +78,10 @@ function getSessionId(): Promise<string> {
   return sessionIdPromise;
 }
 
-async function runOnlineEvaluators(runId: string, output: GraphOutput) {
+async function runOnlineEvaluators(runId: string, output: GraphOutput): Promise<FeedbackResults> {
   const sessionId = await getSessionId();
 
-  const results = await Promise.all([
+  const results: FeedbackResults = await Promise.all([
     groundednessEvaluator(output),
     Promise.resolve(citationFormatEvaluator(output)),
     Promise.resolve(guardrailEvaluator(output)),
@@ -88,22 +98,24 @@ async function runOnlineEvaluators(runId: string, output: GraphOutput) {
         })
       )
   );
+  return results;
 }
 
 // ---------- Traced wrapper around your existing graph ----------
 export const invokeRagGraphWithOnlineEval = traceable(
-  async (input: GraphInput): Promise<GraphOutput> => {
-    const result = await ragGraph.invoke(input);
+  async (input: GraphInput): Promise<FinalResult> => {
+    const promptResult: GraphOutput = await ragGraph.invoke(input);
     const runTree = getCurrentRunTree();
+    
+    const feedbackResult = runTree ? await runOnlineEvaluators(runTree.id, promptResult).catch((err) =>
+      console.error("online eval failed:", err)
+    ) : [null, null, null];
 
-    if (runTree) {
-      // fire-and-forget so evaluation never adds latency to the chat response
-      runOnlineEvaluators(runTree.id, result as GraphOutput).catch((err) =>
-        console.error("online eval failed:", err)
-      );
+    const finalResult = {
+      promptResult,
+      feedbackResult
     }
-
-    return result as GraphOutput;
+    return finalResult as FinalResult;
   },
   { name: "ragGraph.invoke", run_type: "chain" }
 );
