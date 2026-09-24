@@ -53,6 +53,7 @@ async function groundednessEvaluator(output: GraphOutput) {
     ],
     stream: false,
   });
+  // Change this to structured output eventually
 
   const score = Number.parseFloat(judged.message?.content ?? "");
   return Number.isNaN(score) ? null : { key: "groundedness", score };

@@ -13,7 +13,7 @@ import * as pdfjs from "pdfjs-dist/legacy/build/pdf.mjs";
 import type { TextItem } from "pdfjs-dist/types/src/display/api";
 import { FileType } from "@/src/types/file_upload";
 
-// LOAD XML: Langchain PDFLoader not working properly with bundler
+// LOAD PDF: Langchain PDFLoader not working properly with bundler
 // so read file and imitate PDFLoader behavior but also detect images
 pdfjs.GlobalWorkerOptions.workerSrc = new URL(
   "pdfjs-dist/build/pdf.worker.mjs",
