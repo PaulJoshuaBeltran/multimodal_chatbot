@@ -1,5 +1,6 @@
 // lib/huggingFace.ts
 import { RerankResult } from "@/src/types/rag";
+
 export async function rerank(
   query: string,
   documents: string[],
