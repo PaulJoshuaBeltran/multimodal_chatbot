@@ -2,7 +2,28 @@
 import { ollama } from "@/lib/ollama";
 import type { Message } from "ollama";
 
-type ToolName = 'add' | 'multiply'
+type ToolName = 'add' |
+  'multiply' |
+  'create_file' |
+  'read_file' |
+  'update_file' |
+  'delete_file' |
+  'view_file_metadata' |
+  'email' |
+  'sms_text' |
+  'visualize_table' |
+  'visualize_line_graph' |
+  'visualize_bar_graph' |
+  'visualize_pie_chart' |
+  'visualize_scatter_graph' |
+  'visualize_heatmap' |
+  'visualize_flowchart' |
+  'connect_database' |
+  'execute_query' |
+  'start_transaction' |
+  'commit_database' |
+  'rollback_database' |
+  'add_savepoint_database'
 
 // FUNCTIONS (MOCK for now)
 // I. Tests
