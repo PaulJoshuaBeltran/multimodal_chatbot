@@ -150,6 +150,12 @@ d. npx prisma db push
 ### 5.8. Hugging Face
 - @huggingface/inference
 
+### 5.9. SMTP
+- npm install dotenv@^16.4.5
+- npm install nodemailer
+- Google Account → Security → 2-Step Verification and turn on
+- Add app password: https://myaccount.google.com/apppasswords
+
 ### 5.9. Other installations
 - refer to requirements.txt, package.json
 - npm install -i
