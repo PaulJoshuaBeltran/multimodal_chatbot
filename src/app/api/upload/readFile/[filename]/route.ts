@@ -13,7 +13,6 @@ export async function GET(
 ) {
   const { filename } = await params
   try {
-    
     // Prevent directory traversal attacks
     if (filename.includes('..') || filename.includes('/')) {
       return new Response(JSON.stringify({ error: 'Invalid filename' }), {

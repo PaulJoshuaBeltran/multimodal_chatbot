@@ -5,6 +5,8 @@ import { ChunkMetadata, KnowledgeChunk } from "@/src/types/knowledge";
 
 const FETCH_BATCH_SIZE = 1000;
 
+// EVENTUALLY, REMOVE FOLDERS NAMELY ALL AND DOCUMENT
+
 export async function GET() {
   const docs = await prisma.knowledgeDocument.findMany({
     orderBy: { createdAt: "desc" },

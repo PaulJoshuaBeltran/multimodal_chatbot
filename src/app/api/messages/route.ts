@@ -6,6 +6,8 @@ import type { Prisma } from '@/src/app/generated/prisma/client'
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
 
+// WHAT IS ITS DIFFERENCE WITH /api/search???
+
 export async function GET(req: Request) {
   const user = await getLocalUser()
   if (!user) return new Response(JSON.stringify([]), { status: 200, headers: { 'Content-Type': 'application/json' } })

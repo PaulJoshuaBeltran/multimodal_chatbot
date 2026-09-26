@@ -5,6 +5,7 @@ import pinecone from "@/lib/pineconeMongo/pinecone";
 import { rerank } from "@/lib/huggingFace";
 
 // Pinecone RAG API route and HF BGE Reranking wrapped in langchain
+// TO BE DELETED AND INCLUDED IN LANGGRAPH ORCHESTRATION
 export async function POST(req: NextRequest) {
   const { query, topK } = await req.json();
 
