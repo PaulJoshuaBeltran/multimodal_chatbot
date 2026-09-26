@@ -84,7 +84,7 @@ export async function POST(req: Request) {
 
     return new Response(
       JSON.stringify({
-        url: `/api/uploader/readFile/${safeName}`,
+        url: `/api/upload/readFile/${safeName}`,
         fileName: file.name,
         fileType: validation.fileType,
         mimeType: file.type || 'unknown/file',
