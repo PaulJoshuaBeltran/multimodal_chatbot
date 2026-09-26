@@ -156,14 +156,14 @@ d. npx prisma db push
 - Google Account → Security → 2-Step Verification and turn on
 - Add app password: https://myaccount.google.com/apppasswords
 
-### 5.9. Other installations
+### 5.10. Other installations
 - refer to requirements.txt, package.json
 - npm install -i
 
-### 5.10. Run the development server
+### 5.11. Run the development server
 - (npm run/yarn/pnpm/bun) dev
 
-### 5.11. Deploy on Vercel
+### 5.12. Deploy on Vercel
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
 

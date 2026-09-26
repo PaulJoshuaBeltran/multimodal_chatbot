@@ -1,11 +1,8 @@
 // lib/toolcall/message.ts
-
-// npm install dotenv@^16.4.5
-// npm install nodemailer
-
 import nodemailer from "nodemailer";
 import { SendMailOptions, Transporter } from "nodemailer";
 
+// Email
 const transporter: Transporter = nodemailer.createTransport({
   host: "smtp.gmail.com",
   port: 587,
@@ -15,15 +12,6 @@ const transporter: Transporter = nodemailer.createTransport({
     pass: process.env.SMTP_PASS,
   },
 });
-
-// 2. Define your email options safely typed
-// const mailOptions: SendMailOptions = {
-//   from: 'paulbeltran123456@gmail.com',
-//   to: "joshpaulbeltran654321@gmail.com",
-//   subject: "Testing TypeScript Email",
-//   text: "Hello from TypeScript!",
-//   html: "<b>Hello from TypeScript!</b>",
-// };
 
 export async function email(options: SendMailOptions) {
   try {
@@ -35,5 +23,7 @@ export async function email(options: SendMailOptions) {
 }
 
 export function sms_text() {
-
+  // Twilio can't send SMS text verification for me for some reason
+  // Clicksend not sending me SMS text verification for some reason
+  // Not using AWS SNS Client for this
 }
