@@ -15,7 +15,6 @@ export function classifyAndValidate(
 
   const isImage = file.type.startsWith('image/')
   const isAudio = file.type.startsWith('audio/')
-  // const isDocument = ALLOWED_DOCUMENT_MIME_TYPES.includes(file.type)
   const isDocument = file.type.startsWith('application/') || file.type.startsWith('text/')
 
   if (!isImage && !isAudio && !isDocument) {

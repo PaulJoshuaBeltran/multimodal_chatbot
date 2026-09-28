@@ -9,7 +9,7 @@ export async function rerank(
   const scores = await Promise.all(
     documents.map(async (doc) => {
       const res = await fetch(
-        "https://router.huggingface.co/hf-inference/models/BAAI/bge-reranker-base",
+        process.env.HF_URL || "",
         {
           method: "POST",
           headers: {

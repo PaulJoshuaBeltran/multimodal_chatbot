@@ -23,7 +23,7 @@ export async function email(options: SendMailOptions) {
 }
 
 export function sms_text() {
-  // Twilio can't send SMS text verification for me for some reason
-  // Clicksend not sending me SMS text verification for some reason
+  // Twilio can't send SMS text verification for me
+  // Clicksend not sending me SMS text verification
   // Not using AWS SNS Client for this
 }

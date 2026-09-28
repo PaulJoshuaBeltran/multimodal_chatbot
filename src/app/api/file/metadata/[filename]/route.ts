@@ -1,4 +1,4 @@
-// src/app/api/upload/readFile/[filename]/route.ts
+// /src/app/api/file/metadata/[filename]/route.ts
 import { stat } from 'fs/promises'
 import path from 'path'
 import { UPLOAD_DIR } from '@/lib/uploads'

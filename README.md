@@ -21,6 +21,7 @@ The system is orchestrated with LangGraph/LangChain, served by Ollama (with Hugg
 | Clerk                                               | User authentication (signup, login, session management, webhooks for user lifecycle)                |
 | Stripe                                              | Subscription billing and plan management                                                            |
 | MongoDB + Prisma ORM (v6)                           | Primary application database — users, conversations, messages, models, tool/guardrail/eval metadata |
+| Supabase?                                           | SQL database support for toolcalling                                                                |
 | Pinecone                                            | Vector database for storing embeddings and running semantic search over the knowledge base          |
 | Ollama                                              | Local LLM serving — chat, vision, and embedding models                                              |
 | Hugging Face                                        | Fallback/secondary model hosting — embeddings, reranker, OCR/vision models                          |
@@ -58,11 +59,11 @@ The system is orchestrated with LangGraph/LangChain, served by Ollama (with Hugg
 - **Knowledge (RAG)**: manage Pinecone-backed documents — add, reingest, update metadata, delete
 - **Tool calling**: define a tool's name and the action it maps to via a configurable input prompt, plus a test/dry-run capability
 - **Tool scope is intentionally bounded** to:
-  1. Data and table analysis
-  2. Machine learning / other numerical analysis
-  3. File management
-  4. Notification actions (e.g., email)
-  5. Visualization (diagram generation)
+  1. File management
+  2. Database analysis
+  3. Mathematical analysis
+  4. Visualization (diagram generation)
+  5. Message actions e.g., email and SMS text
 
 ### 3.5 LLM, RAG, and Tool-Calling Infrastructure
 - **Orchestration**: LangGraph (control flow) + LangChain (document loading, chunking, retrieval)
@@ -103,10 +104,10 @@ The system is orchestrated with LangGraph/LangChain, served by Ollama (with Hugg
 
 ## 4. Architecture
 ### 4.1. Overall Architecture
-![Overall Architecture](data/diagrams/overall_architecture.jpg)
+![Overall Architecture](docu/diagrams/overall_architecture.jpg)
 
 ### 4.2. Sub Architecture
-![Overall Architecture](data/diagrams/sub_architecture.jpg)
+![Overall Architecture](docu/diagrams/sub_architecture.jpg)
 
 ## 5. Setup Instructions
 ### 5.1. Next.js setup
@@ -150,7 +151,7 @@ d. npx prisma db push
 ### 5.8. Hugging Face
 - @huggingface/inference
 
-### 5.9. SMTP
+### 5.9. Email SMTP
 - npm install dotenv@^16.4.5
 - npm install nodemailer
 - Google Account → Security → 2-Step Verification and turn on

@@ -1,4 +1,4 @@
-// lib/pinecone.ts
+// lib/pineconeMongo/pinecone.ts
 import { Pinecone } from "@pinecone-database/pinecone";
 import { ollamaEmbed } from "../ollama";
 

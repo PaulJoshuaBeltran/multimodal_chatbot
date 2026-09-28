@@ -1,12 +1,15 @@
-import { NextResponse } from "next/server";
+// src/app/api/knowledge/route.ts
+import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/pineconeMongo/prisma";
-import pinecone from "@/lib/pineconeMongo/pinecone";
+import pinecone, { upsertDocumentChunks } from "@/lib/pineconeMongo/pinecone";
 import { ChunkMetadata, KnowledgeChunk } from "@/src/types/knowledge";
+
+export const runtime = 'nodejs'
+export const dynamic = 'force-dynamic'
 
 const FETCH_BATCH_SIZE = 1000;
 
-// EVENTUALLY, REMOVE FOLDERS NAMELY ALL AND DOCUMENT
-
+// Pinecone & MongoDB get all document chunk
 export async function GET() {
   const docs = await prisma.knowledgeDocument.findMany({
     orderBy: { createdAt: "desc" },
@@ -66,4 +69,31 @@ export async function GET() {
   });
 
   return NextResponse.json({ documents });
+}
+
+// Pinecone & MongoDB document chunk upsert helper
+export async function POST(req: NextRequest) {
+  const { title, text, category } = await req.json();
+
+  const doc = await prisma.knowledgeDocument.create({
+    data: { title, category, status: "processing" },
+  });
+
+  try {
+    const chunkCount = await upsertDocumentChunks({
+      documentId: doc.id,
+      text,
+      title,
+      category,
+    });
+    await prisma.knowledgeDocument.update({
+      where: { id: doc.id },
+      data: { status: "ready", chunkCount },
+    });
+  } catch (err) {
+    await prisma.knowledgeDocument.update({ where: { id: doc.id }, data: { status: "failed" } });
+    return NextResponse.json({ error: `Ingestion failed: ${err}` }, { status: 500 });
+  }
+
+  return NextResponse.json({ id: doc.id, status: "ready" });
 }

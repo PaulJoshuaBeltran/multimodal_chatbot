@@ -1,6 +1,10 @@
+// src/app/api/knowledge/[id]/route.ts
 import { deleteDocumentChunks, upsertDocumentChunks } from "@/lib/pineconeMongo/pinecone";
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/pineconeMongo/prisma";
+
+export const runtime = 'nodejs'
+export const dynamic = 'force-dynamic'
 
 // Pinecone and MongoDB document chunk update
 export async function PATCH(

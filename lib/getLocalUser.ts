@@ -1,4 +1,4 @@
-// lib/get-local-user.ts
+// lib/getLocalUser.ts
 import { auth } from '@clerk/nextjs/server'
 import { prisma } from '@/lib/pineconeMongo/prisma'
 

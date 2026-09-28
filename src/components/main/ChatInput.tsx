@@ -90,7 +90,7 @@ export function ChatInput({
 
       let res: Response
       try {
-        res = await fetch('/api/upload/writeFile/', {
+        res = await fetch('/api/file/management/', {
           method: 'POST',
           body: form,
         })
