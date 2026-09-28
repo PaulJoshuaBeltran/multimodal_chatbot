@@ -1,7 +1,7 @@
 // src/components/dialogs/AuthBox.tsx
 'use client'
 
-import { AuthBoxProps } from '@/src/types/props'
+import { AuthBoxProps } from '@/src/types/sidebar_dialog'
 import React, { useState } from 'react'
 import { toast } from "@/src/components/ui/toast"
 

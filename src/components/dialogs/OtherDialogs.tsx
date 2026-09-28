@@ -6,7 +6,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Button } from '../ui/button'
 import { Input } from '../ui/input'
 import { toast } from "@/src/components/ui/toast"
-import { DeactivateAlertDialogProps } from '@/src/types/props'
+import { DeactivateAlertDialogProps } from '@/src/types/sidebar_dialog'
 import { AlertTriangle, Plus, Search } from 'lucide-react'
 import { AiModel, OllamaInstalledModel } from '@/src/types/msg_conversation_model'
 import { ScrollArea } from '../ui/scroll-area'

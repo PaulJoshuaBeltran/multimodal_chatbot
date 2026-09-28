@@ -25,7 +25,7 @@ import {
   MoreVertical,
   Wrench,
 } from 'lucide-react'
-import { ChatSidebarProps } from '@/src/types/props'
+import { ChatSidebarProps } from '@/src/types/sidebar_dialog'
 import { SettingsDialog } from '@/src/components/sidebar/SettingsDialog'
 
 function getInitials(name: string): string {

@@ -12,6 +12,7 @@ import { XMLParser } from "fast-xml-parser";
 import * as pdfjs from "pdfjs-dist/legacy/build/pdf.mjs";
 import type { TextItem } from "pdfjs-dist/types/src/display/api";
 import { FileType } from "@/src/types/file_upload";
+import { SheetRow } from "@/src/types/langchain";
 
 // LOAD PDF: Langchain PDFLoader not working properly with bundler
 // so read file and imitate PDFLoader behavior but also detect images
@@ -99,9 +100,6 @@ function flattenXmlNode(node: unknown, prefix = ""): string {
 
 // LOAD XLSX: Langchain UnstructuredLoader not working properly with bundler,
 // so read file and imitate UnstructuredLoader behavior
-type CellValue = string | number | boolean | Date | null | undefined;
-type SheetRow = Record<string, CellValue>;
-
 function loadXlsxAsDocuments(
   filePath: string,
   pageContentColumn?: string

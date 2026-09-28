@@ -3,7 +3,7 @@ import { ollama } from '@/lib/ollama'
 import { readFile } from 'fs/promises'
 import { uploadPathFromUrl } from '@/lib/uploads'
 import type { ProcessedMessage } from '@/src/types/msg_conversation_model'
-import { IncomingMessage } from '@/src/types/rag'
+import { IncomingMessage } from '@/src/types/chat'
 
 export async function loadImageBase64(url: string): Promise<string | null> {
   try {

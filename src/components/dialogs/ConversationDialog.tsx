@@ -8,7 +8,7 @@ import { Button } from '../ui/button'
 import { Label } from '../ui/label'
 import { Input } from '../ui/input'
 import { toast } from "@/src/components/ui/toast"
-import { DeleteConversationDialogProps, NewConversationDialogProps } from '@/src/types/props'
+import { DeleteConversationDialogProps, NewConversationDialogProps } from '@/src/types/sidebar_dialog'
 import { AlertTriangle } from 'lucide-react'
 
 // ── NewConversationDialog ─────────────────────────────────────────────────────

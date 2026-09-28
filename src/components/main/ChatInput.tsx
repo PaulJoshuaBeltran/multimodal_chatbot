@@ -22,7 +22,7 @@ import {
 import { Square, MessageSquarePlus, Plus, ImageIcon, FileText, Music, Settings, X } from 'lucide-react'
 import { toast } from "@/src/components/ui/toast"
 import type { Attachment as AttachmentData, Message as ChatMessage } from '@/src/types/msg_conversation_model'
-import { ChatInputProps } from '@/src/types/props'
+import { ChatInputProps } from '@/src/types/sidebar_dialog'
 import ImagePreviewDialog from '../dialogs/ImagePreviewDialog'
 import { cn } from '@/lib/utils'
 

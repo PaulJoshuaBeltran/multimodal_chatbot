@@ -1,7 +1,7 @@
 import { Dialog, DialogContent, DialogTitle } from '../ui/dialog'
 import Image from 'next/image'
 import { AspectRatio } from '../ui/aspect-ratio'
-import { ImagePreviewDialogProps } from '@/src/types/props'
+import { ImagePreviewDialogProps } from '@/src/types/sidebar_dialog'
 
 export default function ModelManager({
   attachment,

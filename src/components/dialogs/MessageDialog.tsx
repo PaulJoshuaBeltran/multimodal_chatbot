@@ -5,7 +5,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 
 import { Button } from '../ui/button'
 import { Label } from '../ui/label'
-import { DeleteMessageDialogProps, EditMessageDialogProps } from '@/src/types/props'
+import { DeleteMessageDialogProps, EditMessageDialogProps } from '@/src/types/sidebar_dialog'
 import { Textarea } from '../ui/textarea'
 import { AlertTriangle } from 'lucide-react'
 

@@ -14,7 +14,7 @@ import { ScrollArea } from '../ui/scroll-area'
 import { Separator } from '../ui/separator'
 import { Search, FolderOpen, MessageSquare, Loader2 } from 'lucide-react'
 import { SearchAction, SearchMessage, SearchState } from '@/src/types/search_message'
-import { SearchDialogProps } from '@/src/types/props'
+import { SearchDialogProps } from '@/src/types/sidebar_dialog'
 
 const initialState: SearchState = {
   query: '',

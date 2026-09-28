@@ -1,4 +1,4 @@
-// src/types/props.ts
+// src/types/sidebar_dialog.ts
 import { AiModel, Conversation } from "./msg_conversation_model"
 import type {
   Attachment as AttachmentData,

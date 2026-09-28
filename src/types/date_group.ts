@@ -1,4 +1,4 @@
-// src/lib/dateGroups.ts
+// src/types/date_groups.ts
 export type DateGroupLabel =
   | 'Today'
   | 'Yesterday'

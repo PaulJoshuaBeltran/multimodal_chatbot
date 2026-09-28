@@ -1,17 +1,7 @@
 // src/app/api/chat/langsmith/route.ts
-import { ragGraph } from "@/lib/langgraph/chatPromptRag";
 import { invokeRagGraphWithOnlineEval } from "@/lib/langsmith/onlineEval";
-import path from 'path'
-import type { RagInputType } from "@/lib/langgraph/chatPromptRag";
-import { FileType } from '@/src/types/file_upload'
+import { GraphInput } from "@/src/types/chat"
 
-interface GraphInput {
-  inputType: RagInputType;
-  query: string;
-  filePath?: string;
-  fileType?: FileType;
-  imageBase64?: string;
-}
 
 export async function GET() {
   const input: GraphInput = {

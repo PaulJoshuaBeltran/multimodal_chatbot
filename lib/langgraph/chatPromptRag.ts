@@ -11,22 +11,9 @@ import path from 'path'
 import { readFile, writeFile, mkdir } from 'fs/promises'
 import { randomUUID } from 'crypto'
 import { loadImageBase64 } from "@/src/app/api/chat/ollama/route";
+import { ChatTurn, RagInputType, RetrievedMatch } from "@/src/types/chat";
 
 // ---------- Types ----------
-export type RagInputType = "text" | "image" | "document";
-
-export interface ChatTurn {
-  role: "user" | "assistant" | "system";
-  content: string;
-}
-
-interface RetrievedMatch {
-  text: string;
-  score: number;
-  rerankScore?: number;
-  metadata?: Record<string, unknown>;
-}
-
 const RELEVANCE_THRESHOLD = Number(process.env.RAG_RELEVANCE_THRESHOLD ?? 0.01);
 const MAX_RETRIES = Number(process.env.RAG_MAX_RETRIES ?? 1);
 const TOP_K = Number(process.env.PINECONE_TOP_K ?? 8);

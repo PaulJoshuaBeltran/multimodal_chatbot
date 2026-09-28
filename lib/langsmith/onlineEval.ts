@@ -3,36 +3,9 @@ import { Client } from "langsmith";
 import { traceable, getCurrentRunTree } from "langsmith/traceable";
 import { ragGraph } from "@/lib/langgraph/chatPromptRag";
 import { ollama } from "@/lib/ollama";
-import type { RagInputType } from "@/lib/langgraph/chatPromptRag";
-import { FileType } from '@/src/types/file_upload'
+import { GraphInput, GraphOutput, FeedbackResults, FinalResult } from "@/src/types/chat"
 
 const client = new Client(); // reads LANGSMITH_API_KEY / LANGSMITH_ENDPOINT
-
-interface GraphInput {
-  query: string;
-  inputType: RagInputType;
-  filePath?: string;
-  fileType?: FileType;
-  imageBase64?: string;
-}
-
-interface GraphOutput {
-  response: string;
-  context: string;
-  isFallback: boolean;
-  guardrailFlags?: string[];
-}
-
-type FeedbackResults = [
-  { key: string; score: number } | null,
-  { key: string; score: number } | null,
-  { key: string; score: number; value: { flags: string[] } } | null
-];
-
-interface FinalResult {
-  promptResult: GraphOutput;
-  feedbackResult: FeedbackResults;
-}
 
 // ---------- Individual online evaluators (all reference-free) ----------
 async function groundednessEvaluator(output: GraphOutput) {

@@ -13,7 +13,7 @@ import {
 import { Button } from '../ui/button'
 import { Label } from '../ui/label'
 import { Settings2 } from 'lucide-react'
-import { ModelSelectProps } from '@/src/types/props'
+import { ModelSelectProps } from '@/src/types/sidebar_dialog'
 
 export default function ModelSelect({ value, onChange, onManage, refreshToken }: Omit<ModelSelectProps, 'token'>) {
   const [models, setModels] = useState<AiModel[]>([])

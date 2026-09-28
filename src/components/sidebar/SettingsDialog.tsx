@@ -11,7 +11,7 @@ import {
 } from '../ui/dialog'
 import { Button } from '../ui/button'
 import { Tabs, TabsList, TabsTrigger } from '../ui/tabs'
-import { SettingsDialogProps } from '@/src/types/props'
+import { SettingsDialogProps } from '@/src/types/sidebar_dialog'
 
 import { Separator } from '../ui/separator'
 
