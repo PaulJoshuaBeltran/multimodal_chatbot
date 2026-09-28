@@ -4,7 +4,7 @@
 This application is a full-stack, multimodal AI chatbot platform built on Next.js. It goes beyond a simple chat UI by combining:
 
 - **Retrieval-Augmented Generation (RAG)** over a user-managed knowledge base (Pinecone + MongoDB metadata)
-- **Tool calling** for scoped agentic actions (data orchestration, data analysis, ML/numerical analysis, file management, notifications, diagram/visualization generation)
+- **Tool calling** for scoped agentic actions (data orchestration, file and database management, data analysis, mathematical analysis, visualization, and messaging system)
 - **Guardrails** applied inline/in real time across security, relevance, content integrity, language quality, and logic/functionality checks
 - **Monitoring** of live request traces (quality, latency, cost, drift, user feedback)
 - **Evaluation** as an offline/batch/CI pipeline (LLM-as-a-judge scoring, hallucination/regression detection)
@@ -51,7 +51,7 @@ The system is orchestrated with LangGraph/LangChain, served by Ollama (with Hugg
 - Add, Search, Edit, Delete AI models (Ollama model references, validity flag)
 
 ### 3.3 Chat Prompt
-- Text messages
+- User and assistant messages
 - System prompt and generation parameters (`top-p`, `top-k`, `temperature`, `num_ctx`)
 - Upload image or document attachments
 
@@ -63,7 +63,7 @@ The system is orchestrated with LangGraph/LangChain, served by Ollama (with Hugg
   2. Database analysis
   3. Mathematical analysis
   4. Visualization (diagram generation)
-  5. Message actions e.g., email and SMS text
+  5. Message actions e.g., email
 
 ### 3.5 LLM, RAG, and Tool-Calling Infrastructure
 - **Orchestration**: LangGraph (control flow) + LangChain (document loading, chunking, retrieval)
