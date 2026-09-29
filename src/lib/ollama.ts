@@ -1,4 +1,4 @@
-// lib/ollama.ts
+// src/lib/ollama.ts
 import { Ollama } from 'ollama'
 
 export const ollama = new Ollama({

@@ -1,5 +1,5 @@
 // src/app/api/chat/toolcall/route.ts
-import { ollama } from "@/lib/ollama";
+import { ollama } from "@/src/lib/ollama";
 import type { Message } from "ollama";
 
 type ToolName = 'add' |

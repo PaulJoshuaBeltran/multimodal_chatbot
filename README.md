@@ -107,21 +107,23 @@ The system is orchestrated with LangGraph/LangChain, served by Ollama (with Hugg
 ![Overall Architecture](docu/diagrams/overall_architecture.jpg)
 
 ### 4.2. Sub Architecture
-![Overall Architecture](docu/diagrams/sub_architecture.jpg)
+![Sub Architecture](docu/diagrams/sub_architecture.jpg)
+
 
 ## 5. Setup Instructions
 ### 5.1. Next.js setup
 - CLI run: npx create-next-app@latest my-next-app
 - or npm create next-app@latest my-next-app
 
-### 5.2. Prisma setup
-a. prisma v6 install
+### 5.2. Prisma setup and MongoDB compass
+a. in MongoDB compass find MONGODB_URI, MONGODB_URI, DATABASE_URL
+b. prisma v6 install
 - cd (nextjs proj)
 - npm install prisma@6.19.0 @prisma/client@6.19.0 --save-exact
 - v7 doesnt have mongodb yet
-b. npx prisma init
-c. npx prisma generate
-d. npx prisma db push
+c. npx prisma init
+d. npx prisma generate
+e. npx prisma db push
 
 ### 5.3. Ollama setup
 - install ollama desktop

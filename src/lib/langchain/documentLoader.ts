@@ -1,4 +1,4 @@
-// lib/langchain/documentLoader.ts
+// src/lib/langchain/documentLoader.ts
 import { Document } from "@langchain/core/documents";
 import { RecursiveCharacterTextSplitter } from "@langchain/textsplitters";
 import { TextLoader } from "@langchain/classic/document_loaders/fs/text";

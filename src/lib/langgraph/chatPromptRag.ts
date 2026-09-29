@@ -1,10 +1,10 @@
-// lib/langgraph/chatPromptRag.ts
+// src/lib/langgraph/chatPromptRag.ts
 import { StateGraph, Annotation, START, END } from "@langchain/langgraph";
 import type { Document } from "@langchain/core/documents";
-import { readDocument, splitChunkDocument } from "@/lib/langchain/documentLoader";
-import { ollama, ollamaEmbed } from "@/lib/ollama";
-import pinecone from "@/lib/pineconeMongo/pinecone";
-import { rerank } from "@/lib/huggingFace";
+import { readDocument, splitChunkDocument } from "@/src/lib/langchain/documentLoader";
+import { ollama, ollamaEmbed } from "@/src/lib/ollama";
+import pinecone from "@/src/lib/pineconeMongo/pinecone";
+import { rerank } from "@/src/lib/huggingFace";
 
 import { ALLOWED_EXT, FileType } from '@/src/types/file_upload'
 import path from 'path'

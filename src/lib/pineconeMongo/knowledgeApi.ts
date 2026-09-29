@@ -1,4 +1,4 @@
-// lib/pineconeMongo/knowledgeApi.ts
+// src/lib/pineconeMongo/knowledgeApi.ts
 import { KnowledgeDocument } from '@/src/types/knowledge'
 
 async function parseError(res: Response, fallback: string) {

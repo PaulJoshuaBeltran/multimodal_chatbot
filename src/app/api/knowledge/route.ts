@@ -1,7 +1,7 @@
 // src/app/api/knowledge/route.ts
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/pineconeMongo/prisma";
-import pinecone, { upsertDocumentChunks } from "@/lib/pineconeMongo/pinecone";
+import { prisma } from "@/src/lib/pineconeMongo/prisma";
+import pinecone, { upsertDocumentChunks } from "@/src/lib/pineconeMongo/pinecone";
 import { ChunkMetadata, KnowledgeChunk } from "@/src/types/knowledge";
 
 export const runtime = 'nodejs'

@@ -1,7 +1,7 @@
 // /src/app/api/file/metadata/[filename]/route.ts
 import { stat } from 'fs/promises'
 import path from 'path'
-import { UPLOAD_DIR } from '@/lib/uploads'
+import { UPLOAD_DIR } from '@/src/lib/uploads'
 import { MIME_TYPES } from '@/src/types/file_upload'
 
 export const runtime = 'nodejs'

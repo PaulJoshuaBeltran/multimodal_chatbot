@@ -1,8 +1,8 @@
-// lib/langsmith/onlineEval.ts
+// src/lib/langsmith/onlineEval.ts
 import { Client } from "langsmith";
 import { traceable, getCurrentRunTree } from "langsmith/traceable";
-import { ragGraph } from "@/lib/langgraph/chatPromptRag";
-import { ollama } from "@/lib/ollama";
+import { ragGraph } from "@/src/lib/langgraph/chatPromptRag";
+import { ollama } from "@/src/lib/ollama";
 import { GraphInput, GraphOutput, FeedbackResults, FinalResult } from "@/src/types/chat"
 
 const client = new Client(); // reads LANGSMITH_API_KEY / LANGSMITH_ENDPOINT

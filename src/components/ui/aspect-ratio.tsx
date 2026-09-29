@@ -1,5 +1,5 @@
 // src/components/ui/aspect-ratio.tsx
-import { cn } from "@/lib/utils"
+import { cn } from "@/src/lib/utils"
 
 function AspectRatio({
   ratio,

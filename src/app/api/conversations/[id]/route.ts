@@ -1,6 +1,6 @@
 // src/app/api/conversations/[id]/route.ts
-import { prisma } from '@/lib/pineconeMongo/prisma'
-import { getLocalUser } from '@/lib/getLocalUser'
+import { prisma } from '@/src/lib/pineconeMongo/prisma'
+import { getLocalUser } from '@/src/lib/getLocalUser'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'

@@ -1,4 +1,4 @@
-// lib/pineconeMongo/prisma.ts
+// src/lib/pineconeMongo/prisma.ts
 import { PrismaClient } from "@/src/app/generated/prisma";
 
 const globalForPrisma = globalThis as unknown as { prisma: PrismaClient };

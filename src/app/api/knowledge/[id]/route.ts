@@ -1,7 +1,7 @@
 // src/app/api/knowledge/[id]/route.ts
-import { deleteDocumentChunks, upsertDocumentChunks } from "@/lib/pineconeMongo/pinecone";
+import { deleteDocumentChunks, upsertDocumentChunks } from "@/src/lib/pineconeMongo/pinecone";
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/pineconeMongo/prisma";
+import { prisma } from "@/src/lib/pineconeMongo/prisma";
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'

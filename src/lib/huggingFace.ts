@@ -1,4 +1,4 @@
-// lib/huggingFace.ts
+// src/lib/huggingFace.ts
 import { RerankResult } from "@/src/types/chat";
 
 export async function rerank(

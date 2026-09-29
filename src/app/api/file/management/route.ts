@@ -3,7 +3,7 @@ import { writeFile, mkdir } from 'fs/promises'
 import path from 'path'
 import { randomUUID } from 'crypto'
 import { auth } from '@clerk/nextjs/server'
-import { UPLOAD_DIR, classifyAndValidate, uploadErrorMessage } from '@/lib/uploads'
+import { UPLOAD_DIR, classifyAndValidate, uploadErrorMessage } from '@/src/lib/uploads'
 import { MIME_TYPES } from '@/src/types/file_upload'
 
 export const runtime = 'nodejs'

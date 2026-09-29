@@ -24,7 +24,7 @@ import { toast } from "@/src/components/ui/toast"
 import type { Attachment as AttachmentData, Message as ChatMessage } from '@/src/types/msg_conversation_model'
 import { ChatInputProps } from '@/src/types/sidebar_dialog'
 import ImagePreviewDialog from '../dialogs/ImagePreviewDialog'
-import { cn } from '@/lib/utils'
+import { cn } from '@/src/lib/utils'
 
 function formatFileSize(bytes: number): string {
   if (bytes < 1024) return `${bytes} B`

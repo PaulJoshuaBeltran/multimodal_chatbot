@@ -7,7 +7,7 @@ import { Button } from '../ui/button'
 import { Input } from '../ui/input'
 import { toast } from "@/src/components/ui/toast"
 import { MoreVertical, Edit2, Trash2, Check, X, MessageSquare } from 'lucide-react'
-import { cn } from '@/lib/utils'
+import { cn } from '@/src/lib/utils'
 
 import {
   DropdownMenu,

@@ -1,6 +1,6 @@
-// lib/getLocalUser.ts
+// src/lib/getLocalUser.ts
 import { auth } from '@clerk/nextjs/server'
-import { prisma } from '@/lib/pineconeMongo/prisma'
+import { prisma } from '@/src/lib/pineconeMongo/prisma'
 
 export async function getLocalUser() {
   const { userId: clerkId } = await auth()

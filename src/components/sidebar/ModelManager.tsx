@@ -16,7 +16,7 @@ import { ScrollArea } from '../ui/scroll-area'
 import { Separator } from '../ui/separator'
 import { toast } from "@/src/components/ui/toast"
 import { Search, Pencil, Trash2, Check, X, Plus, AlertTriangle } from 'lucide-react'
-import { cn } from '@/lib/utils'
+import { cn } from '@/src/lib/utils'
 import { Label } from '../ui/label'
 
 export default function ModelManager({

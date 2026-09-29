@@ -1,4 +1,4 @@
-// lib/toolcall/dbManagement.ts
+// src/lib/toolcall/dbManagement.ts
 export function connect_database() {
 }
 export function execute_query() {

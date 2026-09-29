@@ -1,5 +1,5 @@
 // src/app/api/models/ollama-all/route.ts
-import { ollama } from '@/lib/ollama'
+import { ollama } from '@/src/lib/ollama'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'

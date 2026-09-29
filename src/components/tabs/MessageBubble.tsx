@@ -16,7 +16,7 @@ import {
   DropdownMenuTrigger,
 } from '../ui/dropdown-menu'
 import { MoreHorizontal, Pencil, Trash2, Copy, RotateCcw, AlertCircle } from 'lucide-react'
-import { cn } from '@/lib/utils'
+import { cn } from '@/src/lib/utils'
 import { toast } from "@/src/components/ui/toast"
 import { HastNode } from '@/src/types/hast_nodes'
 import type { Attachment } from '@/src/types/msg_conversation_model'

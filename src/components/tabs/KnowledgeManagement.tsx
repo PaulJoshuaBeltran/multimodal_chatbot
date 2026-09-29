@@ -33,7 +33,7 @@ import {
   createKnowledgeDocument,
   updateKnowledgeDocument,
   deleteKnowledgeDocument,
-} from '@/lib/pineconeMongo/knowledgeApi'
+} from '@/src/lib/pineconeMongo/knowledgeApi'
 import { AddEditKnowledgeDialog, DeleteKnowledgeDialog, PreviewKnowledgeDialog } from '../dialogs/KnowledgeDialog'
 
 const ROWS_PER_PAGE_OPTIONS = [4, 8, 10, 20]

@@ -1,4 +1,4 @@
-// lib/toolcall/message.ts
+// src/lib/toolcall/message.ts
 import nodemailer from "nodemailer";
 import { SendMailOptions, Transporter } from "nodemailer";
 

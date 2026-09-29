@@ -1,5 +1,5 @@
 // src/app/api/chat/langgraph/route.ts
-import { ragGraph } from "@/lib/langgraph/chatPromptRag";
+import { ragGraph } from "@/src/lib/langgraph/chatPromptRag";
 import path from 'path'
 
 export async function GET() {

@@ -1,7 +1,7 @@
 // /src/app/api/chat/ollama/route.ts
-import { ollama } from '@/lib/ollama'
+import { ollama } from '@/src/lib/ollama'
 import { readFile } from 'fs/promises'
-import { uploadPathFromUrl } from '@/lib/uploads'
+import { uploadPathFromUrl } from '@/src/lib/uploads'
 import type { ProcessedMessage } from '@/src/types/msg_conversation_model'
 import { IncomingMessage } from '@/src/types/chat'
 

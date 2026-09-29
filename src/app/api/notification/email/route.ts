@@ -1,4 +1,4 @@
-import { email } from '@/lib/toolcall/message'
+import { email } from '@/src/lib/toolcall/message'
 import { SendMailOptions } from "nodemailer";
 
 export async function POST(req: Request) {

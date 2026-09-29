@@ -1,7 +1,7 @@
 // src/app/api/models/[id]/route.ts
-import { prisma } from '@/lib/pineconeMongo/prisma'
-import { getLocalUser } from '@/lib/getLocalUser'
-import { ollama } from '@/lib/ollama'
+import { prisma } from '@/src/lib/pineconeMongo/prisma'
+import { getLocalUser } from '@/src/lib/getLocalUser'
+import { ollama } from '@/src/lib/ollama'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
