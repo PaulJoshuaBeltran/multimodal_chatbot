@@ -159,14 +159,21 @@ e. npx prisma db push
 - Google Account → Security → 2-Step Verification and turn on
 - Add app password: https://myaccount.google.com/apppasswords
 
-### 5.10. Other installations
+### 5.10. Supabase
+- npm install @supabase/supabase-js @supabase/ssr
+- .env includes, NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY, NEXT_PUBLIC_SUPABASE_SECRET_KEY
+- .env also includes DATABASE_URL="postgresql://postgres:<password>@db.<project-id>.supabase.co:5432/postgres"
+- and DATABASE_URL_POOLER="postgres://postgres.<project-id>:<password>@aws-0-<area>.pooler.supabase.com:6543/postgres"
+- npx supabase gen types typescript --project-id <project-id> > <output path of ts types>
+
+### 5.11. Other installations
 - refer to requirements.txt, package.json
 - npm install -i
 
-### 5.11. Run the development server
+### 5.12. Run the development server
 - (npm run/yarn/pnpm/bun) dev
 
-### 5.12. Deploy on Vercel
+### 5.13. Deploy on Vercel
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
 

@@ -40,6 +40,7 @@
     "papaparse": "^5.5.4",
     "pdf-parse": "^2.4.5",
     "pdfjs-dist": "^6.3.289",
+    "postgres": "^3.4.9",
     "prisma": "6.19.0",
     "radix-ui": "^1.6.0",
     "react": "19.2.4",
