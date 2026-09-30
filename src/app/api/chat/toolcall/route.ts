@@ -1,661 +1,405 @@
 // src/app/api/chat/toolcall/route.ts
 import { ollama } from "@/src/lib/ollama";
-import type { Message } from "ollama";
+import type { Message, Tool } from "ollama";
 
-type ToolName = 'add' |
-  'multiply' |
-  'create_file' |
-  'read_file' |
-  'update_file' |
-  'delete_file' |
-  'view_file_metadata' |
-  'email' |
-  'sms_text' |
-  'visualize_table' |
-  'visualize_line_graph' |
-  'visualize_bar_graph' |
-  'visualize_pie_chart' |
-  'visualize_scatter_graph' |
-  'visualize_heatmap' |
-  'visualize_flowchart' |
-  'connect_database' |
-  'execute_query' |
-  'start_transaction' |
-  'commit_database' |
-  'rollback_database' |
-  'add_savepoint_database'
+export const dynamic = "force-dynamic";
 
-// FUNCTIONS (MOCK for now)
-// I. Tests
-function add(a: number, b: number): number {
-  return a + b
-}
-function multiply(a: number, b: number): number {
-  return a * b
-}
-// II. Actual
-// 1. File management
-function create_file(a: number, b: number): string {
-  return "Mock Test: new file created named test.pdf"
-}
-function read_file(a: number, b: number): string {
-  return "Mock Test: read file named test.pdf"
-}
-function update_file(a: number, b: number): string {
-  return "Mock Test: updated file named test.pdf"
-}
-function delete_file(a: number, b: number): string {
-  return "Mock Test: deleted file named test.pdf"
-}
-function view_file_metadata(a: number, b: number): string {
-  return "Mock Test: displayed the metadata for file named test.pdf"
+// Types + helpers
+type Args = Record<string, unknown>;
+type Handler = (args: Args) => string | number | Promise<string | number>;
+type Props = NonNullable<NonNullable<Tool["function"]["parameters"]>["properties"]>;
+
+interface RegisteredTool {
+  definition: Tool;
+  handler: Handler;
 }
 
-// 2. Message
-function email(a: number, b: number): string {
-  return "Mock Test: emailed the message to the recipient"
-}
-function sms_text(a: number, b: number): string {
-  return "Mock Test: sent an sms text message to 0123456789 with message 'Hello'!"
-}
-
-// 3. Visualization
-function visualize_table(a: number, b: number): string {
-  return "Mock Test: displayed a table given by a data from test.xlsx"
-}
-function visualize_line_graph(a: number, b: number): string {
-  return "Mock Test: displayed a line graph given by a data from test.xlsx"
-}
-function visualize_bar_graph(a: number, b: number): string {
-  return "Mock Test: displayed a bar graph given by a data from test.xlsx"
-}
-function visualize_pie_chart(a: number, b: number): string {
-  return "Mock Test: displayed a pie chart given by a data from test.xlsx"
-}
-function visualize_scatter_graph(a: number, b: number): string {
-  return "Mock Test: displayed a scatter graph given by a data from test.xlsx"
-}
-function visualize_heatmap(a: number, b: number): string {
-  return "Mock Test: displayed a heatmap given by a data from test.xlsx"
-}
-function visualize_flowchart(a: number, b: number): string {
-  return "Mock Test: displayed a flowchart given by a data from test.xlsx"
-}
-
-// 4. Database management
-function connect_database(a: number, b: number): string {
-  return "Mock Test: database connect with hostname@username with password '123456' and database 'test_db'"
-}
-function execute_query(a: number, b: number): string {
-  return "Mock Test: executed query specifically 'SELECT * FROM test_table'"
-}
-function start_transaction(a: number, b: number): string {
-  return "Mock Test: transaction started"
-}
-function commit_database(a: number, b: number): string {
-  return "Mock Test: changes in table is committed"
-}
-function rollback_database(a: number, b: number): string {
-  return "Mock Test: rollback to the start of transaction"
-}
-function add_savepoint_database(a: number, b: number): string {
-  return "Mock Test: added savepoint named 'savepoint123456'"
-}
-
-const availableFunctions: Record<ToolName, (a: number, b: number) => number | string> = {
-  add,
-  multiply,
-  create_file,
-  read_file,
-  update_file,
-  delete_file,
-  view_file_metadata,
-  email,
-  sms_text,
-  visualize_table,
-  visualize_line_graph,
-  visualize_bar_graph,
-  visualize_pie_chart,
-  visualize_scatter_graph,
-  visualize_heatmap,
-  visualize_flowchart,
-  connect_database,
-  execute_query,
-  start_transaction,
-  commit_database,
-  rollback_database,
-  add_savepoint_database
-}
-
-// TOOLS
-// I. Tests
-const add_tool = {
-  type: 'function',
-  function: {
-    name: 'add',
-    description: 'Add two numbers',
-    parameters: {
-      type: 'object',
-      required: ['a', 'b'],
-      properties: {
-        a: { type: 'integer', description: 'The first number' },
-        b: { type: 'integer', description: 'The second number' },
+// Define schema + handler together so the name, schema and function can't drift apart.
+function defineTool(opts: {
+  name: string;
+  description: string;
+  properties?: Props;
+  required?: string[];
+  handler: Handler;
+}): RegisteredTool {
+  return {
+    definition: {
+      type: "function",
+      function: {
+        name: opts.name,
+        description: opts.description,
+        parameters: {
+          type: "object",
+          required: opts.required ?? [],
+          properties: opts.properties ?? {},
+        },
       },
     },
+    handler: opts.handler,
+  };
+}
+
+// JSON-schema helpers. Arrays MUST use `items`; nested objects use `properties`/`required`.
+const str = (description: string) => ({ type: "string", description });
+const num = (description: string) => ({ type: "number", description });
+const bool = (description: string) => ({ type: "boolean", description });
+const enumStr = (description: string, values: string[]) => ({ type: "string", description, enum: values });
+const arrayOf = (items: object, description?: string) => ({ type: "array", description, items });
+const obj = (properties: Props, required: string[] = []) => ({ type: "object", properties, required });
+
+// Models sometimes emit numbers as strings ("11434"), so coerce + validate.
+function toNum(v: unknown, name: string): number {
+  const n = typeof v === "number" ? v : Number(v);
+  if (v === null || v === undefined || v === "" || !Number.isFinite(n)) {
+    throw new Error(`Argument "${name}" must be a number, got ${JSON.stringify(v)}`);
   }
+  return n;
 }
-const multiply_tool = { 
-  type: 'function',
-  function: {
-    name: 'multiply',
-    description: 'Multiply two numbers',
-    parameters: {
-      type: 'object',
-      required: ['a', 'b'],
-      properties: {
-        a: { type: 'integer', description: 'The first number' },
-        b: { type: 'integer', description: 'The second number' },
-      },
-    },
-  },
-}
-// II. Actual
-// 1. File management
-const create_file_tool = { 
-  type: 'function',
-  function: {
-    name: 'create_file',
-    description: 'Create local file',
-    parameters: {
-      type: 'object',
-      required: ['filepath', 'filename', 'filetype', 'content'],
-      properties: {
-        filepath: { type: 'string', description: 'The filepath of newly created file' },
-        filename: { type: 'string', description: 'The filename of newly created file' },
-        filetype: { type: 'string', description: 'The filename of newly created file' },
-        content: { type: 'string', description: 'The content of newly created file' },
-      },
-    },
-  },
-}
-const read_file_tool = { 
-  type: 'function',
-  function: {
-    name: 'read_file',
-    description: 'Read local file',
-    parameters: {
-      type: 'object',
-      required: ['filepath', 'filename', 'filetype'],
-      properties: {
-        filepath: { type: 'string', description: 'The filepath of existing file to read' },
-        filename: { type: 'string', description: 'The filename of existing file to read' },
-        filetype: { type: 'string', description: 'The filename of existing file to read' },
-      },
-    },
-  },
-}
-const update_file_tool = { 
-  type: 'function',
-  function: {
-    name: 'update_file',
-    description: 'Update local file',
-    parameters: {
-      type: 'object',
-      required: ['filepath', 'filename', 'filetype', 'new_content'],
-      properties: {
-        filepath: { type: 'string', description: 'The filepath of existing file to update' },
-        filename: { type: 'string', description: 'The filename of existing file to update' },
-        filetype: { type: 'string', description: 'The filename of existing file to update' },
-        new_content: { type: 'string', description: 'The new content of existing file to update' },
-      },
-    },
-  },
-}
-const delete_file_tool = { 
-  type: 'function',
-  function: {
-    name: 'delete_file',
-    description: 'Delete local file',
-    parameters: {
-      type: 'object',
-      required: ['filepath', 'filename', 'filetype'],
-      properties: {
-        filepath: { type: 'string', description: 'The filepath of existing file to delete' },
-        filename: { type: 'string', description: 'The filename of existing file to delete' },
-        filetype: { type: 'string', description: 'The filename of existing file to delete' },
-      },
-    },
-  },
-}
-const view_file_metadata_tool = { 
-  type: 'function',
-  function: {
-    name: 'view_file_metadata',
+
+const fileProps: Props = {
+  filepath: str("Directory path of the file"),
+  filename: str("Name of the file, without extension"),
+  filetype: str("File extension/type, e.g. pdf, txt, xlsx"),
+};
+const fileRequired = ["filepath", "filename", "filetype"];
+
+// Tools (handlers are MOCK for now)
+const registeredTools: RegisteredTool[] = [
+  // I. Tests
+  defineTool({
+    name: "add",
+    description: "Add two numbers",
+    properties: { a: num("The first number"), b: num("The second number") },
+    required: ["a", "b"],
+    handler: (args) => toNum(args.a, "a") + toNum(args.b, "b"),
+  }),
+  defineTool({
+    name: "multiply",
+    description: "Multiply two numbers",
+    properties: { a: num("The first number"), b: num("The second number") },
+    required: ["a", "b"],
+    handler: (args) => toNum(args.a, "a") * toNum(args.b, "b"),
+  }),
+
+  // II-1. File management
+  defineTool({
+    name: "create_file",
+    description: "Create local file",
+    properties: { ...fileProps, content: str("Content of the new file") },
+    required: [...fileRequired, "content"],
+    handler: () => "Mock Test: new file created named test.pdf",
+  }),
+  defineTool({
+    name: "read_file",
+    description: "Read local file",
+    properties: fileProps,
+    required: fileRequired,
+    handler: () => "Mock Test: read file named test.pdf",
+  }),
+  defineTool({
+    name: "update_file",
+    description: "Update local file",
+    properties: { ...fileProps, new_content: str("New content of the file") },
+    required: [...fileRequired, "new_content"],
+    handler: () => "Mock Test: updated file named test.pdf",
+  }),
+  defineTool({
+    name: "delete_file",
+    description: "Delete local file",
+    properties: fileProps,
+    required: fileRequired,
+    handler: () => "Mock Test: deleted file named test.pdf",
+  }),
+  defineTool({
+    name: "view_file_metadata",
     description: "View local file's metadata",
-    parameters: {
-      type: 'object',
-      required: ['filepath', 'filename', 'filetype'],
-      properties: {
-        filepath: { type: 'string', description: 'The filepath of existing file to view metadata' },
-        filename: { type: 'string', description: 'The filename of existing file to view metadata' },
-        filetype: { type: 'string', description: 'The filename of existing file to view metadata' },
-      },
-    },
-  },
-}
+    properties: fileProps,
+    required: fileRequired,
+    handler: () => "Mock Test: displayed the metadata for file named test.pdf",
+  }),
 
-// 2. Message
-const email_tool = { 
-  type: 'function',
-  function: {
-    name: 'email',
-    description: 'Send email',
-    parameters: {
-      type: 'object',
-      required: ['from', 'to', 'header', 'body', 'upload'],
-      properties: {
-        from: { type: 'string', description: 'Sender of email to send' },
-        to: { type: 'string', description: 'Recipient of email to send' },
-        cc: { type: 'string', description: 'Carbon copy (CC) of email to send' },
-        bcc: { type: 'string', description: 'Blind carbon copy (BCC) of email to send' },
-        header: { type: 'string', description: 'Header of email to send' },
-        body: { type: 'string', description: 'Body of email to send' },
-        upload: { type: 'string', description: 'Upload of email to send' },
-      },
+  // II-2. Message
+  defineTool({
+    name: "email",
+    description: "Send email",
+    properties: {
+      from: str("Sender email address"),
+      to: str("Recipient email address"),
+      cc: str("Carbon copy (CC) recipients"),
+      bcc: str("Blind carbon copy (BCC) recipients"),
+      header: str("Subject line of the email"),
+      body: str("Body of the email"),
+      upload: str("Path of a file to attach (optional)"),
     },
-  },
-}
-const sms_text_tool = { 
-  type: 'function',
-  function: {
-    name: 'sms_text',
-    description: 'Send SMS text',
-    parameters: {
-      type: 'object',
-      required: ['from', 'to', 'body', 'upload'],
-      properties: {
-        from: { type: 'string', description: 'Phone number of SMS text sender' },
-        to: { type: 'string', description: "Phone number of SMS text's recipient to send" },
-        body: { type: 'string', description: 'Body of SMS text to send' },
-        upload: { type: 'string', description: 'Upload of SMS text to send' },
-      },
+    required: ["from", "to", "header", "body"],
+    handler: () => "Mock Test: emailed the message to the recipient",
+  }),
+  defineTool({
+    name: "sms_text",
+    description: "Send SMS text",
+    properties: {
+      from: str("Sender phone number"),
+      to: str("Recipient phone number"),
+      body: str("Body of the SMS text"),
+      upload: str("Path of a file to attach (optional)"),
     },
-  },
-}
+    required: ["from", "to", "body"],
+    handler: () => "Mock Test: sent an sms text message to 0123456789 with message 'Hello'!",
+  }),
 
-// 3. Visualization
-const visualize_table_tool = { 
-  type: 'function',
-  function: {
-    name: 'visualize_table',
-    description: 'Visualize data by table',
-    parameters: {
-      type: 'object',
-      required: ['page'],
-      properties: {
-        page: {
-          type: 'array',
-          required: ['rows'],
-          properties: {
-            rows: {
-              type: 'array',
-              required: ['cols'],
-              cols: {
-                type: 'array',
-                required: ['value'],
-                properties: {
-                  value: { type: 'string', description: "Value of specific table's cell" },
-                }
-              }
-            }
-          }
-        }
-      },
+  // II-3. Visualization
+  defineTool({
+    name: "visualize_table",
+    description: "Visualize data by table",
+    properties: {
+      rows: arrayOf(arrayOf(str("Value of a table cell")), "Table rows; each row is an array of cell values"),
     },
-  },
-}
-const visualize_line_graph_tool = { 
-  type: 'function',
-  function: {
-    name: 'visualize_line_graph',
-    description: 'Visualize data by line graph',
-    parameters: {
-      type: 'object',
-      required: ['layer'],
-      properties: {
-        layer: {
-          type: 'array',
-          required: ['data', 'x_text', 'y_text'],
-          properties: {
-            data: {
-              type: 'array',
-              required: ['value'],
-              properties: {
-                value: { type: 'integer', description: "Value of specific line graph's node" },
-              }
-            },
-            line_color: { type: 'string',  description: 'Outline color of line graph' },
-            has_auc:    { type: 'boolean', description: 'Does line graph have area under the line' },
-            has_legend: { type: 'boolean', description: 'Does line graph have legend' },
-            auc_color:  { type: 'string',  description: 'Background color of line graph under the line' },
-            x_min:      { type: 'integer', description: 'Minimum x-value of line graph' },
-            x_max:      { type: 'integer', description: 'Maximum x-value of line graph' },
-            x_interval: { type: 'integer', description: "Interval values in line graph's x-axis" },
-            x_text:     { type: 'string',  description: "Label text of line graph's x-axis" },
-            y_min:      { type: 'integer', description: 'Minimum y-value of line graph' },
-            y_max:      { type: 'integer', description: 'Maximum y-value of line graph' },
-            y_interval: { type: 'integer', description: "Interval values in line graph's y-axis" },
-            y_text:     { type: 'string',  description: "Label text of line graph's y-axis" },
-          }
-        }
-      },
+    required: ["rows"],
+    handler: () => "Mock Test: displayed a table given by a data from test.xlsx",
+  }),
+  defineTool({
+    name: "visualize_line_graph",
+    description: "Visualize data by line graph",
+    properties: {
+      layers: arrayOf(
+        obj(
+          {
+            data: arrayOf(num("Value of a line graph node"), "Node values of the line"),
+            line_color: str("Outline color of the line"),
+            has_aul: bool("Whether to fill the area under the line"),
+            has_legend: bool("Whether the graph has a legend"),
+            aul_color: str("Fill color under the line"),
+            x_min: num("Minimum x-value"),
+            x_max: num("Maximum x-value"),
+            x_interval: num("Interval of the x-axis"),
+            x_text: str("Label of the x-axis"),
+            y_min: num("Minimum y-value"),
+            y_max: num("Maximum y-value"),
+            y_interval: num("Interval of the y-axis"),
+            y_text: str("Label of the y-axis"),
+          },
+          ["data", "x_text", "y_text"],
+        ),
+        "One entry per line drawn on the graph",
+      ),
     },
-  },
-}
-const visualize_bar_graph_tool = { 
-  type: 'function',
-  function: {
-    name: 'visualize_bar_graph',
-    description: 'Visualize data by bar graph',
-    parameters: {
-      type: 'object',
-      required: ['data', 'x_text', 'y_text'],
-      properties: {
-        data: {
-          type: 'array',
-          required: ['label', 'value'],
-          properties: {
-            label: { type: 'string',  description: "Label of specific bar graph's bar" },
-            value: { type: 'integer', description: "Value of specific bar graph's bar" },
-            color: { type: 'string',  description: "Color of specific bar graph's bar" },
-          }
-        },
-        orientation: { type: 'string',  description: 'Orientation of bar graph' },
-        x_text:      { type: 'string',  description: "Label text of bar graph's x-axis" },
-        y_text:      { type: 'string',  description: "Label text of bar graph's y-axis" },
-      }
-    }
-  }
-}
-const visualize_pie_chart_tool = { 
-  type: 'function',
-  function: {
-    name: 'visualize_pie_chart',
-    description: 'Visualize data by pie chart',
-    parameters: {
-      type: 'object',
-      required: ['data'],
-      properties: {
-        data: {
-          type: 'array',
-          required: ['label', 'value'],
-          properties: {
-            label: { type: 'string',  description: "Label of specific pie chart's pie" },
-            value: { type: 'integer', description: "Value of specific pie chart's pie" },
-            color: { type: 'string',  description: "Color of specific pie chart's pie" },
-          }
-        }
-      }
-    }
-  }
-}
-const visualize_scatter_graph_tool = { 
-  type: 'function',
-  function: {
-    name: 'visualize_scatter_graph',
-    description: 'Visualize data by scatter graph',
-    parameters: {
-      type: 'object',
-      required: ['data'],
-      properties: {
-        data: {
-          type: 'array',
-          required: ['x', 'y'],
-          properties: {
-            x:     { type: 'integer', description: "X-value of scatter graph element" },
-            y:     { type: 'integer', description: "Y-value of scatter graph element" },
-            color: { type: 'string',  description: "Color of scatter graph" },
-          }
-        }
-      }
-    }
-  }
-}
-const visualize_heatmap_tool = { 
-  type: 'function',
-  function: {
-    name: 'visualize_heatmap',
-    description: 'Visualize data by heatmap',
-    parameters: {
-      type: 'object',
-      required: ['data'],
-      properties: {
-        data: {
-          type: 'array',
-          required: ['label', 'value'],
-          properties: {
-            label: { type: 'string',  description: "Label of heatmap's element" },
-            value: { type: 'integer', description: "Value of heatmap's element" },
-          }
-        }
-      }
-    }
-  }
-}
-const visualize_flowchart_tool = { 
-  type: 'function',
-  function: {
-    name: 'visualize_flowchart',
-    description: 'Visualize data by flowchart',
-    parameters: {
-      type: 'object',
-      required: ['nodes', 'arrows'],
-      properties: {
-        nodes: {
-          type: 'array',
-          required: ['type', 'label'],
-          properties: {
-            id:    { type: 'string', description: "Id of flowchart's element (same as label, if there's duplicate then append duplicate number)" },
-            type:  { type: 'string', description: "Type of flowchart's element" },
-            label: { type: 'string', description: "Label of flowchart's element" },
-            color: { type: 'string', description: "Color of flowchart's element" },
-          }
-        },
-        arrows: {
-          type: 'array',
-          required: ['from_id', 'to_id'],
-          properties: {
-            from_id: { type: 'string', description: "Starting node ID of arrow" },
-            to_id:   { type: 'string', description: "End node ID of arrow" }
-          }
-        },
-        conditionals: {
-          type: 'array',
-          required: ['conditional_label', 'from_id', 'to_ids'],
-          properties: {
-            conditional_label: { type: 'string', description: "Starting point of arrow" },
-            from_id: { type: 'string', description: "Starting node ID of conditional" },
-            to_ids:  {
-              type: 'array',
-              required: ['label', 'to_ids'],
-              properties: {
-                label:  { type: 'string', description: "Label of specific end node" },
-                to_ids:   { type: 'string', description: "End node ID of conditional" }
-              }
-            },
-          }
-        },
-      }
-    }
-  }
-}
+    required: ["layers"],
+    handler: () => "Mock Test: displayed a line graph given by a data from test.xlsx",
+  }),
+  defineTool({
+    name: "visualize_bar_graph",
+    description: "Visualize data by bar graph",
+    properties: {
+      data: arrayOf(
+        obj(
+          { label: str("Label of the bar"), value: num("Value of the bar"), color: str("Color of the bar") },
+          ["label", "value"],
+        ),
+      ),
+      orientation: enumStr("Orientation of the bar graph", ["vertical", "horizontal"]),
+      x_text: str("Label of the x-axis"),
+      y_text: str("Label of the y-axis"),
+    },
+    required: ["data", "x_text", "y_text"],
+    handler: () => "Mock Test: displayed a bar graph given by a data from test.xlsx",
+  }),
+  defineTool({
+    name: "visualize_pie_chart",
+    description: "Visualize data by pie chart",
+    properties: {
+      data: arrayOf(
+        obj(
+          { label: str("Label of the slice"), value: num("Value of the slice"), color: str("Color of the slice") },
+          ["label", "value"],
+        ),
+      ),
+    },
+    required: ["data"],
+    handler: () => "Mock Test: displayed a pie chart given by a data from test.xlsx",
+  }),
+  defineTool({
+    name: "visualize_scatter_graph",
+    description: "Visualize data by scatter graph",
+    properties: {
+      data: arrayOf(
+        obj({ x: num("X-value of the point"), y: num("Y-value of the point"), color: str("Color of the point") }, [
+          "x",
+          "y",
+        ]),
+      ),
+    },
+    required: ["data"],
+    handler: () => "Mock Test: displayed a scatter graph given by a data from test.xlsx",
+  }),
+  defineTool({
+    name: "visualize_heatmap",
+    description: "Visualize data by heatmap",
+    properties: {
+      data: arrayOf(obj({ label: str("Label of the cell"), value: num("Value of the cell") }, ["label", "value"])),
+    },
+    required: ["data"],
+    handler: () => "Mock Test: displayed a heatmap given by a data from test.xlsx",
+  }),
+  defineTool({
+    name: "visualize_flowchart",
+    description: "Visualize data by flowchart",
+    properties: {
+      nodes: arrayOf(
+        obj(
+          {
+            id: str("Unique node id (same as label; append a number if duplicated)"),
+            type: str("Node type, e.g. start, process, decision, end"),
+            label: str("Label of the node"),
+            color: str("Color of the node"),
+          },
+          ["type", "label"],
+        ),
+      ),
+      arrows: arrayOf(
+        obj({ from_id: str("Starting node id"), to_id: str("Ending node id") }, ["from_id", "to_id"]),
+      ),
+      conditionals: arrayOf(
+        obj(
+          {
+            conditional_label: str("Condition text shown at the branching point"),
+            from_id: str("Node id the condition branches from"),
+            branches: arrayOf(
+              obj({ label: str("Branch label, e.g. yes/no"), to_id: str("Node id this branch leads to") }, [
+                "label",
+                "to_id",
+              ]),
+            ),
+          },
+          ["conditional_label", "from_id", "branches"],
+        ),
+      ),
+    },
+    required: ["nodes", "arrows"],
+    handler: () => "Mock Test: displayed a flowchart given by a data from test.xlsx",
+  }),
 
-// 4. Database management
-const connect_db_tool = { 
-  type: 'function',
-  function: {
-    name: 'connect_database',
-    description: 'Connect to database',
-    parameters: {
-      type: 'object',
-      required: ['host', 'user', 'password', 'database'],
-      properties: {
-        host:     { type: 'string', description: 'Hostname for database connection' },
-        user:     { type: 'string', description: 'Username for database connection' },
-        password: { type: 'string', description: 'Password for database connection' },
-        database: { type: 'string', description: 'Database name for database connection' },
-      },
+  // II-4. Database management
+  defineTool({
+    name: "connect_database",
+    description: "Connect to database",
+    properties: {
+      host: str("Hostname for the database connection"),
+      user: str("Username for the database connection"),
+      password: str("Password for the database connection"),
+      database: str("Database name"),
     },
-  },
-}
-const execute_query_tool = { 
-  type: 'function',
-  function: {
-    name: 'execute_query',
-    description: 'Execute query in database',
-    parameters: {
-      type: 'object',
-      required: ['query', 'read_result'],
-      properties: {
-        query:       { type: 'string',  description: 'Query to execute in database' },
-        read_result:  { type: 'string', description: 'What to read after the execution in database' },
-      }
-    }
-  }
-}
-const start_transaction_tool = { 
-  type: 'function',
-  function: {
-    name: 'start_transaction',
-    description: 'Start transaction in database'
-  }
-}
-const commit_db_tool = { 
-  type: 'function',
-  function: {
-    name: 'commit_database',
-    description: 'Commit changes in database',
-    parameters: {
-      type: 'object',
-      required: ['read_result'],
-      properties: {
-        read_result:  { type: 'string', description: 'What to read after the commit in database' },
-      }
-    }
-  }
-}
-const rollback_db_tool = { 
-  type: 'function',
-  function: {
-    name: 'rollback_database',
-    description: 'Rollback to specific savepoint from database',
-    parameters: {
-      type: 'object',
-      properties: {
-        save_point:  { type: 'string', description: 'What to read after the commit in database' },
-      }
-    }
-  }
-}
-const add_savepoint_db_tool = { 
-  type: 'function',
-  function: {
-    name: 'add_savepoint_database',
-    description: 'Add savepoint in database',
-    parameters: {
-      type: 'object',
-      properties: {
-        save_point:  { type: 'string', description: 'Name of save point to be added in database' },
-      }
-    }
-  }
-}
+    required: ["host", "user", "password", "database"],
+    // Never echo the password back into the model context.
+    handler: (args) => `Mock Test: connected to '${String(args.database)}' at ${String(args.host)} as ${String(args.user)}`,
+  }),
+  defineTool({
+    name: "execute_query",
+    description: "Execute query in database",
+    properties: {
+      query: str("SQL query to execute"),
+      read_result: str("What to read from the result after execution"),
+    },
+    required: ["query", "read_result"],
+    handler: (args) => `Mock Test: executed query '${String(args.query)}'`,
+  }),
+  defineTool({
+    name: "start_transaction",
+    description: "Start transaction in database",
+    handler: () => "Mock Test: transaction started",
+  }),
+  defineTool({
+    name: "commit_database",
+    description: "Commit changes in database",
+    properties: { read_result: str("What to read after the commit") },
+    required: ["read_result"],
+    handler: () => "Mock Test: changes in table is committed",
+  }),
+  defineTool({
+    name: "rollback_database",
+    description: "Rollback the transaction, optionally to a specific savepoint",
+    properties: { save_point: str("Name of the savepoint to roll back to (omit to roll back the whole transaction)") },
+    handler: (args) =>
+      args.save_point
+        ? `Mock Test: rolled back to savepoint '${String(args.save_point)}'`
+        : "Mock Test: rollback to the start of transaction",
+  }),
+  defineTool({
+    name: "add_savepoint_database",
+    description: "Add savepoint in database",
+    properties: { save_point: str("Name of the savepoint to add") },
+    required: ["save_point"],
+    handler: (args) => `Mock Test: added savepoint named '${String(args.save_point)}'`,
+  }),
+];
 
-const tools = [
-  add_tool,
-  multiply_tool,
-  create_file_tool,
-  read_file_tool,
-  update_file_tool,
-  delete_file_tool,
-  view_file_metadata_tool,
-  email_tool,
-  sms_text_tool,
-  visualize_table_tool,
-  visualize_line_graph_tool,
-  visualize_bar_graph_tool,
-  visualize_pie_chart_tool,
-  visualize_scatter_graph_tool,
-  visualize_heatmap_tool,
-  visualize_flowchart_tool,
-  connect_db_tool,
-  execute_query_tool,
-  start_transaction_tool,
-  commit_db_tool,
-  rollback_db_tool,
-  add_savepoint_db_tool
-]
+const registry = new Map(registeredTools.map((t) => [t.definition.function.name, t]));
+const toolDefinitions = registeredTools.map((t) => t.definition);
+
+// Agent loop
+const MAX_ITERATIONS = 8;
 
 async function agentLoop(userPrompt: string): Promise<string> {
-  const messages: Message[] = [{ role: 'user', content: userPrompt }]
-  const MAX_ITERATIONS = 8
+  const model = process.env.OLLAMA_DEFAULT_MODEL;
+  if (!model) throw new Error("OLLAMA_DEFAULT_MODEL is not set");
 
+  // `think: true` errors on models without thinking support, so make it switchable.
+  const think = process.env.OLLAMA_THINK !== "false";
+  const messages: Message[] = [{ role: "user", content: userPrompt }];
   for (let i = 0; i < MAX_ITERATIONS; i++) {
-    const response = await ollama.chat({
-      model: process.env.OLLAMA_DEFAULT_MODEL ?? "",
-      messages,
-      tools,
-      think: true,
-    })
+    const response = await ollama.chat({ model, messages, tools: toolDefinitions, think });
 
-    const toolCalls = response.message.tool_calls ?? []
+    // Push the full assistant message (incl. tool_calls + thinking) so the model keeps its context.
+    messages.push(response.message);
 
-    messages.push(response.message)
-
-    if (!toolCalls.length) {
-      return response.message.content
-    }
-
+    const toolCalls = response.message.tool_calls ?? [];
+    if (!toolCalls.length) return response.message.content;
     for (const call of toolCalls) {
-      const fn = availableFunctions[call.function.name as ToolName]
-      if (!fn) {
-        messages.push({
-          role: 'tool',
-          tool_name: call.function.name,
-          content: `Error: unknown tool "${call.function.name}"`,
-        })
-        continue
-      }
+      const name = call.function.name;
+      const args = (call.function.arguments ?? {}) as Args;
+      const tool = registry.get(name);
 
-      const args = call.function.arguments as { a: number; b: number }
-      let result: number | string
+      if (!tool) {
+        messages.push({ role: "tool", tool_name: name, content: `Error: unknown tool "${name}"` });
+        continue;
+      }
       try {
-        result = fn(args.a, args.b)
+        const result = await tool.handler(args);
+        console.log(`Called ${name}(${JSON.stringify(args)}) -> ${result}`);
+        messages.push({ role: "tool", tool_name: name, content: String(result) });
       } catch (err) {
+        // Feed the error back so the model can correct its arguments and retry.
         messages.push({
-          role: 'tool',
-          tool_name: call.function.name,
-          content: `Error executing ${call.function.name}: ${(err as Error).message}`,
-        })
-        continue
+          role: "tool",
+          tool_name: name,
+          content: `Error executing ${name}: ${(err as Error).message}`,
+        });
       }
-
-      console.log(`Called ${call.function.name}(${args.a}, ${args.b}) -> ${result}`)
-      messages.push({ role: 'tool', tool_name: call.function.name, content: String(result) })
     }
-    console.log(`Messages: ${messages.map((m) => `\n${JSON.stringify(m)}`)}`)
-    console.log("-----------------------------------------------------------")
+    console.log(`Iteration ${i + 1} done -----------------------------------`);
   }
 
-  throw new Error(`Agent loop did not converge after ${MAX_ITERATIONS} iterations`)
+  throw new Error(`Agent loop did not converge after ${MAX_ITERATIONS} iterations`);
 }
 
+// Route handlers
 export async function GET() {
   try {
-    const answer = await agentLoop('What is (11434+12341)*412?')
-    return Response.json({ answer })
+    const answer = await agentLoop("What is (11434+12341)*412?");
+    return Response.json({ answer });
   } catch (err) {
-    console.error(err)
-    return Response.json({ error: (err as Error).message }, { status: 500 })
+    console.error(err);
+    return Response.json({ error: (err as Error).message }, { status: 500 });
+  }
+}
+
+export async function POST(req: Request) {
+  try {
+    const { prompt } = (await req.json()) as { prompt?: string };
+    if (!prompt?.trim()) return Response.json({ error: "Missing 'prompt'" }, { status: 400 });
+    const answer = await agentLoop(prompt);
+    return Response.json({ answer });
+  } catch (err) {
+    console.error(err);
+    return Response.json({ error: (err as Error).message }, { status: 500 });
   }
 }
