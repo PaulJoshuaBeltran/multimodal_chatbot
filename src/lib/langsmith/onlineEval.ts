@@ -7,7 +7,7 @@ import { GraphInput, GraphOutput, FeedbackResults, FinalResult } from "@/src/typ
 
 const client = new Client(); // reads LANGSMITH_API_KEY / LANGSMITH_ENDPOINT
 
-// ---------- Individual online evaluators (all reference-free) ----------
+// Individual online evaluators (all reference-free)
 async function groundednessEvaluator(output: GraphOutput) {
   if (output.isFallback || !output.context) return null; // nothing to ground against
 
@@ -75,7 +75,7 @@ async function runOnlineEvaluators(runId: string, output: GraphOutput): Promise<
   return results;
 }
 
-// ---------- Traced wrapper around your existing graph ----------
+// Traced wrapper around your existing graph
 export const invokeRagGraphWithOnlineEval = traceable(
   async (input: GraphInput): Promise<FinalResult> => {
     const promptResult: GraphOutput = await ragGraph.invoke(input);

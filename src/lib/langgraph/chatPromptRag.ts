@@ -13,13 +13,13 @@ import { randomUUID } from 'crypto'
 import { loadImageBase64 } from "@/src/app/api/chat/ollama/route";
 import { ChatTurn, RagInputType, RetrievedMatch } from "@/src/types/chat";
 
-// ---------- Types ----------
+// Types
 const RELEVANCE_THRESHOLD = Number(process.env.RAG_RELEVANCE_THRESHOLD ?? 0.01);
 const MAX_RETRIES = Number(process.env.RAG_MAX_RETRIES ?? 1);
 const TOP_K = Number(process.env.PINECONE_TOP_K ?? 8);
 const MAX_UPLOADED_CHARS = Number(process.env.RAG_MAX_UPLOADED_CHARS ?? 6000);
 
-// ---------- Graph state ----------
+// Graph state
 const RagState = Annotation.Root({
   // Inputs, set by the caller before invoking the graph
   inputType: Annotation<RagInputType>,
@@ -51,13 +51,13 @@ const RagState = Annotation.Root({
 
 type RagStateType = typeof RagState.State;
 
-// ---------- Helpers ----------
+// Helpers
 function truncate(text: string, maxChars: number): string {
   if (text.length <= maxChars) return text;
   return `${text.slice(0, maxChars)}\n...[truncated, ${text.length - maxChars} more characters — full content is searchable via the knowledge base]`;
 }
 
-// ---------- Branch nodes (Input type: document / image / text) ----------
+// Branch nodes (Input type: document / image / text)
 async function documentLoaderNode(state: RagStateType) {
   if (!state.filePath || !state.fileType) {
     throw new Error("documentLoaderNode: filePath and fileType are required for document input");
@@ -137,7 +137,7 @@ function passthroughTextNode(state: RagStateType) {
   return { extractedText: state.query, embeddingQuery: state.query };
 }
 
-// ---------- Embedding model query ----------
+// Embedding model query
 async function embedQueryNode(state: RagStateType) {
   // No-op guard: an empty query short-circuits straight past retrieval.
   if (!state.embeddingQuery.trim()) {
@@ -149,7 +149,7 @@ async function embedQueryNode(state: RagStateType) {
   return {};
 }
 
-// ---------- Semantic search + reranking (Pinecone -> cross-encoder) ----------
+// Semantic search + reranking (Pinecone -> cross-encoder)
 async function semanticSearchNode(state: RagStateType) {
   if (!state.embeddingQuery.trim()) {
     return { candidateMatches: [], rerankedMatches: [] };
@@ -186,14 +186,14 @@ async function semanticSearchNode(state: RagStateType) {
   return { candidateMatches, rerankedMatches };
 }
 
-// ---------- Has relevant data? ----------
+// Has relevant data?
 function relevanceGateNode(state: RagStateType) {
   const top = state.rerankedMatches[0];
   const hasRelevantData = Boolean(top && (top.rerankScore ?? 0) >= RELEVANCE_THRESHOLD);
   return { hasRelevantData };
 }
 
-// ---------- Yes branch: retrieve relevant data & history ----------
+// Yes branch: retrieve relevant data & history
 function assembleGroundedContextNode(state: RagStateType) {
   const context = state.rerankedMatches
     .filter((m) => (m.rerankScore ?? 0) >= RELEVANCE_THRESHOLD)
@@ -202,7 +202,7 @@ function assembleGroundedContextNode(state: RagStateType) {
   return { context, isFallback: false };
 }
 
-// ---------- No branch: retry, or fall back to general knowledge if it persists ----------
+// No branch: retry, or fall back to general knowledge if it persists
 function retryOrFallbackNode(state: RagStateType) {
   if (state.retryCount < MAX_RETRIES) {
     // Widen the query and loop back into embedding + search once before giving up.
@@ -215,7 +215,7 @@ function retryOrFallbackNode(state: RagStateType) {
   return { context: "", isFallback: true, retryExhausted: true };
 }
 
-// ---------- Prompt construction ----------
+// Prompt construction
 function promptConstructionNode(state: RagStateType) {
   const historyText = state.history.map((h) => `${h.role}: ${h.content}`).join("\n");
   const userQuery = state.query || state.extractedText;
@@ -245,7 +245,7 @@ function promptConstructionNode(state: RagStateType) {
   return { prompt };
 }
 
-// ---------- LLM response ----------
+// LLM response
 async function llmResponseNode(state: RagStateType) {
   const model = process.env.OLLAMA_DEFAULT_MODEL || "";
   const result = await ollama.chat({
@@ -256,7 +256,7 @@ async function llmResponseNode(state: RagStateType) {
   return { response: result.message?.content ?? "" };
 }
 
-// ---------- Conditional edge routers ----------
+// Conditional edge routers
 function routeInputType(state: RagStateType): RagInputType {
   return state.inputType;
 }
@@ -269,7 +269,7 @@ function routeRetry(state: RagStateType): "retry_search" | "fallback" {
   return state.retryExhausted ? "fallback" : "retry_search";
 }
 
-// ---------- Graph assembly ----------
+// Graph assembly
 const graph = new StateGraph(RagState)
   .addNode("documentLoader", documentLoaderNode)
   .addNode("visionOcr", visionOcrNode)

@@ -88,6 +88,9 @@ const registeredTools: RegisteredTool[] = [
     properties: { ...fileProps, content: str("Content of the new file") },
     required: [...fileRequired, "content"],
     handler: () => "Mock Test: new file created named test.pdf",
+    // TODO: place the function here
+    // e.g. handler: ({ filepath, filename, filetype, content }) =>
+    // createFile(filepath, filename, filetype, content),
   }),
   defineTool({
     name: "read_file",
@@ -391,7 +394,6 @@ export async function GET() {
     return Response.json({ error: (err as Error).message }, { status: 500 });
   }
 }
-
 export async function POST(req: Request) {
   try {
     const { prompt } = (await req.json()) as { prompt?: string };
