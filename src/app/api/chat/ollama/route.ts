@@ -1,4 +1,4 @@
-// /src/app/api/chat/ollama/route.ts
+// src/app/api/chat/ollama/route.ts
 import { ollama } from '@/src/lib/ollama'
 import { readFile } from 'fs/promises'
 import { uploadPathFromUrl } from '@/src/lib/uploads'

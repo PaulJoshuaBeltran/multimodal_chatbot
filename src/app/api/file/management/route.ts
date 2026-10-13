@@ -1,4 +1,4 @@
-// /src/app/api/file/management/route.ts
+// src/app/api/file/management/route.ts
 import { writeFile, mkdir } from 'fs/promises'
 import path from 'path'
 import { randomUUID } from 'crypto'

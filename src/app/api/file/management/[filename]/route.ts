@@ -1,4 +1,4 @@
-// /src/app/api/file/management/[filename]/route.ts
+// src/app/api/file/management/[filename]/route.ts
 import { readFile, rm, open } from 'fs/promises'
 import path from 'path'
 import { auth } from '@clerk/nextjs/server'

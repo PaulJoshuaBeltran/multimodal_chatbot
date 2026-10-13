@@ -5,7 +5,6 @@ import { useMemo, useState } from 'react'
 import { Button } from '../ui/button'
 import { ScrollArea } from '../ui/scroll-area'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../ui/table'
-import { Checkbox } from '../ui/checkbox'
 import {
   Select,
   SelectContent,
@@ -18,13 +17,8 @@ import {
   ArrowUp,
   ChevronLeft,
   ChevronRight,
-  Plus,
-  RotateCw,
-  SquarePen,
-  Trash,
   Wrench
 } from 'lucide-react'
-import { ToolFormData } from '@/src/types/dialog'
 import { SortField } from '@/src/types/tabs'
 import { ToolDocument } from '@/src/types/knowledge'
 
@@ -105,41 +99,10 @@ function getPageNumbers(current: number, total: number): (number | 'ellipsis')[]
 }
 
 export function ToolList() {
-  const [selectedtools, setSelectedtools] = useState<Record<string, boolean>>({
-    'tool-1': true,
-    'tool-3': true,
-  })
   const [toolPage, settoolPage] = useState(1)
   const [toolS_PER_PAGE, settoolPerPage] = useState(10)
   const [sortField, setSortField] = useState<SortField>('title')
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc')
-  const [dialogOpen, setDialogOpen] = useState(false)
-  const [dialogMode, setDialogMode] = useState<'add' | 'edit'>('add')
-  const [dialogInitialData, setDialogInitialData] = useState<ToolFormData | undefined>(undefined)
-
-  const openAddDialog = () => {
-    setDialogMode('add')
-    setDialogInitialData(undefined)
-    setDialogOpen(true)
-  }
-
-  const openEditDialog = () => {
-    const selectedIds = Object.entries(selectedtools)
-      .filter(([, v]) => v)
-      .map(([id]) => id)
-    const target = MOCK_KNOWLEDGE.find((k) => k.id === selectedIds[0])
-    if (!target) return
-    setDialogMode('edit')
-    setDialogInitialData({
-      id: target.id,
-      title: target.title,
-      description: target.description,
-      category: target.category,
-    })
-    setDialogOpen(true)
-  }
-
-  const hasSelection = Object.values(selectedtools).some(Boolean)
 
   const sortedTool = useMemo(() => {
     const copy = [...MOCK_KNOWLEDGE]
@@ -158,9 +121,6 @@ export function ToolList() {
     (toolPage - 1) * toolS_PER_PAGE,
     toolPage * toolS_PER_PAGE
   )
-
-  const toggletool = (toolId: string) =>
-    setSelectedtools((prev) => ({ ...prev, [toolId]: !prev[toolId] }))
 
   const handleRowsPerPageChange = (value: string) => {
     settoolPerPage(Number(value))
@@ -246,7 +206,6 @@ export function ToolList() {
               return (
                 <TableRow
                   key={tool.id}
-                  onClick={() => toggletool(tool.id)}
                   className={`cursor-pointer transition-colors 'hover:bg-muted/40'`}
                 >
                   <TableCell className="align-middle py-4" onClick={(e) => e.stopPropagation()}>

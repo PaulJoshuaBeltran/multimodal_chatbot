@@ -5,10 +5,3 @@ export type KnowledgeFormData = {
   category: string
   content?: string
 }
-
-export type ToolFormData = {
-  id: string
-  title: string
-  description: string
-  category: string
-}
