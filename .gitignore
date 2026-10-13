@@ -46,3 +46,5 @@ next-env.d.ts
 # uploads
 /data/uploads
 /data
+/data/uploads/document
+/data/uploads/image
