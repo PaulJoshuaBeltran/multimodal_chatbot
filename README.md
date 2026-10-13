@@ -21,7 +21,7 @@ The system is orchestrated with LangGraph/LangChain, served by Ollama (with Hugg
 | Clerk                                               | User authentication (signup, login, session management, webhooks for user lifecycle)                |
 | Stripe                                              | Subscription billing and plan management                                                            |
 | MongoDB + Prisma ORM (v6)                           | Primary application database — users, conversations, messages, models, tool/guardrail/eval metadata |
-| Supabase?                                           | SQL database support for toolcalling                                                                |
+| Supabase                                            | SQL database support for toolcalling                                                                |
 | Pinecone                                            | Vector database for storing embeddings and running semantic search over the knowledge base          |
 | Ollama                                              | Local LLM serving — chat, vision, and embedding models                                              |
 | Hugging Face                                        | Fallback/secondary model hosting — embeddings, reranker, OCR/vision models                          |
@@ -63,7 +63,7 @@ The system is orchestrated with LangGraph/LangChain, served by Ollama (with Hugg
   2. Database analysis
   3. Mathematical analysis
   4. Visualization (diagram generation)
-  5. Message actions e.g., email
+  5. Email messaging system
 
 ### 3.5 LLM, RAG, and Tool-Calling Infrastructure
 - **Orchestration**: LangGraph (control flow) + LangChain (document loading, chunking, retrieval)
@@ -116,7 +116,7 @@ The system is orchestrated with LangGraph/LangChain, served by Ollama (with Hugg
 - or npm create next-app@latest my-next-app
 
 ### 5.2. Prisma setup and MongoDB compass
-a. in MongoDB compass find MONGODB_URI, MONGODB_URI, DATABASE_URL
+a. in MongoDB compass, find MONGODB_URI, MONGODB_URI, DATABASE_URL
 b. prisma v6 install
 - cd (nextjs proj)
 - npm install prisma@6.19.0 @prisma/client@6.19.0 --save-exact
@@ -138,7 +138,6 @@ e. npx prisma db push
 - Sign up free at https://dashboard.ngrok.com/signup
 - Grab your authtoken from https://dashboard.ngrok.com/get-started/your-authtoken
 - Run powershell command: ngrok config add-authtoken YOUR_TOKEN_HERE
-- Run powershell command: ngrok http 3000
 - Open: https://trance-ankle-unsaddle.ngrok-free.dev/
 
 ### 5.6. Pinecone
@@ -161,7 +160,7 @@ e. npx prisma db push
 
 ### 5.10. Supabase
 - npm install @supabase/supabase-js @supabase/ssr
-- .env includes, NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY, NEXT_PUBLIC_SUPABASE_SECRET_KEY
+- .env includes NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY, NEXT_PUBLIC_SUPABASE_SECRET_KEY
 - .env also includes DATABASE_URL="postgresql://postgres:<password>@db.<project-id>.supabase.co:5432/postgres"
 - and DATABASE_URL_POOLER="postgres://postgres.<project-id>:<password>@aws-0-<area>.pooler.supabase.com:6543/postgres"
 - npx supabase gen types typescript --project-id <project-id> > <output path of ts types>
@@ -178,7 +177,7 @@ The easiest way to deploy your Next.js app is to use the [Vercel Platform](https
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
 
 
-## 6. Open Items (not yet discussed in detail)
+## 6. Not yet discussed in detail
 - Exact tool-calling execution sandbox/security model (how a tool's "action prompt" maps to real, safely-bounded code execution)
 - Guardrail enforcement mechanics: which checks run synchronously (blocking) vs asynchronously (logged only), and what happens on a block (retry, refuse, redact)
 - Rate limiting strategy and limits (per-user, per-plan, per-endpoint)

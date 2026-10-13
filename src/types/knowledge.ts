@@ -15,6 +15,16 @@ export interface KnowledgeDocument {
   chunks: KnowledgeChunk[]
 }
 
+// TEMPORARY
+export interface ToolDocument {
+  id: string
+  title: string
+  description: string
+  category: string
+  createdAt: string
+  updatedAt: string
+}
+
 export interface ChunkMetadata {
   chunkIndex?: number;
   text?: string;

@@ -374,7 +374,7 @@ export function RAGList() {
           <TableHeader className="bg-muted/50 sticky top-0 z-10">
             <TableRow>
               <TableHead className="w-[160px]">ID</TableHead>
-              <TableHead>Title</TableHead>
+              <TableHead className="w-[200px] font-medium">Title</TableHead>
               <TableHead className="w-[90px]">Preview</TableHead>
               <TableHead className="w-[120px]">Category</TableHead>
               <TableHead className="w-[100px]">Status</TableHead>
@@ -409,17 +409,18 @@ export function RAGList() {
                     <TableCell className="align-middle py-4 font-mono text-xs">
                       {doc.id}
                     </TableCell>
-                    <TableCell className={`align-middle py-4 ${isSelected ? '' : 'text-muted-foreground'}`}>
+                    <TableCell className={`align-middle py-4 font-semibold ${isSelected ? '' : 'text-muted-foreground'}`}>
                       {doc.title}
                     </TableCell>
                     <TableCell className="align-middle py-4">
                       <Button
+                        className={`${
+                          isSelected
+                            ? "bg-white hover:bg-white hover:ring-1 hover:ring-black"
+                            : "bg-[var(--gray3)] hover:bg-[var(--gray3)] hover:ring-1 hover:ring-white"
+                        }`}
                         size="sm"
-                        variant="ghost"
                         onClick={(e) => openPreviewDialog(doc, e)}
-                        style={{ backgroundColor: 'var(--gray3)' }}
-                        onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray2)')}
-                        onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray3)')}
                       >
                         <Eye className="h-4 w-4" />
                       </Button>

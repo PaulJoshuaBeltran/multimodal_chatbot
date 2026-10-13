@@ -26,30 +26,61 @@ import {
 } from 'lucide-react'
 import { ToolFormData } from '@/src/types/dialog'
 import { SortField } from '@/src/types/tabs'
+import { ToolDocument } from '@/src/types/knowledge'
 
-export const MOCK_KNOWLEDGE = [
-  { id: 'tool-1', description: 'Queries search engines for live web information.',                  category: 'Information', createdAt: '09/14/2026 4:43:00PM', updatedAt: '09/15/2026 4:43:00PM'},
-  { id: 'tool-2', description: 'Executes untrusted mathematical and algorithmic scripts securely.', category: 'Runtime'    , createdAt: '09/14/2026 4:43:00PM', updatedAt: '09/15/2026 4:43:00PM'},
-  { id: 'tool-3', description: 'Extracts structural semantics from text, PDF, and CSV payloads.',   category: 'Data'       , createdAt: '09/14/2026 4:43:00PM', updatedAt: '09/15/2026 4:43:00PM'},
-  { id: 'tool-4', description: 'Translates pixel layouts into relational coordinate systems.',      category: 'Vision'     , createdAt: '09/14/2026 4:43:00PM', updatedAt: '09/15/2026 4:43:00PM'},
-  { id: 'tool-5', description: 'Normalizes chronological structures across spatial zones.',         category: 'Utility'    , createdAt: '09/14/2026 4:43:00PM', updatedAt: '09/15/2026 4:43:00PM'},
-  { id: 'tool-6', description: 'Fetches real-time financial conversions and spot prices.',          category: 'Finance'    , createdAt: '09/14/2026 4:43:00PM', updatedAt: '09/15/2026 4:43:00PM'},
-  { id: 'tool-7', description: 'Queries search engines for live web information.',                  category: 'Information', createdAt: '09/14/2026 4:43:00PM', updatedAt: '09/15/2026 4:43:00PM'},
-  { id: 'tool-8', description: 'Executes untrusted mathematical and algorithmic scripts securely.', category: 'Runtime'    , createdAt: '09/14/2026 4:43:00PM', updatedAt: '09/15/2026 4:43:00PM'},
-  { id: 'tool-9', description: 'Extracts structural semantics from text, PDF, and CSV payloads.',   category: 'Data'       , createdAt: '09/14/2026 4:43:00PM', updatedAt: '09/15/2026 4:43:00PM'},
-  { id: 'tool-10', description: 'Translates pixel layouts into relational coordinate systems.',      category: 'Vision'     , createdAt: '09/14/2026 4:43:00PM', updatedAt: '09/15/2026 4:43:00PM'},
-  { id: 'tool-11', description: 'Normalizes chronological structures across spatial zones.',         category: 'Utility'    , createdAt: '09/14/2026 4:43:00PM', updatedAt: '09/15/2026 4:43:00PM'},
-  { id: 'tool-12', description: 'Fetches real-time financial conversions and spot prices.',          category: 'Finance'    , createdAt: '09/14/2026 4:43:00PM', updatedAt: '09/15/2026 4:43:00PM'},
-]
+const MOCK_KNOWLEDGE = [
+  // File
+  { id: 'tool-1', title: 'Create File', description: 'Creates new files and writes content to specified paths.', category: 'File', createdAt: '09/14/2026 4:43:00PM', updatedAt: '09/15/2026 4:43:00PM' },
+  { id: 'tool-2', title: 'Read File', description: 'Reads file content from a specified path.', category: 'File', createdAt: '09/14/2026 4:43:00PM', updatedAt: '09/15/2026 4:43:00PM' },
+  { id: 'tool-3', title: 'Update File', description: 'Updates existing files by modifying or replacing their content.', category: 'File', createdAt: '09/14/2026 4:43:00PM', updatedAt: '09/15/2026 4:43:00PM' },
+  { id: 'tool-4', title: 'Delete File', description: 'Deletes files from specified paths.', category: 'File', createdAt: '09/14/2026 4:43:00PM', updatedAt: '09/15/2026 4:43:00PM' },
+  { id: 'tool-5', title: 'Get File Metadata', description: 'Retrieves file metadata, including name, size, type, and timestamps.', category: 'File', createdAt: '09/14/2026 4:43:00PM', updatedAt: '09/15/2026 4:43:00PM' },
+  // Messaging
+  { id: 'tool-6', title: 'Send Email', description: 'Composes and sends emails to specified recipients with optional subjects and attachments.', category: 'Messaging', createdAt: '09/14/2026 4:43:00PM', updatedAt: '09/15/2026 4:43:00PM' },
+  // Visualization
+  { id: 'tool-7', title: 'Generate Table', description: 'Generates tables to organize and present structured data.', category: 'Visualization', createdAt: '09/14/2026 4:43:00PM', updatedAt: '09/15/2026 4:43:00PM' },
+  { id: 'tool-8', title: 'Generate Line Graph', description: 'Generates line graphs to visualize trends and changes over continuous intervals.', category: 'Visualization', createdAt: '09/14/2026 4:43:00PM', updatedAt: '09/15/2026 4:43:00PM' },
+  { id: 'tool-9', title: 'Generate Bar Graph', description: 'Generates bar graphs to compare values across categories.', category: 'Visualization', createdAt: '09/14/2026 4:43:00PM', updatedAt: '09/15/2026 4:43:00PM' },
+  { id: 'tool-10', title: 'Generate Pie Chart', description: 'Generates pie charts to illustrate proportions and percentage distributions.', category: 'Visualization', createdAt: '09/14/2026 4:43:00PM', updatedAt: '09/15/2026 4:43:00PM' },
+  { id: 'tool-11', title: 'Generate Scatter Plot', description: 'Generates scatter plots to analyze relationships and correlations between variables.', category: 'Visualization', createdAt: '09/14/2026 4:43:00PM', updatedAt: '09/15/2026 4:43:00PM' },
+  { id: 'tool-12', title: 'Generate Heatmap', description: 'Generates heatmaps to visualize data intensity, distributions, and correlations using color.', category: 'Visualization', createdAt: '09/14/2026 4:43:00PM', updatedAt: '09/15/2026 4:43:00PM' },
+  { id: 'tool-13', title: 'Generate Flowchart', description: 'Generates flowcharts to represent processes, workflows, and decision paths.', category: 'Visualization', createdAt: '09/14/2026 4:43:00PM', updatedAt: '09/15/2026 4:43:00PM' },
+  // Database Management
+  { id: 'tool-14', title: 'Create Database Connection', description: 'Creates and configures database connections using specified connection parameters.', category: 'Database', createdAt: '09/14/2026 4:43:00PM', updatedAt: '09/15/2026 4:43:00PM' },
+  { id: 'tool-15', title: 'Execute Query', description: 'Executes database queries and retrieves results from database tables.', category: 'Database', createdAt: '09/14/2026 4:43:00PM', updatedAt: '09/15/2026 4:43:00PM' },
+  { id: 'tool-16', title: 'Start Transaction', description: 'Starts database transactions and establishes a transactional scope for operations.', category: 'Database', createdAt: '09/14/2026 4:43:00PM', updatedAt: '09/15/2026 4:43:00PM' },
+  { id: 'tool-17', title: 'Commit Transaction', description: 'Commits a database transaction and retrieves the resulting operation status or content.', category: 'Database', createdAt: '09/14/2026 4:43:00PM', updatedAt: '09/15/2026 4:43:00PM' },
+  { id: 'tool-18', title: 'Rollback Transaction', description: 'Rolls back a transaction to a specified savepoint or its beginning.', category: 'Database', createdAt: '09/14/2026 4:43:00PM', updatedAt: '09/15/2026 4:43:00PM' },
+  { id: 'tool-19', title: 'Create Savepoint', description: 'Creates a savepoint within an active transaction for partial rollback.', category: 'Database', createdAt: '09/14/2026 4:43:00PM', updatedAt: '09/15/2026 4:43:00PM' },
+  // Quantitative Analysis
+  { id: 'tool-20', title: 'Numerical Analysis', description: 'Performs numerical computations, mathematical operations, and statistical analysis.', category: 'Quant', createdAt: '09/14/2026 4:43:00PM', updatedAt: '09/15/2026 4:43:00PM' },
+  { id: 'tool-21', title: 'Machine Learning', description: 'Executes machine learning workflows for data preprocessing, model training, inference, and evaluation.', category: 'Quant', createdAt: '09/14/2026 4:43:00PM', updatedAt: '09/15/2026 4:43:00PM' },
+];
 
 const ROWS_PER_PAGE_OPTIONS = [4, 8, 10, 20]
 
 const SORT_FIELD_OPTIONS: { value: SortField; label: string }[] = [
-  { value: 'description', label: 'Name' },
+  { value: 'title', label: 'Title' },
   { value: 'category', label: 'Category' },
   { value: 'createdAt', label: 'Created At' },
   { value: 'updatedAt', label: 'Updated At' },
 ]
+
+function getSortValue(
+  doc: ToolDocument,
+  field: SortField
+): string | number | undefined {
+  switch (field) {
+    case 'title':
+      return doc.title
+    case 'category':
+      return doc.category
+    case 'createdAt':
+      return new Date(doc.createdAt).getTime()
+    case 'updatedAt':
+      return new Date(doc.updatedAt).getTime()
+  }
+}
 
 // Builds a compact page-number sequence with ellipses, e.g. 1 … 4 5 6 … 12
 function getPageNumbers(current: number, total: number): (number | 'ellipsis')[] {
@@ -80,7 +111,7 @@ export function ToolList() {
   })
   const [toolPage, settoolPage] = useState(1)
   const [toolS_PER_PAGE, settoolPerPage] = useState(10)
-  const [sortField, setSortField] = useState<SortField>('description')
+  const [sortField, setSortField] = useState<SortField>('title')
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc')
   const [dialogOpen, setDialogOpen] = useState(false)
   const [dialogMode, setDialogMode] = useState<'add' | 'edit'>('add')
@@ -101,6 +132,7 @@ export function ToolList() {
     setDialogMode('edit')
     setDialogInitialData({
       id: target.id,
+      title: target.title,
       description: target.description,
       category: target.category,
     })
@@ -112,12 +144,10 @@ export function ToolList() {
   const sortedTool = useMemo(() => {
     const copy = [...MOCK_KNOWLEDGE]
     copy.sort((a, b) => {
-      let cmp: number
-      if (sortField === 'createdAt' || sortField === 'updatedAt') {
-        cmp = new Date(a[sortField]).getTime() - new Date(b[sortField]).getTime()
-      } else {
-        cmp = a[sortField].localeCompare(b[sortField])
-      }
+      const av = getSortValue(a, sortField)
+      const bv = getSortValue(b, sortField)
+      const cmp =
+        typeof av === 'number' && typeof bv === 'number' ? av - bv : String(av).localeCompare(String(bv))
       return sortDirection === 'asc' ? cmp : -cmp
     })
     return copy
@@ -162,55 +192,6 @@ export function ToolList() {
         className="flex items-center pt-4 mb-2"
         style={{ backgroundColor: 'var(--gray3)' }}
       >
-        <Button
-          className="hover:border-white mr-1"
-          size="sm"
-          // onClick={() => settoolPage((p) => Math.max(p - 1, 1))}
-          onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray2)')}
-          onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray3)')}
-        >
-          <RotateCw className="h-8 w-8 mr-1" />
-          Refresh
-        </Button>
-        
-        <Button
-          className="hover:border-white mr-1"
-          size="sm"
-          onClick={openAddDialog}
-          onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray2)')}
-          onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray3)')}
-        >
-          <Plus className="h-8 w-8 mr-1" />
-          Add
-        </Button>
-
-        {hasSelection && (
-          <>
-            <Button
-              className="hover:border-white mr-1"
-              size="sm"
-              onClick={openEditDialog}
-              onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray2)')}
-              onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray3)')}
-            >
-              <SquarePen className="h-8 w-8 mr-1" />
-              Edit Selected
-            </Button>
-
-            <Button
-              className="hover:border-white bg-[var(--red3)] mr-1"
-              size="sm"
-              // onClick={() => settoolPage((p) => Math.max(p - 1, 1))}
-              onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--red2)')}
-              onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'var(--red3)')}
-            >
-              <Trash className="h-8 w-8 mr-1" />
-              Delete Selected
-            </Button>
-          </>
-        )}
-
-        {/* Sort by field */}
         <div className="flex items-center gap-1 ml-1">
           <Select value={sortField} onValueChange={handleSortFieldChange}>
             <SelectTrigger className="h-8 w-[140px] bg-[var(--gray3)] border-white hover:bg-[var(--gray2)]">
@@ -230,7 +211,6 @@ export function ToolList() {
               ))}
             </SelectContent>
           </Select>
-
           <Button
             className="hover:border-white"
             size="sm"
@@ -253,9 +233,7 @@ export function ToolList() {
         <Table>
           <TableHeader className="bg-muted/50 sticky top-0 z-10">
             <TableRow>
-              <TableHead className="hidden w-0 p-0">
-                <Checkbox className="mr-2" checked={false}></Checkbox>
-              </TableHead>
+              <TableHead className="w-[160px]">ID</TableHead>
               <TableHead className="w-[200px] font-medium">Tool Name</TableHead>
               <TableHead> Description</TableHead>
               <TableHead className="w-[120px]">Category</TableHead>
@@ -265,31 +243,21 @@ export function ToolList() {
           </TableHeader>
           <TableBody>
             {paginatedtools.map((tool) => {
-              const isSelected = !!selectedtools[tool.id]
               return (
                 <TableRow
                   key={tool.id}
                   onClick={() => toggletool(tool.id)}
-                  className={`cursor-pointer transition-colors ${
-                    isSelected ? 'bg-white text-black hover:bg-white' : 'hover:bg-muted/40'
-                  }`}
+                  className={`cursor-pointer transition-colors 'hover:bg-muted/40'`}
                 >
-                  <TableCell className="hidden w-0 p-0">
-                    <Checkbox
-                      checked={isSelected}
-                      onCheckedChange={() => toggletool(tool.id)}
-                    />
-                  </TableCell>
                   <TableCell className="align-middle py-4" onClick={(e) => e.stopPropagation()}>
-                    {/* Checkable, but uncontrolled — its own click state, not wired to selection */}
-                    <Checkbox id={tool.id} />
+                    {tool.id}
                   </TableCell>
                   <TableCell className="font-semibold align-middle py-4">
                     <label htmlFor={tool.id} className="cursor-pointer block">
-                      {tool.description}
+                      {tool.title}
                     </label>
                   </TableCell>
-                  <TableCell className={`align-middle py-4 ${isSelected ? '' : 'text-muted-foreground'}`}>
+                  <TableCell className={`align-middle py-4 text-muted-foreground`}>
                     {tool.description}
                   </TableCell>
                   <TableCell className="align-middle py-4">

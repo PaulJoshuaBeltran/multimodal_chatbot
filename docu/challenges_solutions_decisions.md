@@ -17,5 +17,3 @@ The pattern across multiple GitHub issues matches yours almost exactly: gemma4:e
 - I chose langchain for it possible more compatibility with langgraph orchestration
 
 6. Langsmith will do guardrail checks
-
-7. 
