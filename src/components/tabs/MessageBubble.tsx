@@ -118,20 +118,21 @@ function AttachmentView({ att, isUserMessage }: { att: Attachment; isUserMessage
         <button
           type="button"
           onClick={() => setPreviewOpen(true)}
-          className="relative w-48 rounded-lg overflow-hidden cursor-pointer"
-          style={{ height: 200 }}
+          className="relative w-72 rounded-lg overflow-hidden cursor-pointer"
+          style={{
+            aspectRatio: imageRatio || "1 / 1",
+          }}
           aria-label={`Open preview of ${att.fileName}`}
         >
           <Image
             src={att.url}
             alt={att.fileName}
             fill
-            sizes="192px"
             className="object-contain rounded-lg"
             onLoad={(e) => {
-              const { naturalWidth, naturalHeight } = e.currentTarget
+              const { naturalWidth, naturalHeight } = e.currentTarget;
               if (naturalWidth && naturalHeight) {
-                setImageRatio(naturalWidth / naturalHeight)
+                setImageRatio(naturalWidth / naturalHeight);
               }
             }}
             onError={() => setFailed(true)}

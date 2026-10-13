@@ -1,32 +1,52 @@
+// src/components/dialogs/ImagePreviewDialog.tsx
 import { Dialog, DialogContent, DialogTitle } from '../ui/dialog'
 import Image from 'next/image'
-import { AspectRatio } from '../ui/aspect-ratio'
 import { ImagePreviewDialogProps } from '@/src/types/sidebar_dialog'
 
-export default function ModelManager({
+const MARGIN = '2rem'
+
+export default function ImagePreviewDialog({
   attachment,
-  imageRatio,
+  imageRatio, // width / height
   open,
-  onOpenChange
-}: ImagePreviewDialogProps
-) {
-return (
-  <Dialog open={open} onOpenChange={onOpenChange}>
+  onOpenChange,
+}: ImagePreviewDialogProps) {
+  if (!attachment) return null
+
+  const ratio = imageRatio || 1
+
+  const imageWidth = `min(calc(90vw - 2 * ${MARGIN}), calc((90dvh - 2 * ${MARGIN}) * ${ratio}))`
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
-      className="max-w-2xl border-none p-2 sm:max-w-2xl"
-      style={{ backgroundColor: 'var(--gray3)' }}
+        className="
+          !fixed !left-1/2 !top-1/2 !-translate-x-1/2 !-translate-y-1/2
+          !h-auto !max-w-none !max-h-none
+          overflow-hidden border-none
+        "
+        style={{
+          backgroundColor: 'var(--gray3)',
+          paddingTop: MARGIN,
+          width: `calc(${imageWidth} + 2 * ${MARGIN})`,
+        }}
       >
-      <DialogTitle className="sr-only">{attachment!.fileName}</DialogTitle>
-      <AspectRatio ratio={imageRatio} className="overflow-hidden rounded-lg">
+        <DialogTitle className="sr-only">{attachment.fileName}</DialogTitle>
+
+        <div
+          className="relative mx-auto"
+          style={{ width: imageWidth, aspectRatio: ratio }}
+        >
           <Image
-            src={attachment!.url}
-            alt={attachment!.fileName}
+            src={attachment.url}
+            alt={attachment.fileName}
             fill
-            sizes="(max-width: 640px) 100vw, 640px"
+            sizes="90vw"
             className="object-contain"
+            priority
           />
-      </AspectRatio>
+        </div>
       </DialogContent>
-  </Dialog>
-)
+    </Dialog>
+  )
 }
