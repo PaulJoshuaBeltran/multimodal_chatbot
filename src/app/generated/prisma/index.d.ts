@@ -3382,6 +3382,7 @@ export namespace Prisma {
     conversationId: string | null
     role: string | null
     content: string | null
+    isError: boolean | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -3391,6 +3392,7 @@ export namespace Prisma {
     conversationId: string | null
     role: string | null
     content: string | null
+    isError: boolean | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -3400,6 +3402,7 @@ export namespace Prisma {
     conversationId: number
     role: number
     content: number
+    isError: number
     createdAt: number
     updatedAt: number
     _all: number
@@ -3411,6 +3414,7 @@ export namespace Prisma {
     conversationId?: true
     role?: true
     content?: true
+    isError?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -3420,6 +3424,7 @@ export namespace Prisma {
     conversationId?: true
     role?: true
     content?: true
+    isError?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -3429,6 +3434,7 @@ export namespace Prisma {
     conversationId?: true
     role?: true
     content?: true
+    isError?: true
     createdAt?: true
     updatedAt?: true
     _all?: true
@@ -3511,6 +3517,7 @@ export namespace Prisma {
     conversationId: string
     role: string
     content: string
+    isError: boolean
     createdAt: Date
     updatedAt: Date | null
     _count: MessageCountAggregateOutputType | null
@@ -3538,6 +3545,7 @@ export namespace Prisma {
     role?: boolean
     content?: boolean
     attachment?: boolean | AttachmentDefaultArgs<ExtArgs>
+    isError?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     conversation?: boolean | ConversationDefaultArgs<ExtArgs>
@@ -3550,11 +3558,12 @@ export namespace Prisma {
     conversationId?: boolean
     role?: boolean
     content?: boolean
+    isError?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }
 
-  export type MessageOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "conversationId" | "role" | "content" | "attachment" | "createdAt" | "updatedAt", ExtArgs["result"]["message"]>
+  export type MessageOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "conversationId" | "role" | "content" | "attachment" | "isError" | "createdAt" | "updatedAt", ExtArgs["result"]["message"]>
   export type MessageInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     conversation?: boolean | ConversationDefaultArgs<ExtArgs>
   }
@@ -3569,6 +3578,7 @@ export namespace Prisma {
       conversationId: string
       role: string
       content: string
+      isError: boolean
       createdAt: Date
       updatedAt: Date | null
     }, ExtArgs["result"]["message"]>
@@ -3970,6 +3980,7 @@ export namespace Prisma {
     readonly conversationId: FieldRef<"Message", 'String'>
     readonly role: FieldRef<"Message", 'String'>
     readonly content: FieldRef<"Message", 'String'>
+    readonly isError: FieldRef<"Message", 'Boolean'>
     readonly createdAt: FieldRef<"Message", 'DateTime'>
     readonly updatedAt: FieldRef<"Message", 'DateTime'>
   }
@@ -6391,6 +6402,7 @@ export namespace Prisma {
     conversationId: 'conversationId',
     role: 'role',
     content: 'content',
+    isError: 'isError',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt'
   };
@@ -6637,6 +6649,7 @@ export namespace Prisma {
     role?: StringFilter<"Message"> | string
     content?: StringFilter<"Message"> | string
     attachment?: XOR<AttachmentNullableCompositeFilter, AttachmentObjectEqualityInput> | null
+    isError?: BoolFilter<"Message"> | boolean
     createdAt?: DateTimeFilter<"Message"> | Date | string
     updatedAt?: DateTimeNullableFilter<"Message"> | Date | string | null
     conversation?: XOR<ConversationScalarRelationFilter, ConversationWhereInput>
@@ -6648,6 +6661,7 @@ export namespace Prisma {
     role?: SortOrder
     content?: SortOrder
     attachment?: AttachmentOrderByInput
+    isError?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     conversation?: ConversationOrderByWithRelationInput
@@ -6662,6 +6676,7 @@ export namespace Prisma {
     role?: StringFilter<"Message"> | string
     content?: StringFilter<"Message"> | string
     attachment?: XOR<AttachmentNullableCompositeFilter, AttachmentObjectEqualityInput> | null
+    isError?: BoolFilter<"Message"> | boolean
     createdAt?: DateTimeFilter<"Message"> | Date | string
     updatedAt?: DateTimeNullableFilter<"Message"> | Date | string | null
     conversation?: XOR<ConversationScalarRelationFilter, ConversationWhereInput>
@@ -6672,6 +6687,7 @@ export namespace Prisma {
     conversationId?: SortOrder
     role?: SortOrder
     content?: SortOrder
+    isError?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     _count?: MessageCountOrderByAggregateInput
@@ -6687,6 +6703,7 @@ export namespace Prisma {
     conversationId?: StringWithAggregatesFilter<"Message"> | string
     role?: StringWithAggregatesFilter<"Message"> | string
     content?: StringWithAggregatesFilter<"Message"> | string
+    isError?: BoolWithAggregatesFilter<"Message"> | boolean
     createdAt?: DateTimeWithAggregatesFilter<"Message"> | Date | string
     updatedAt?: DateTimeNullableWithAggregatesFilter<"Message"> | Date | string | null
   }
@@ -6945,6 +6962,7 @@ export namespace Prisma {
     role: string
     content: string
     attachment?: XOR<AttachmentNullableCreateEnvelopeInput, AttachmentCreateInput> | null
+    isError?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string | null
     conversation: ConversationCreateNestedOneWithoutMessagesInput
@@ -6956,6 +6974,7 @@ export namespace Prisma {
     role: string
     content: string
     attachment?: XOR<AttachmentNullableCreateEnvelopeInput, AttachmentCreateInput> | null
+    isError?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string | null
   }
@@ -6964,6 +6983,7 @@ export namespace Prisma {
     role?: StringFieldUpdateOperationsInput | string
     content?: StringFieldUpdateOperationsInput | string
     attachment?: XOR<AttachmentNullableUpdateEnvelopeInput, AttachmentCreateInput> | null
+    isError?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     conversation?: ConversationUpdateOneRequiredWithoutMessagesNestedInput
@@ -6974,6 +6994,7 @@ export namespace Prisma {
     role?: StringFieldUpdateOperationsInput | string
     content?: StringFieldUpdateOperationsInput | string
     attachment?: XOR<AttachmentNullableUpdateEnvelopeInput, AttachmentCreateInput> | null
+    isError?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
@@ -6984,6 +7005,7 @@ export namespace Prisma {
     role: string
     content: string
     attachment?: XOR<AttachmentNullableCreateEnvelopeInput, AttachmentCreateInput> | null
+    isError?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string | null
   }
@@ -6992,6 +7014,7 @@ export namespace Prisma {
     role?: StringFieldUpdateOperationsInput | string
     content?: StringFieldUpdateOperationsInput | string
     attachment?: XOR<AttachmentNullableUpdateEnvelopeInput, AttachmentCreateInput> | null
+    isError?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
@@ -7001,6 +7024,7 @@ export namespace Prisma {
     role?: StringFieldUpdateOperationsInput | string
     content?: StringFieldUpdateOperationsInput | string
     attachment?: XOR<AttachmentNullableUpdateEnvelopeInput, AttachmentCreateInput> | null
+    isError?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
@@ -7361,6 +7385,11 @@ export namespace Prisma {
     size: number
   }
 
+  export type BoolFilter<$PrismaModel = never> = {
+    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
+    not?: NestedBoolFilter<$PrismaModel> | boolean
+  }
+
   export type ConversationScalarRelationFilter = {
     is?: ConversationWhereInput
     isNot?: ConversationWhereInput
@@ -7379,6 +7408,7 @@ export namespace Prisma {
     conversationId?: SortOrder
     role?: SortOrder
     content?: SortOrder
+    isError?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -7388,6 +7418,7 @@ export namespace Prisma {
     conversationId?: SortOrder
     role?: SortOrder
     content?: SortOrder
+    isError?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -7397,13 +7428,17 @@ export namespace Prisma {
     conversationId?: SortOrder
     role?: SortOrder
     content?: SortOrder
+    isError?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
 
-  export type BoolFilter<$PrismaModel = never> = {
+  export type BoolWithAggregatesFilter<$PrismaModel = never> = {
     equals?: boolean | BooleanFieldRefInput<$PrismaModel>
-    not?: NestedBoolFilter<$PrismaModel> | boolean
+    not?: NestedBoolWithAggregatesFilter<$PrismaModel> | boolean
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedBoolFilter<$PrismaModel>
+    _max?: NestedBoolFilter<$PrismaModel>
   }
 
   export type AiModelCountOrderByAggregateInput = {
@@ -7437,14 +7472,6 @@ export namespace Prisma {
     isValid?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
-  }
-
-  export type BoolWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
-    not?: NestedBoolWithAggregatesFilter<$PrismaModel> | boolean
-    _count?: NestedIntFilter<$PrismaModel>
-    _min?: NestedBoolFilter<$PrismaModel>
-    _max?: NestedBoolFilter<$PrismaModel>
   }
 
   export type IntNullableFilter<$PrismaModel = never> = {
@@ -7696,6 +7723,10 @@ export namespace Prisma {
     unset?: boolean
   }
 
+  export type BoolFieldUpdateOperationsInput = {
+    set?: boolean
+  }
+
   export type ConversationUpdateOneRequiredWithoutMessagesNestedInput = {
     create?: XOR<ConversationCreateWithoutMessagesInput, ConversationUncheckedCreateWithoutMessagesInput>
     connectOrCreate?: ConversationCreateOrConnectWithoutMessagesInput
@@ -7708,10 +7739,6 @@ export namespace Prisma {
     create?: XOR<UserCreateWithoutModelsInput, UserUncheckedCreateWithoutModelsInput>
     connectOrCreate?: UserCreateOrConnectWithoutModelsInput
     connect?: UserWhereUniqueInput
-  }
-
-  export type BoolFieldUpdateOperationsInput = {
-    set?: boolean
   }
 
   export type UserUpdateOneRequiredWithoutModelsNestedInput = {
@@ -8062,6 +8089,7 @@ export namespace Prisma {
     role: string
     content: string
     attachment?: XOR<AttachmentNullableCreateEnvelopeInput, AttachmentCreateInput> | null
+    isError?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string | null
   }
@@ -8071,6 +8099,7 @@ export namespace Prisma {
     role: string
     content: string
     attachment?: XOR<AttachmentNullableCreateEnvelopeInput, AttachmentCreateInput> | null
+    isError?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string | null
   }
@@ -8135,6 +8164,7 @@ export namespace Prisma {
     conversationId?: StringFilter<"Message"> | string
     role?: StringFilter<"Message"> | string
     content?: StringFilter<"Message"> | string
+    isError?: BoolFilter<"Message"> | boolean
     createdAt?: DateTimeFilter<"Message"> | Date | string
     updatedAt?: DateTimeNullableFilter<"Message"> | Date | string | null
   }
@@ -8320,6 +8350,7 @@ export namespace Prisma {
     role: string
     content: string
     attachment?: XOR<AttachmentNullableCreateEnvelopeInput, AttachmentCreateInput> | null
+    isError?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string | null
   }
@@ -8328,6 +8359,7 @@ export namespace Prisma {
     role?: StringFieldUpdateOperationsInput | string
     content?: StringFieldUpdateOperationsInput | string
     attachment?: XOR<AttachmentNullableUpdateEnvelopeInput, AttachmentCreateInput> | null
+    isError?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
@@ -8336,6 +8368,7 @@ export namespace Prisma {
     role?: StringFieldUpdateOperationsInput | string
     content?: StringFieldUpdateOperationsInput | string
     attachment?: XOR<AttachmentNullableUpdateEnvelopeInput, AttachmentCreateInput> | null
+    isError?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
@@ -8344,6 +8377,7 @@ export namespace Prisma {
     role?: StringFieldUpdateOperationsInput | string
     content?: StringFieldUpdateOperationsInput | string
     attachment?: XOR<AttachmentNullableUpdateEnvelopeInput, AttachmentCreateInput> | null
+    isError?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }

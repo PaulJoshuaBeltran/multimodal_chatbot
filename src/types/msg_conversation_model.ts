@@ -39,7 +39,8 @@ export type Message = {
   id?: string
   role: ChatRole
   content: string
-  attachments?: Attachment[]
+  attachments?: Attachment[] | null
+  isError?: boolean
   createdAt?: string
   updatedAt?: string | null
 }

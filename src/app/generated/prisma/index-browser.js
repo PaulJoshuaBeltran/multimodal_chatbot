@@ -135,6 +135,7 @@ exports.Prisma.MessageScalarFieldEnum = {
   conversationId: 'conversationId',
   role: 'role',
   content: 'content',
+  isError: 'isError',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };

@@ -25,7 +25,7 @@ import { LoginSignup } from '../components/main/LoginSignup'
 import { AddModelDialog, DeactivateAlertDialog } from '../components/dialogs/OtherDialogs'
 import { NewConversationDialog } from '../components/dialogs/ConversationDialog'
 
-// Page
+// Main function
 export default function Page() {
   const { isLoaded, isSignedIn } = useAuth()
   const { signOut } = useClerk()
@@ -93,6 +93,30 @@ export default function Page() {
       active = false
     }
   }, [isSignedIn])
+
+  // Helper functions: message saved and stream includes messages (successful or error) & attachments
+  function normalizeAttachments(a: unknown): Attachment[] {
+    if (!a) return []
+    if (typeof a === 'string') {
+      try {
+        const parsed = JSON.parse(a)
+        return Array.isArray(parsed) ? parsed : []
+      } catch {
+        return []
+      }
+    }
+    return Array.isArray(a) ? (a as Attachment[]) : []
+  }
+  function toContext(msgs: ChatMessage[]) {
+    return msgs
+      .filter((m) => !m.isError)
+      .map((m) => ({
+        role: m.role,
+        content: m.content,
+        attachments: normalizeAttachments(m.attachments),
+      }))
+  }
+  const STREAM_ERR = /\n\n\[Error: ([\s\S]+)\]$/
 
   // Message loading
   async function loadMessages(convId: string) {
@@ -191,46 +215,66 @@ export default function Page() {
     return full
   }
 
-  // Regenerate
-  async function handleRegenerateFromIndex(index: number) {
+  async function persistAssistant(
+    convId: string,
+    content: string,
+    isError: boolean
+  ): Promise<ChatMessage | null> {
+    try {
+      const r = await fetch('/api/messages', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          conversationId: convId,
+          role: 'assistant',
+          content,
+          attachments: [],
+          isError,
+        }),
+      })
+      return r.ok ? await r.json() : null
+    } catch {
+      return null
+    }
+  }
+
+  async function runGeneration(convId: string, history: ChatMessage[]) {
     const controller = new AbortController()
     abortRef.current = controller
-    if (!selectedConv) return
+    const assistantIndex = history.length
 
-    const context = messages.slice(0, index).map((m) => ({
-      role: m.role,
-      content: m.content,
-      attachments: m.attachments,
-    }))
     setIsThinking(true)
     setStreaming(true)
+    setMessages([
+      ...history,
+      { role: 'assistant', content: '', createdAt: new Date().toISOString() },
+    ])
 
-    let assistantIndex = index
-
-    setMessages((prev) => {
-      const copy = prev.slice(0, index)
-      copy.push({ role: 'assistant', content: '', createdAt: new Date().toISOString() })
-      assistantIndex = copy.length - 1
-      return copy
-    })
+    let reply = ''
+    let streamed = ''
+    let errorText: string | null = null
 
     try {
-      await generateAssistantReply({
-        messages: context,
-        conversationId: selectedConv,
+      reply = await generateAssistantReply({
+        messages: toContext(history),
+        conversationId: convId,
         systemPrompt,
-        temperature: temperature,
-        topP: topP,
+        temperature,
+        topP,
         topK,
+        numCtx,
+        numPredict,
         signal: controller.signal,
-        onToken: (text) => {
+        onToken: (chunk) => {
+          streamed += chunk
           setIsThinking(false)
           setMessages((prev) => {
             const copy = [...prev]
             const existing = copy[assistantIndex]
             copy[assistantIndex] = {
+              ...existing,
               role: 'assistant',
-              content: (existing?.content ?? '') + text,
+              content: (existing?.content ?? '') + chunk,
               createdAt: existing?.createdAt ?? new Date().toISOString(),
             }
             return copy
@@ -238,48 +282,98 @@ export default function Page() {
         },
       })
     } catch (err) {
+      if ((err as Error)?.name !== 'AbortError') {
+        errorText = err instanceof Error ? err.message : 'Unknown error'
+      }
+    }
+
+    // Decide what gets shown and saved
+    const streamErr = STREAM_ERR.exec(reply)
+    let content: string
+    let isError = false
+
+    if (errorText !== null) {
+      isError = true
+      content = streamed
+        ? `${streamed}\n\n⚠️ Ollama: ${errorText}`
+        : `⚠️ Ollama: ${errorText}`
+    } else if (streamErr) {
+      isError = true
+      content = `${reply.slice(0, streamErr.index)}\n\n⚠️ Ollama: ${streamErr[1]}`.trimStart()
+    } else {
+      content = streamed // full reply, or the partial text if the user hit stop
+    }
+
+    setIsThinking(false)
+    setStreaming(false)
+
+    if (!content.trim()) {
+      // aborted before any token arrived: drop the empty placeholder
+      setMessages((prev) => prev.slice(0, assistantIndex))
+      return
+    }
+
+    setMessages((prev) => {
+      const copy = [...prev]
+      if (copy[assistantIndex]) {
+        copy[assistantIndex] = { ...copy[assistantIndex], role: 'assistant', content, isError }
+      }
+      return copy
+    })
+
+    if (isError) {
+      toast.add({ title: 'ERROR', description: content.split('\n').pop() ?? 'Generation failed' })
+    }
+
+    const saved = await persistAssistant(convId, content, isError)
+    if (saved) {
       setMessages((prev) => {
         const copy = [...prev]
-        copy[assistantIndex] = {
-          role: 'assistant',
-          content: `Ollama failed to regenerate:\n\n${String(err)}`,
-          createdAt: copy[assistantIndex]?.createdAt ?? new Date().toISOString(),
-        }
+        const cur = copy[assistantIndex]
+        // guard: only swap in the saved row if the slot is still the same unsaved message
+        if (cur && !cur.id && cur.content === content) copy[assistantIndex] = saved
         return copy
       })
-    } finally {
-      setIsThinking(false)
-      setStreaming(false)
     }
   }
 
-  async function send() {
-    const controller = new AbortController()
-    abortRef.current = controller
-    if (!input.trim() || streaming) return
-
-    if (!selectedConv) {
-      toast.add({
-        title: "ERROR",
-        description: "No conversation selected"
-      })
-      return
-    }
+  // Regenerate
+  async function handleRegenerateFromIndex(index: number) {
+    if (!selectedConv || streaming) return
     if (!selectedModel?.modelId) {
-      toast.add({
-        title: "ERROR",
-        description: "No model selected",
-      })
+      toast.add({ title: 'ERROR', description: 'No model selected' })
       setShowModelManager(true)
       return
     }
 
-    const nowIso = new Date().toISOString()
-    const userMsg: ChatMessage & { createdAt?: string; attachments?: Attachment[] | null } = {
+    // remove the old assistant row(s) from the DB so they don't reappear on reload
+    const stale = messages.slice(index).filter((m) => m.id)
+    await Promise.all(
+      stale.map((m) => fetch(`/api/messages/${m.id}`, { method: 'DELETE' }))
+    )
+
+    await runGeneration(selectedConv, messages.slice(0, index))
+  }
+
+  // Send
+  async function send() {
+    if (!input.trim() || streaming) return
+    if (!selectedConv) {
+      toast.add({ title: 'ERROR', description: 'No conversation selected' })
+      return
+    }
+    if (!selectedModel?.modelId) {
+      toast.add({ title: 'ERROR', description: 'No model selected' })
+      setShowModelManager(true)
+      return
+    }
+
+    const convId = selectedConv
+    const userMsg: ChatMessage = {
       role: 'user',
       content: input,
       attachments: pendingAttachment ? [pendingAttachment] : undefined,
-      createdAt: nowIso,
+      createdAt: new Date().toISOString(),
     }
 
     setMessages((prev) => [...prev, userMsg])
@@ -287,183 +381,66 @@ export default function Page() {
     setPendingAttachment(null)
     setIsThinking(true)
 
-    const saveRes = await fetch('/api/messages', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        conversationId: selectedConv,
-        role: 'user',
-        content: userMsg.content,
-        attachments: userMsg.attachments ?? [],
-      }),
-    })
-    if (saveRes.ok) {
-      const savedMsg = await saveRes.json()
-      setMessages((prev) => prev.map((m) => (m === userMsg ? savedMsg : m)))
-    }
-
-    setStreaming(true)
-
-    const contextMessages: ChatMessage[] = [...messages, userMsg].map((m) => ({
-      role: m.role,
-      content: m.content,
-      attachments: m.attachments,
-    }))
-
-    let reply = ''
-
+    let userForHistory: ChatMessage = userMsg
     try {
-      reply = await generateAssistantReply({
-        messages: contextMessages,
-        conversationId: selectedConv,
-        systemPrompt,
-        temperature: temperature,
-        topP: topP,
-        topK,
-        numCtx,
-        numPredict,
-        signal: controller.signal,
-        onToken: (chunk) => {
-          setIsThinking(false)
-          setMessages((prev) => {
-            const copy = [...prev]
-            const last = copy[copy.length - 1]
-            if (last?.role === 'assistant') {
-              copy[copy.length - 1] = { role: 'assistant', content: last.content + chunk, createdAt: last.createdAt }
-            } else {
-              copy.push({ role: 'assistant', content: chunk, createdAt: new Date().toISOString() })
-            }
-            return copy
-          })
-        },
+      const saveRes = await fetch('/api/messages', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          conversationId: convId,
+          role: 'user',
+          content: userMsg.content,
+          attachments: userMsg.attachments ?? [],
+        }),
       })
-    } catch (err) {
-      const errorText =
-        err instanceof Error ? `⚠️ Ollama ${err.message}` : '⚠️ Ollama Unknown error'
-      setMessages((prev) => {
-        const copy = [...prev]
-        if (copy.length && copy[copy.length - 1].role === 'assistant') {
-          copy[copy.length - 1] = { role: 'assistant', content: errorText }
-        } else {
-          copy.push({ role: 'assistant', content: errorText })
-        }
-        return copy
-      })
-      toast.add({
-        title: "ERROR",
-        description: errorText,
-      })  
-    } finally {
-      setIsThinking(false)
-      setStreaming(false)
-      if (reply) {
-        const r = await fetch('/api/messages', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ conversationId: selectedConv, role: 'assistant', content: reply, attachments: [] }),
-        })
-        if (r.ok) {
-          const saved = await r.json()
-          setMessages((prev) => {
-            const copy = [...prev]
-            copy[copy.length - 1] = saved
-            return copy
-          })
+      if (saveRes.ok) {
+        const savedMsg: ChatMessage = await saveRes.json()
+        // Never let the server response clobber the attachment we know we sent
+        const savedAtt = normalizeAttachments(savedMsg.attachments)
+        userForHistory = {
+          ...savedMsg,
+          attachments: savedAtt.length ? savedAtt : userMsg.attachments,
         }
       }
+    } catch (err) {
+      console.error('Failed to persist user message', err)
     }
+
+    await runGeneration(convId, [...messages, userForHistory])
   }
 
-  // Edit message
+  // Edit
   async function handleEditMessage(id: string, content: string) {
     if (!selectedModel?.modelId) {
-      // toast.error('No model selected: Please add or select an AI model first.')
       toast.add({
-        title: "ERROR",
-        description: "No model selected: Please add or select an AI model first.",
+        title: 'ERROR',
+        description: 'No model selected: Please add or select an AI model first.',
       })
       setCurrentView('chat')
       setShowModelManager(true)
       return
     }
+    if (!selectedConv || streaming) return
+
+    const editedIndex = messages.findIndex((m) => m.id === id)
+    if (editedIndex === -1) return
+
     await fetch(`/api/messages/${id}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ content }),
     })
 
-    const editedIndex = messages.findIndex((m) => m.id === id)
-    if (editedIndex === -1) return
-
-    const updatedMessages = messages
-      .slice(0, editedIndex + 1)
-      .map((m) => (m.id === id ? { ...m, content } : m))
-    setMessages(updatedMessages)
-
     const toDelete = messages.slice(editedIndex + 1).filter((m) => m.id)
     await Promise.all(
       toDelete.map((m) => fetch(`/api/messages/${m.id}`, { method: 'DELETE' }))
     )
 
-    if (!selectedConv) return
-    setIsThinking(true)
-    setStreaming(true)
-    abortRef.current = new AbortController()
-    const context = updatedMessages.map((m) => ({
-      role: m.role,
-      content: m.content,
-      attachments: m.attachments,
-    }))
+    const updated = messages
+      .slice(0, editedIndex + 1)
+      .map((m) => (m.id === id ? { ...m, content } : m))
 
-    let reply = ''
-    try {
-      reply = await generateAssistantReply({
-        messages: context,
-        conversationId: selectedConv,
-        systemPrompt,
-        temperature: temperature,
-        topP: topP,
-        topK,
-        signal: abortRef.current.signal,
-        onToken: (chunk) => {
-          setIsThinking(false)
-          setMessages((prev) => {
-            const copy = [...prev]
-            const last = copy[copy.length - 1]
-            if (last?.role === 'assistant') {
-              copy[copy.length - 1] = { role: 'assistant', content: last.content + chunk }
-            } else {
-              copy.push({ role: 'assistant', content: chunk })
-            }
-            return copy
-          })
-        },
-      })
-    } catch (e: unknown) {
-      const err = e as Error
-      if (err.name !== 'AbortError') {
-        reply = `Error connecting to model: ${err.message}`
-        setMessages((prev) => {
-          const copy = [...prev]
-          if (copy.length > 0 && copy[copy.length - 1].role === 'assistant' && copy[copy.length - 1].content === '') {
-            copy[copy.length - 1] = { role: 'assistant', content: reply }
-          } else {
-            copy.push({ role: 'assistant', content: reply })
-          }
-          return copy
-        })
-      }
-    } finally {
-      setIsThinking(false)
-      setStreaming(false)
-      if (reply) {
-        await fetch('/api/messages', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ conversationId: selectedConv, role: 'assistant', content: reply }),
-        })
-      }
-    }
+    await runGeneration(selectedConv, updated)
   }
 
   function stop() { abortRef.current?.abort(); setIsThinking(false); setStreaming(false) }
