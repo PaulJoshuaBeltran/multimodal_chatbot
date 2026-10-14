@@ -15,7 +15,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '../ui/dropdown-menu'
-import { MoreHorizontal, Pencil, Trash2, Copy, RotateCcw, AlertCircle } from 'lucide-react'
+import { MoreHorizontal, Pencil, Trash2, Copy, RotateCcw, AlertCircle, FileText, Music } from 'lucide-react'
 import { cn } from '@/src/lib/utils'
 import { toast } from "@/src/components/ui/toast"
 import { HastNode } from '@/src/types/hast_nodes'
@@ -103,8 +103,8 @@ function AttachmentView({ att, isUserMessage }: { att: Attachment; isUserMessage
   if (failed) {
     return (
       <div className={cn(
-        "flex items-center gap-2 px-3 py-2 rounded-lg text-xs",
-        isUserMessage ? "bg-white/20 text-white" : "bg-red-500/10 text-red-600"
+        'flex items-center gap-2 px-3 py-2 rounded-lg text-xs w-full min-w-0 hover:opacity-80 transition-opacity',
+        isUserMessage ? 'bg-white/20 text-white' : 'bg-black/5 text-black'
       )}>
         <AlertCircle className="w-4 h-4 shrink-0" />
         <span className="truncate max-w-[200px]">Couldn&apos;t load {att.fileName}</span>
@@ -118,7 +118,7 @@ function AttachmentView({ att, isUserMessage }: { att: Attachment; isUserMessage
         <button
           type="button"
           onClick={() => setPreviewOpen(true)}
-          className="relative w-72 rounded-lg overflow-hidden cursor-pointer"
+          className="relative w-full rounded-lg overflow-hidden cursor-pointer"
           style={{
             aspectRatio: imageRatio || "1 / 1",
           }}
@@ -148,6 +148,62 @@ function AttachmentView({ att, isUserMessage }: { att: Attachment; isUserMessage
       </>
     )
   }
+
+  // Documents / audio: render a download chip instead of nothing
+  return (
+    <a
+      href={att.url}
+      target="_blank"
+      rel="noreferrer"
+      download={att.fileName}
+      className={cn(
+        'flex items-center gap-2 px-3 py-2 rounded-lg text-xs max-w-72 hover:opacity-80 transition-opacity',
+        isUserMessage ? 'bg-white/20 text-white' : 'bg-black/5 text-black'
+      )}
+    >
+      {att.fileType === 'audio'
+        ? <Music className="w-4 h-4 shrink-0" />
+        : <FileText className="w-4 h-4 shrink-0" />}
+      <span className="truncate">{att.fileName}</span>
+    </a>
+  )
+}
+
+function AttachmentGroups({
+  attachments,
+  isUserMessage,
+  wide,
+  className,
+}: {
+  attachments: Attachment[]
+  isUserMessage?: boolean
+  wide: boolean
+  className?: string
+}) {
+  const images = attachments.filter((a) => a.fileType === 'image')
+  const files = attachments.filter((a) => a.fileType !== 'image')
+  const cols = wide ? 'grid-cols-2' : 'grid-cols-1'
+  const imageGrid = cn('grid gap-2 items-center', cols) // images: centered on the Y axis
+  const fileGrid = cn('grid gap-2 items-start', cols)   // doc chips: top-aligned
+
+  return (
+    <div className={cn('flex flex-col gap-2', className)}>
+      {images.length > 0 && (
+        <div className={imageGrid}>
+          {images.map((att, i) => (
+            <AttachmentView key={att.url ?? i} att={att} isUserMessage={isUserMessage} />
+          ))}
+        </div>
+      )}
+      {files.length > 0 && (
+        <div className={fileGrid}>
+          {files.map((att, i) => (
+            <AttachmentView key={att.url ?? i} att={att} isUserMessage={isUserMessage} />
+          ))}
+        </div>
+      )}
+    </div>
+  )
 }
 
 export default function MessageBubble({
@@ -171,7 +227,11 @@ export default function MessageBubble({
 }) {
   const [menuOpen, setMenuOpen] = useState(false)
   const isUser = role === 'user'
-  const hasAttachments = attachments && attachments.length > 0
+  const hasAttachments = !!attachments && attachments.length > 0
+  const hasText = content.trim().length > 0
+  const imageCount = attachments?.filter((a) => a.fileType === 'image').length ?? 0
+  const fileCount = (attachments?.length ?? 0) - imageCount
+  const wide = imageCount >= 2 || fileCount >= 2
 
   async function handleCopy() {
     try {
@@ -193,7 +253,8 @@ export default function MessageBubble({
       <div
         id={id ? `msg-${id}` : undefined}
         className={cn(
-          'flex flex-col mb-2 max-w-[80%]',
+          'flex flex-col mb-2',
+          hasAttachments ? 'max-w-[95%]' : 'max-w-[80%]',
           isUser ? 'items-end ml-auto' : 'items-start mr-auto'
         )}
         style={{ alignSelf: isUser ? 'flex-end' : 'flex-start' }}
@@ -269,16 +330,20 @@ export default function MessageBubble({
           <div
             className={cn(
               'px-4 py-2.5 rounded-2xl text-sm leading-relaxed overflow-x-auto min-h-[38px] flex flex-col',
+              isUser && hasAttachments && (wide ? 'w-[38.5rem]' : 'w-80') + ' max-w-full',
               isUser
                 ? 'bg-primary text-primary-foreground rounded-br-sm border border-white'
                 : 'bg-white text-black border rounded-bl-sm'
             )}
           >
             {isUser ? (
-              <div className="whitespace-pre-wrap">{highlightLiveText(content, highlightQuery)}</div>
+              // Attachment-only messages have empty content: skip the empty text node
+              hasText && (
+                <div className="whitespace-pre-wrap">{highlightLiveText(content, highlightQuery)}</div>
+              )
             ) : (
               <div className="markdown-content w-full">
-                {content.trim() ? (
+                {hasText ? (
                   <ReactMarkdown
                     remarkPlugins={[remarkGfm, remarkMath]}
                     rehypePlugins={[rehypeKatex, [rehypeHighlightQuery, { query: highlightQuery }]]}
@@ -295,14 +360,19 @@ export default function MessageBubble({
                 )}
               </div>
             )}
-            
+
             {/* Attachments inside bubble for user messages */}
             {isUser && hasAttachments && (
-              <div className="flex flex-col gap-2 mt-2">
-                {attachments!.map((att, i) => (
-                  <AttachmentView key={i} att={att} isUserMessage={isUser} />
-                ))}
-              </div>
+              <AttachmentGroups
+                attachments={attachments!}
+                isUserMessage
+                wide={wide}
+                className={hasText ? 'mt-2' : undefined}
+              />
+            )}
+            {/* Attachments inside bubble for assistant messages */}
+            {!isUser && hasAttachments && (
+              <AttachmentGroups attachments={attachments!} wide={wide} className="mt-2 w-full" />
             )}
           </div>
 
@@ -339,9 +409,9 @@ export default function MessageBubble({
 
         {/* Attachments displayed below message for assistant */}
         {!isUser && hasAttachments && (
-          <div className="flex flex-col gap-2 mt-2 w-full">
+          <div className="flex flex-wrap gap-2 mt-2 w-full">
             {attachments!.map((att, i) => (
-              <AttachmentView key={i} att={att} isUserMessage={isUser} />
+              <AttachmentView key={att.url ?? i} att={att} isUserMessage={isUser} />
             ))}
           </div>
         )}

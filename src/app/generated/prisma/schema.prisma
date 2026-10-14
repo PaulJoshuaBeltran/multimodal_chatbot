@@ -42,7 +42,7 @@ model Message {
   conversationId String       @db.ObjectId
   role           String
   content        String
-  attachment     Attachment?
+  attachments    Attachment[]
   isError        Boolean      @default(false)
   createdAt      DateTime     @default(now())
   updatedAt      DateTime?    @updatedAt

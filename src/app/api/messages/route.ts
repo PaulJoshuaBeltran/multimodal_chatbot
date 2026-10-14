@@ -6,8 +6,6 @@ import type { Prisma } from '@/src/app/generated/prisma/client'
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
 
-// WHAT IS ITS DIFFERENCE WITH /api/search???
-
 export async function GET(req: Request) {
   const user = await getLocalUser()
   if (!user) return new Response(JSON.stringify([]), { status: 200, headers: { 'Content-Type': 'application/json' } })
@@ -42,12 +40,27 @@ export async function GET(req: Request) {
   return new Response(JSON.stringify(messages), { status: 200, headers: { 'Content-Type': 'application/json' } })
 }
 
+function toAttachments(list: unknown) {
+  if (!Array.isArray(list)) return []
+  return list
+    .filter((a) => a?.url && a?.fileName)
+    .map((a) => ({
+      url: a.url as string,
+      fileName: a.fileName as string,
+      fileType: a.fileType as string,
+      mimeType: a.mimeType as string,
+      size: a.size as number,
+    }))
+}
+
 export async function POST(req: Request) {
   const user = await getLocalUser()
   if (!user) return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401, headers: { 'Content-Type': 'application/json' } })
 
-  const { conversationId, role, content, attachments } = await req.json()
-  if ((!content && (!attachments || attachments.length === 0)) || !role) {
+  const { conversationId, role, content, attachments, isError } = await req.json()
+  const files = toAttachments(attachments)
+
+  if ((!content && files.length === 0) || !role) {
     return new Response(JSON.stringify({ error: 'Missing fields' }), { status: 400, headers: { 'Content-Type': 'application/json' } })
   }
 
@@ -60,14 +73,13 @@ export async function POST(req: Request) {
     if (!conv || conv.userId !== user.id) return new Response(JSON.stringify({ error: 'Conversation not found' }), { status: 404, headers: { 'Content-Type': 'application/json' } })
   }
 
-  const attachment = attachments && attachments.length > 0 ? attachments[0] : undefined
-
   const message = await prisma.message.create({
     data: {
       conversationId: convId,
       role,
       content: content ?? '',
-      ...(attachment ? { attachment } : {}),
+      isError: Boolean(isError),
+      attachments: files, // always an array, never undefined
     },
   })
   return new Response(JSON.stringify(message), { status: 201, headers: { 'Content-Type': 'application/json' } })

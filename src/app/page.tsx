@@ -33,7 +33,7 @@ export default function Page() {
   const [conversations, setConversations] = useState<Conversation[]>([])
   const [selectedConv, setSelectedConv] = useState<string | null>(null)
   const [messages, setMessages] = useState<ChatMessage[]>([])
-  const [pendingAttachment, setPendingAttachment] = useState<Attachment | null>(null)
+  const [pendingAttachments, setPendingAttachments] = useState<Attachment[]>([])
   const [input, setInput] = useState('')
   const [streaming, setStreaming] = useState(false)
   const [isThinking, setIsThinking] = useState(false)
@@ -357,7 +357,7 @@ export default function Page() {
 
   // Send
   async function send() {
-    if (!input.trim() || streaming) return
+    if ((!input.trim() && pendingAttachments.length === 0) || streaming) return
     if (!selectedConv) {
       toast.add({ title: 'ERROR', description: 'No conversation selected' })
       return
@@ -372,13 +372,13 @@ export default function Page() {
     const userMsg: ChatMessage = {
       role: 'user',
       content: input,
-      attachments: pendingAttachment ? [pendingAttachment] : undefined,
+      attachments: pendingAttachments.length ? pendingAttachments : undefined,
       createdAt: new Date().toISOString(),
     }
 
     setMessages((prev) => [...prev, userMsg])
     setInput('')
-    setPendingAttachment(null)
+    setPendingAttachments([])
     setIsThinking(true)
 
     let userForHistory: ChatMessage = userMsg
@@ -545,8 +545,8 @@ export default function Page() {
               onSend={send}
               onStop={stop}
               onOpenSystemPrompt={() => openSettings('system_prompt')}
-              attachment={pendingAttachment}
-              onAttachmentChange={setPendingAttachment}
+              attachments={pendingAttachments}
+              onAttachmentsChange={setPendingAttachments}
               numCtx={numCtx}
               numPredict={numPredict}
               historyMessages={messages}

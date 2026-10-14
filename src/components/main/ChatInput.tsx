@@ -3,6 +3,7 @@
 
 import Image from 'next/image'
 import { useMemo, useRef, useState } from 'react'
+import type { ChangeEvent, Dispatch, SetStateAction } from 'react'
 import { Button } from '../ui/button'
 import { Textarea } from '../ui/textarea'
 import {
@@ -10,7 +11,6 @@ import {
 } from '../ui/dropdown-menu'
 import {
   Attachment,
-  AttachmentGroup,
   AttachmentMedia,
   AttachmentContent,
   AttachmentTitle,
@@ -25,6 +25,8 @@ import type { Attachment as AttachmentData, Message as ChatMessage } from '@/src
 import { ChatInputProps } from '@/src/types/sidebar_dialog'
 import ImagePreviewDialog from '../dialogs/ImagePreviewDialog'
 import { cn } from '@/src/lib/utils'
+
+const MAX_ATTACHMENTS = 5
 
 function formatFileSize(bytes: number): string {
   if (bytes < 1024) return `${bytes} B`
@@ -46,14 +48,14 @@ export function ChatInput({
   onSend,
   onStop,
   onOpenSystemPrompt,
-  attachment,
-  onAttachmentChange,
+  attachments,
+  onAttachmentsChange,
   numCtx,
   numPredict,
   historyMessages = [],
 }: ChatInputProps & {
-  attachment: AttachmentData | null
-  onAttachmentChange: (a: AttachmentData | null) => void
+  attachments: AttachmentData[]
+  onAttachmentsChange: Dispatch<SetStateAction<AttachmentData[]>>
   numCtx: number
   numPredict: number
   historyMessages?: ChatMessage[]
@@ -61,9 +63,10 @@ export function ChatInput({
   const imageInputRef = useRef<HTMLInputElement | null>(null)
   const docInputRef = useRef<HTMLInputElement | null>(null)
   const audioInputRef = useRef<HTMLInputElement | null>(null)
-  const [uploading, setUploading] = useState(false)
-  const [previewOpen, setPreviewOpen] = useState(false)
-  const [imageRatio, setImageRatio] = useState(1)
+  const [uploadingCount, setUploadingCount] = useState(0)
+  const [previewTarget, setPreviewTarget] = useState<AttachmentData | null>(null)
+  const [ratios, setRatios] = useState<Record<string, number>>({})
+  const uploading = uploadingCount > 0
 
   // Estimated usage: full history + current draft + reserved output tokens,
   // against the configured context window.
@@ -81,53 +84,94 @@ export function ChatInput({
   const isNearLimit = usage.ratio >= 0.8 && usage.ratio < 1
   const isOverLimit = usage.ratio >= 1
 
-  async function handleFileSelected(file: File | undefined) {
-    if (!file) return
-    setUploading(true)
+  async function uploadOne(file: File): Promise<AttachmentData> {
+    const form = new FormData()
+    form.append('file', file)
+
+    let res: Response
     try {
-      const form = new FormData()
-      form.append('file', file)
-
-      let res: Response
-      try {
-        res = await fetch('/api/file/management/', {
-          method: 'POST',
-          body: form,
-        })
-      } catch {
-        throw new Error('Network error — check your connection and try again.')
-      }
-
-      if (!res.ok) {
-        let message = `Upload failed (${res.status})`
-        try {
-          const err = await res.json()
-          if (err?.error) message = err.error
-        } catch {
-          // response wasn't JSON — keep the generic status message
-        }
-        throw new Error(message)
-      }
-
-      let meta: AttachmentData
-      try {
-        meta = await res.json()
-      } catch {
-        throw new Error('Server returned an invalid response.')
-      }
-
-      onAttachmentChange(meta)
-    } catch (err) {
-      toast.add({
-        title: "ERROR",
-        description: err instanceof Error ? err.message : 'Upload failed',
+      res = await fetch('/api/file/management/', {
+        method: 'POST',
+        body: form,
       })
-    } finally {
-      setUploading(false)
+    } catch {
+      throw new Error(`${file.name}: network error, check your connection.`)
+    }
+
+    if (!res.ok) {
+      let message = `Upload failed (${res.status})`
+      try {
+        const err = await res.json()
+        if (err?.error) message = err.error
+      } catch {
+        // response wasn't JSON — keep the generic status message
+      }
+      throw new Error(`${file.name}: ${message}`)
+    }
+
+    try {
+      return (await res.json()) as AttachmentData
+    } catch {
+      throw new Error(`${file.name}: server returned an invalid response.`)
     }
   }
 
-  const isImage = attachment?.fileType === 'image'
+  async function handleFilesSelected(files: File[]) {
+    if (files.length === 0) return
+
+    const room = MAX_ATTACHMENTS - attachments.length - uploadingCount
+    if (room <= 0) {
+      toast.add({
+        title: 'ERROR',
+        description: `Maximum ${MAX_ATTACHMENTS} attachments per message.`,
+      })
+      return
+    }
+
+    const batch = files.slice(0, room)
+    if (files.length > room) {
+      toast.add({
+        title: 'INFO',
+        description: `Only the first ${room} file(s) were added (limit ${MAX_ATTACHMENTS}).`,
+      })
+    }
+
+    setUploadingCount((c) => c + batch.length)
+    try {
+      // allSettled keeps selection order and lets one failure not sink the rest
+      const results = await Promise.allSettled(batch.map(uploadOne))
+      const ok: AttachmentData[] = []
+      for (const r of results) {
+        if (r.status === 'fulfilled') {
+          ok.push(r.value)
+        } else {
+          toast.add({
+            title: 'ERROR',
+            description: (r.reason as Error)?.message ?? 'Upload failed',
+          })
+        }
+      }
+      if (ok.length) onAttachmentsChange((prev) => [...prev, ...ok])
+    } finally {
+      setUploadingCount((c) => c - batch.length)
+    }
+  }
+
+  function removeAttachment(url: string) {
+    onAttachmentsChange((prev) => prev.filter((a) => a.url !== url))
+    // Pending files were never sent, so clean up the orphan on disk
+    const name = url.split('?')[0].split('/').pop()
+    if (name) {
+      fetch(`/api/file/management/${name}`, { method: 'DELETE' }).catch(() => {})
+    }
+  }
+
+  // Copy the FileList BEFORE resetting value: clearing the input empties the live FileList
+  function onPick(e: ChangeEvent<HTMLInputElement>) {
+    const files = Array.from(e.target.files ?? [])
+    e.target.value = ''
+    void handleFilesSelected(files)
+  }
 
   return (
     <div className="p-4 w-full" style={{ backgroundColor: 'var(--gray3)' }}>
@@ -136,56 +180,51 @@ export function ChatInput({
         ref={imageInputRef}
         type="file"
         accept="image/*"
+        multiple
         className="hidden"
-        onChange={(e) => { handleFileSelected(e.target.files?.[0]); e.target.value = '' }}
+        onChange={onPick}
       />
       <input
         ref={docInputRef}
         type="file"
         accept=".pdf,.doc,.docx,.txt,.csv,.zip"
+        multiple
         className="hidden"
-        onChange={(e) => { handleFileSelected(e.target.files?.[0]); e.target.value = '' }}
+        onChange={onPick}
       />
       <input
         ref={audioInputRef}
         type="file"
         accept="audio/*"
+        multiple
         className="hidden"
-        onChange={(e) => { handleFileSelected(e.target.files?.[0]); e.target.value = '' }}
+        onChange={onPick}
       />
 
-      {/* Pending attachment preview */}
-      {(attachment || uploading) && (
-        <div className="mb-3">
-          {uploading ? (
-            <Attachment state="uploading" size="sm" className="max-w-xs">
-              <AttachmentMedia variant="icon">
-                <FileText />
-              </AttachmentMedia>
-              <AttachmentContent>
-                <AttachmentTitle>Uploading…</AttachmentTitle>
-              </AttachmentContent>
-            </Attachment>
-          ) : (
-            <AttachmentGroup>
-              <Attachment size="default" className="max-w-xs">
+      {/* Pending attachments preview */}
+      {(attachments.length > 0 || uploading) && (
+        <div className="mb-3 flex flex-wrap gap-2">
+          {attachments.map((att) => {
+            const isImage = att.fileType === 'image'
+            return (
+              <Attachment key={att.url} size="default" className="max-w-xs">
                 {isImage ? (
                   <>
                     <AttachmentTrigger
-                      onClick={() => setPreviewOpen(true)}
+                      onClick={() => setPreviewTarget(att)}
                       className="hover:bg-white/10 rounded-2xl"
-                      aria-label={`Open preview of ${attachment!.fileName}`}
+                      aria-label={`Open preview of ${att.fileName}`}
                     />
                     <AttachmentMedia variant="image">
                       <Image
-                        src={attachment!.url}
-                        alt={attachment!.fileName}
+                        src={att.url}
+                        alt={att.fileName}
                         fill
                         sizes="192px"
                         onLoad={(e) => {
                           const { naturalWidth, naturalHeight } = e.currentTarget
                           if (naturalWidth && naturalHeight) {
-                            setImageRatio(naturalWidth / naturalHeight)
+                            setRatios((r) => ({ ...r, [att.url]: naturalWidth / naturalHeight }))
                           }
                         }}
                       />
@@ -193,20 +232,20 @@ export function ChatInput({
                   </>
                 ) : (
                   <AttachmentMedia variant="icon">
-                    <FileText />
+                    {att.fileType === 'audio' ? <Music /> : <FileText />}
                   </AttachmentMedia>
                 )}
                 <AttachmentContent>
-                  <AttachmentTitle>{attachment!.fileName}</AttachmentTitle>
+                  <AttachmentTitle>{att.fileName}</AttachmentTitle>
                   <AttachmentDescription>
-                    {formatFileSize(attachment!.size)}
-                    {!isImage && ` · ${(attachment!.mimeType.split('/')[1] || 'file').toUpperCase()}`}
+                    {formatFileSize(att.size)}
+                    {!isImage && ` · ${(att.mimeType.split('/')[1] || 'file').toUpperCase()}`}
                   </AttachmentDescription>
                 </AttachmentContent>
                 <AttachmentActions>
                   <AttachmentAction
-                    aria-label="Remove attachment"
-                    onClick={() => onAttachmentChange(null)}
+                    aria-label={`Remove ${att.fileName}`}
+                    onClick={() => removeAttachment(att.url)}
                     onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray2)')}
                     onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}
                   >
@@ -214,18 +253,31 @@ export function ChatInput({
                   </AttachmentAction>
                 </AttachmentActions>
               </Attachment>
-            </AttachmentGroup>
-          )}
+            )
+          })}
+
+          {Array.from({ length: uploadingCount }).map((_, i) => (
+            <Attachment key={`uploading-${i}`} state="uploading" size="sm" className="max-w-xs">
+              <AttachmentMedia variant="icon">
+                <FileText />
+              </AttachmentMedia>
+              <AttachmentContent>
+                <AttachmentTitle>Uploading…</AttachmentTitle>
+              </AttachmentContent>
+            </Attachment>
+          ))}
         </div>
       )}
 
       {/* Full-size image preview dialog */}
-      {isImage && (
+      {previewTarget && (
         <ImagePreviewDialog
-          attachment={attachment}
-          imageRatio={imageRatio}
-          open={previewOpen}
-          onOpenChange={setPreviewOpen}
+          attachment={previewTarget}
+          imageRatio={ratios[previewTarget.url] ?? 1}
+          open
+          onOpenChange={(open) => {
+            if (!open) setPreviewTarget(null)
+          }}
         />
       )}
 
@@ -269,7 +321,7 @@ export function ChatInput({
               onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}
             >
               <ImageIcon className="w-4 h-4 mr-2" />
-              Upload Image
+              Upload Images
             </DropdownMenuItem>
             <DropdownMenuItem
               className="cursor-pointer"
@@ -278,9 +330,9 @@ export function ChatInput({
               onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}
             >
               <FileText className="w-4 h-4 mr-2" />
-              Upload Document
+              Upload Documents
             </DropdownMenuItem>
-            <DropdownMenuItem
+            {/* <DropdownMenuItem
               className="cursor-pointer"
               onClick={() => audioInputRef.current?.click()}
               onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray2)')}
@@ -288,7 +340,7 @@ export function ChatInput({
             >
               <Music className="w-4 h-4 mr-2" />
               Upload Audio
-            </DropdownMenuItem>
+            </DropdownMenuItem> */}
             <DropdownMenuItem
               className="cursor-pointer"
               onClick={onOpenSystemPrompt}
@@ -323,7 +375,7 @@ export function ChatInput({
           ) : (
             <Button
               size="icon"
-              disabled={(!input.trim() && !attachment) || uploading}
+              disabled={(!input.trim() && attachments.length === 0) || uploading}
               onClick={onSend}
               className="absolute bottom-1.5 right-1.5 h-8 w-8 rounded-xl text-white disabled:text-white/25"
               style={{ backgroundColor: 'transparent' }}

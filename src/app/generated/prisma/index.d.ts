@@ -3544,7 +3544,7 @@ export namespace Prisma {
     conversationId?: boolean
     role?: boolean
     content?: boolean
-    attachment?: boolean | AttachmentDefaultArgs<ExtArgs>
+    attachments?: boolean | AttachmentDefaultArgs<ExtArgs>
     isError?: boolean
     createdAt?: boolean
     updatedAt?: boolean
@@ -3563,7 +3563,7 @@ export namespace Prisma {
     updatedAt?: boolean
   }
 
-  export type MessageOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "conversationId" | "role" | "content" | "attachment" | "isError" | "createdAt" | "updatedAt", ExtArgs["result"]["message"]>
+  export type MessageOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "conversationId" | "role" | "content" | "attachments" | "isError" | "createdAt" | "updatedAt", ExtArgs["result"]["message"]>
   export type MessageInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     conversation?: boolean | ConversationDefaultArgs<ExtArgs>
   }
@@ -3583,7 +3583,7 @@ export namespace Prisma {
       updatedAt: Date | null
     }, ExtArgs["result"]["message"]>
     composites: {
-      attachment: Prisma.$AttachmentPayload | null
+      attachments: Prisma.$AttachmentPayload[]
     }
   }
 
@@ -6648,7 +6648,7 @@ export namespace Prisma {
     conversationId?: StringFilter<"Message"> | string
     role?: StringFilter<"Message"> | string
     content?: StringFilter<"Message"> | string
-    attachment?: XOR<AttachmentNullableCompositeFilter, AttachmentObjectEqualityInput> | null
+    attachments?: AttachmentCompositeListFilter | AttachmentObjectEqualityInput[]
     isError?: BoolFilter<"Message"> | boolean
     createdAt?: DateTimeFilter<"Message"> | Date | string
     updatedAt?: DateTimeNullableFilter<"Message"> | Date | string | null
@@ -6660,7 +6660,7 @@ export namespace Prisma {
     conversationId?: SortOrder
     role?: SortOrder
     content?: SortOrder
-    attachment?: AttachmentOrderByInput
+    attachments?: AttachmentOrderByCompositeAggregateInput
     isError?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -6675,7 +6675,7 @@ export namespace Prisma {
     conversationId?: StringFilter<"Message"> | string
     role?: StringFilter<"Message"> | string
     content?: StringFilter<"Message"> | string
-    attachment?: XOR<AttachmentNullableCompositeFilter, AttachmentObjectEqualityInput> | null
+    attachments?: AttachmentCompositeListFilter | AttachmentObjectEqualityInput[]
     isError?: BoolFilter<"Message"> | boolean
     createdAt?: DateTimeFilter<"Message"> | Date | string
     updatedAt?: DateTimeNullableFilter<"Message"> | Date | string | null
@@ -6961,7 +6961,7 @@ export namespace Prisma {
     id?: string
     role: string
     content: string
-    attachment?: XOR<AttachmentNullableCreateEnvelopeInput, AttachmentCreateInput> | null
+    attachments?: XOR<AttachmentListCreateEnvelopeInput, AttachmentCreateInput> | AttachmentCreateInput[]
     isError?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string | null
@@ -6973,7 +6973,7 @@ export namespace Prisma {
     conversationId: string
     role: string
     content: string
-    attachment?: XOR<AttachmentNullableCreateEnvelopeInput, AttachmentCreateInput> | null
+    attachments?: XOR<AttachmentListCreateEnvelopeInput, AttachmentCreateInput> | AttachmentCreateInput[]
     isError?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string | null
@@ -6982,7 +6982,7 @@ export namespace Prisma {
   export type MessageUpdateInput = {
     role?: StringFieldUpdateOperationsInput | string
     content?: StringFieldUpdateOperationsInput | string
-    attachment?: XOR<AttachmentNullableUpdateEnvelopeInput, AttachmentCreateInput> | null
+    attachments?: XOR<AttachmentListUpdateEnvelopeInput, AttachmentCreateInput> | AttachmentCreateInput[]
     isError?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -6993,7 +6993,7 @@ export namespace Prisma {
     conversationId?: StringFieldUpdateOperationsInput | string
     role?: StringFieldUpdateOperationsInput | string
     content?: StringFieldUpdateOperationsInput | string
-    attachment?: XOR<AttachmentNullableUpdateEnvelopeInput, AttachmentCreateInput> | null
+    attachments?: XOR<AttachmentListUpdateEnvelopeInput, AttachmentCreateInput> | AttachmentCreateInput[]
     isError?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -7004,7 +7004,7 @@ export namespace Prisma {
     conversationId: string
     role: string
     content: string
-    attachment?: XOR<AttachmentNullableCreateEnvelopeInput, AttachmentCreateInput> | null
+    attachments?: XOR<AttachmentListCreateEnvelopeInput, AttachmentCreateInput> | AttachmentCreateInput[]
     isError?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string | null
@@ -7013,7 +7013,7 @@ export namespace Prisma {
   export type MessageUpdateManyMutationInput = {
     role?: StringFieldUpdateOperationsInput | string
     content?: StringFieldUpdateOperationsInput | string
-    attachment?: XOR<AttachmentNullableUpdateEnvelopeInput, AttachmentCreateInput> | null
+    attachments?: XOR<AttachmentListUpdateEnvelopeInput, AttachmentCreateInput> | AttachmentCreateInput[]
     isError?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -7023,7 +7023,7 @@ export namespace Prisma {
     conversationId?: StringFieldUpdateOperationsInput | string
     role?: StringFieldUpdateOperationsInput | string
     content?: StringFieldUpdateOperationsInput | string
-    attachment?: XOR<AttachmentNullableUpdateEnvelopeInput, AttachmentCreateInput> | null
+    attachments?: XOR<AttachmentListUpdateEnvelopeInput, AttachmentCreateInput> | AttachmentCreateInput[]
     isError?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -7370,10 +7370,12 @@ export namespace Prisma {
     isSet?: boolean
   }
 
-  export type AttachmentNullableCompositeFilter = {
-    equals?: AttachmentObjectEqualityInput | null
-    is?: AttachmentWhereInput | null
-    isNot?: AttachmentWhereInput | null
+  export type AttachmentCompositeListFilter = {
+    equals?: AttachmentObjectEqualityInput[]
+    every?: AttachmentWhereInput
+    some?: AttachmentWhereInput
+    none?: AttachmentWhereInput
+    isEmpty?: boolean
     isSet?: boolean
   }
 
@@ -7395,12 +7397,8 @@ export namespace Prisma {
     isNot?: ConversationWhereInput
   }
 
-  export type AttachmentOrderByInput = {
-    url?: SortOrder
-    fileName?: SortOrder
-    fileType?: SortOrder
-    mimeType?: SortOrder
-    size?: SortOrder
+  export type AttachmentOrderByCompositeAggregateInput = {
+    _count?: SortOrder
   }
 
   export type MessageCountOrderByAggregateInput = {
@@ -7699,8 +7697,8 @@ export namespace Prisma {
     deleteMany?: MessageScalarWhereInput | MessageScalarWhereInput[]
   }
 
-  export type AttachmentNullableCreateEnvelopeInput = {
-    set?: AttachmentCreateInput | null
+  export type AttachmentListCreateEnvelopeInput = {
+    set?: AttachmentCreateInput | AttachmentCreateInput[]
   }
 
   export type AttachmentCreateInput = {
@@ -7717,10 +7715,11 @@ export namespace Prisma {
     connect?: ConversationWhereUniqueInput
   }
 
-  export type AttachmentNullableUpdateEnvelopeInput = {
-    set?: AttachmentCreateInput | null
-    upsert?: AttachmentUpsertInput
-    unset?: boolean
+  export type AttachmentListUpdateEnvelopeInput = {
+    set?: AttachmentCreateInput | AttachmentCreateInput[]
+    push?: AttachmentCreateInput | AttachmentCreateInput[]
+    updateMany?: AttachmentUpdateManyInput
+    deleteMany?: AttachmentDeleteManyInput
   }
 
   export type BoolFieldUpdateOperationsInput = {
@@ -8088,7 +8087,7 @@ export namespace Prisma {
     id?: string
     role: string
     content: string
-    attachment?: XOR<AttachmentNullableCreateEnvelopeInput, AttachmentCreateInput> | null
+    attachments?: XOR<AttachmentListCreateEnvelopeInput, AttachmentCreateInput> | AttachmentCreateInput[]
     isError?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string | null
@@ -8098,7 +8097,7 @@ export namespace Prisma {
     id?: string
     role: string
     content: string
-    attachment?: XOR<AttachmentNullableCreateEnvelopeInput, AttachmentCreateInput> | null
+    attachments?: XOR<AttachmentListCreateEnvelopeInput, AttachmentCreateInput> | AttachmentCreateInput[]
     isError?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string | null
@@ -8190,9 +8189,13 @@ export namespace Prisma {
     create: XOR<ConversationCreateWithoutMessagesInput, ConversationUncheckedCreateWithoutMessagesInput>
   }
 
-  export type AttachmentUpsertInput = {
-    set: AttachmentCreateInput | null
-    update: AttachmentUpdateInput
+  export type AttachmentUpdateManyInput = {
+    where: AttachmentWhereInput
+    data: AttachmentUpdateInput
+  }
+
+  export type AttachmentDeleteManyInput = {
+    where: AttachmentWhereInput
   }
 
   export type ConversationUpsertWithoutMessagesInput = {
@@ -8349,7 +8352,7 @@ export namespace Prisma {
     id?: string
     role: string
     content: string
-    attachment?: XOR<AttachmentNullableCreateEnvelopeInput, AttachmentCreateInput> | null
+    attachments?: XOR<AttachmentListCreateEnvelopeInput, AttachmentCreateInput> | AttachmentCreateInput[]
     isError?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string | null
@@ -8358,7 +8361,7 @@ export namespace Prisma {
   export type MessageUpdateWithoutConversationInput = {
     role?: StringFieldUpdateOperationsInput | string
     content?: StringFieldUpdateOperationsInput | string
-    attachment?: XOR<AttachmentNullableUpdateEnvelopeInput, AttachmentCreateInput> | null
+    attachments?: XOR<AttachmentListUpdateEnvelopeInput, AttachmentCreateInput> | AttachmentCreateInput[]
     isError?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -8367,7 +8370,7 @@ export namespace Prisma {
   export type MessageUncheckedUpdateWithoutConversationInput = {
     role?: StringFieldUpdateOperationsInput | string
     content?: StringFieldUpdateOperationsInput | string
-    attachment?: XOR<AttachmentNullableUpdateEnvelopeInput, AttachmentCreateInput> | null
+    attachments?: XOR<AttachmentListUpdateEnvelopeInput, AttachmentCreateInput> | AttachmentCreateInput[]
     isError?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -8376,7 +8379,7 @@ export namespace Prisma {
   export type MessageUncheckedUpdateManyWithoutConversationInput = {
     role?: StringFieldUpdateOperationsInput | string
     content?: StringFieldUpdateOperationsInput | string
-    attachment?: XOR<AttachmentNullableUpdateEnvelopeInput, AttachmentCreateInput> | null
+    attachments?: XOR<AttachmentListUpdateEnvelopeInput, AttachmentCreateInput> | AttachmentCreateInput[]
     isError?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
