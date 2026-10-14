@@ -1,47 +1,54 @@
 // src/app/api/knowledge/[id]/route.ts
-import { deleteDocumentChunks, upsertDocumentChunks } from "@/src/lib/pineconeMongo/pinecone";
-import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/src/lib/pineconeMongo/prisma";
+import { deleteDocumentChunks, upsertDocumentChunks } from '@/src/lib/pineconeMongo/pinecone'
+import { NextRequest, NextResponse } from 'next/server'
+import { prisma } from '@/src/lib/pineconeMongo/prisma'
+import { getLocalUser } from '@/src/lib/getLocalUser'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
 
-// Pinecone and MongoDB document chunk update
-export async function PATCH(
-  req: NextRequest,
-  { params }: { params: { id: string } }
-) {
-  const { title, text, category } = await req.json();
-  const { id } = await params;
+type Ctx = { params: Promise<{ id: string }> }
 
-  await prisma.knowledgeDocument.update({
-    where: { id },
-    data: { status: "processing" },
-  });
+async function requireOwnedDoc(id: string) {
+  const user = await getLocalUser()
+  if (!user) return { error: NextResponse.json({ error: 'Unauthorized' }, { status: 401 }) }
+  const doc = await prisma.knowledgeDocument.findFirst({
+    where: { id, userId: user.id },
+    select: { id: true },
+  })
+  if (!doc) return { error: NextResponse.json({ error: 'Not found' }, { status: 404 }) }
+  return { user }
+}
 
-  await deleteDocumentChunks(id);
+export async function PATCH(req: NextRequest, { params }: Ctx) {
+  const { id } = await params
+  const check = await requireOwnedDoc(id)
+  if (check.error) return check.error
+
+  const { title, text, category } = await req.json()
+
+  await prisma.knowledgeDocument.update({ where: { id }, data: { status: 'processing' } })
+  await deleteDocumentChunks(id)
   const chunkCount = await upsertDocumentChunks({
     documentId: id,
+    userId: check.user!.id,
     text,
     title,
     category,
-  });
-
+  })
   const doc = await prisma.knowledgeDocument.update({
     where: { id },
-    data: { title, category, status: "ready", chunkCount },
-  });
-
-  return NextResponse.json(doc);
+    data: { title, category, status: 'ready', chunkCount },
+  })
+  return NextResponse.json(doc)
 }
 
-// Pinecone and MongoDB document chunk delete
-export async function DELETE(
-  _req: NextRequest,
-  { params }: { params: { id: string } }
-) {
-  const { id } = await params;
-  await deleteDocumentChunks(id);
-  await prisma.knowledgeDocument.delete({ where: { id } });
-  return NextResponse.json({ deleted: true });
+export async function DELETE(_req: NextRequest, { params }: Ctx) {
+  const { id } = await params
+  const check = await requireOwnedDoc(id)
+  if (check.error) return check.error
+
+  await deleteDocumentChunks(id)
+  await prisma.knowledgeDocument.delete({ where: { id } })
+  return NextResponse.json({ deleted: true })
 }

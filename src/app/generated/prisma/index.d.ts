@@ -1182,11 +1182,13 @@ export namespace Prisma {
   export type UserCountOutputType = {
     conversations: number
     models: number
+    knowledgeDocs: number
   }
 
   export type UserCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     conversations?: boolean | UserCountOutputTypeCountConversationsArgs
     models?: boolean | UserCountOutputTypeCountModelsArgs
+    knowledgeDocs?: boolean | UserCountOutputTypeCountKnowledgeDocsArgs
   }
 
   // Custom InputTypes
@@ -1212,6 +1214,13 @@ export namespace Prisma {
    */
   export type UserCountOutputTypeCountModelsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: AiModelWhereInput
+  }
+
+  /**
+   * UserCountOutputType without action
+   */
+  export type UserCountOutputTypeCountKnowledgeDocsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: KnowledgeDocumentWhereInput
   }
 
 
@@ -1491,6 +1500,7 @@ export namespace Prisma {
     createdAt?: boolean
     conversations?: boolean | User$conversationsArgs<ExtArgs>
     models?: boolean | User$modelsArgs<ExtArgs>
+    knowledgeDocs?: boolean | User$knowledgeDocsArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["user"]>
 
@@ -1508,6 +1518,7 @@ export namespace Prisma {
   export type UserInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     conversations?: boolean | User$conversationsArgs<ExtArgs>
     models?: boolean | User$modelsArgs<ExtArgs>
+    knowledgeDocs?: boolean | User$knowledgeDocsArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
   }
 
@@ -1516,6 +1527,7 @@ export namespace Prisma {
     objects: {
       conversations: Prisma.$ConversationPayload<ExtArgs>[]
       models: Prisma.$AiModelPayload<ExtArgs>[]
+      knowledgeDocs: Prisma.$KnowledgeDocumentPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -1888,6 +1900,7 @@ export namespace Prisma {
     readonly [Symbol.toStringTag]: "PrismaPromise"
     conversations<T extends User$conversationsArgs<ExtArgs> = {}>(args?: Subset<T, User$conversationsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ConversationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     models<T extends User$modelsArgs<ExtArgs> = {}>(args?: Subset<T, User$modelsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AiModelPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    knowledgeDocs<T extends User$knowledgeDocsArgs<ExtArgs> = {}>(args?: Subset<T, User$knowledgeDocsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$KnowledgeDocumentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -2337,6 +2350,30 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: AiModelScalarFieldEnum | AiModelScalarFieldEnum[]
+  }
+
+  /**
+   * User.knowledgeDocs
+   */
+  export type User$knowledgeDocsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the KnowledgeDocument
+     */
+    select?: KnowledgeDocumentSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the KnowledgeDocument
+     */
+    omit?: KnowledgeDocumentOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: KnowledgeDocumentInclude<ExtArgs> | null
+    where?: KnowledgeDocumentWhereInput
+    orderBy?: KnowledgeDocumentOrderByWithRelationInput | KnowledgeDocumentOrderByWithRelationInput[]
+    cursor?: KnowledgeDocumentWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: KnowledgeDocumentScalarFieldEnum | KnowledgeDocumentScalarFieldEnum[]
   }
 
   /**
@@ -5405,6 +5442,7 @@ export namespace Prisma {
 
   export type KnowledgeDocumentMinAggregateOutputType = {
     id: string | null
+    userId: string | null
     title: string | null
     category: string | null
     status: string | null
@@ -5415,6 +5453,7 @@ export namespace Prisma {
 
   export type KnowledgeDocumentMaxAggregateOutputType = {
     id: string | null
+    userId: string | null
     title: string | null
     category: string | null
     status: string | null
@@ -5425,6 +5464,7 @@ export namespace Prisma {
 
   export type KnowledgeDocumentCountAggregateOutputType = {
     id: number
+    userId: number
     title: number
     category: number
     status: number
@@ -5445,6 +5485,7 @@ export namespace Prisma {
 
   export type KnowledgeDocumentMinAggregateInputType = {
     id?: true
+    userId?: true
     title?: true
     category?: true
     status?: true
@@ -5455,6 +5496,7 @@ export namespace Prisma {
 
   export type KnowledgeDocumentMaxAggregateInputType = {
     id?: true
+    userId?: true
     title?: true
     category?: true
     status?: true
@@ -5465,6 +5507,7 @@ export namespace Prisma {
 
   export type KnowledgeDocumentCountAggregateInputType = {
     id?: true
+    userId?: true
     title?: true
     category?: true
     status?: true
@@ -5562,6 +5605,7 @@ export namespace Prisma {
 
   export type KnowledgeDocumentGroupByOutputType = {
     id: string
+    userId: string
     title: string
     category: string
     status: string
@@ -5591,18 +5635,21 @@ export namespace Prisma {
 
   export type KnowledgeDocumentSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
+    userId?: boolean
     title?: boolean
     category?: boolean
     status?: boolean
     chunkCount?: boolean
     createdAt?: boolean
     updatedAt?: boolean
+    user?: boolean | UserDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["knowledgeDocument"]>
 
 
 
   export type KnowledgeDocumentSelectScalar = {
     id?: boolean
+    userId?: boolean
     title?: boolean
     category?: boolean
     status?: boolean
@@ -5611,13 +5658,19 @@ export namespace Prisma {
     updatedAt?: boolean
   }
 
-  export type KnowledgeDocumentOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "title" | "category" | "status" | "chunkCount" | "createdAt" | "updatedAt", ExtArgs["result"]["knowledgeDocument"]>
+  export type KnowledgeDocumentOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "title" | "category" | "status" | "chunkCount" | "createdAt" | "updatedAt", ExtArgs["result"]["knowledgeDocument"]>
+  export type KnowledgeDocumentInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }
 
   export type $KnowledgeDocumentPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "KnowledgeDocument"
-    objects: {}
+    objects: {
+      user: Prisma.$UserPayload<ExtArgs>
+    }
     scalars: $Extensions.GetPayloadResult<{
       id: string
+      userId: string
       title: string
       category: string
       status: string
@@ -5987,6 +6040,7 @@ export namespace Prisma {
    */
   export interface Prisma__KnowledgeDocumentClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
+    user<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -6017,6 +6071,7 @@ export namespace Prisma {
    */
   interface KnowledgeDocumentFieldRefs {
     readonly id: FieldRef<"KnowledgeDocument", 'String'>
+    readonly userId: FieldRef<"KnowledgeDocument", 'String'>
     readonly title: FieldRef<"KnowledgeDocument", 'String'>
     readonly category: FieldRef<"KnowledgeDocument", 'String'>
     readonly status: FieldRef<"KnowledgeDocument", 'String'>
@@ -6040,6 +6095,10 @@ export namespace Prisma {
      */
     omit?: KnowledgeDocumentOmit<ExtArgs> | null
     /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: KnowledgeDocumentInclude<ExtArgs> | null
+    /**
      * Filter, which KnowledgeDocument to fetch.
      */
     where: KnowledgeDocumentWhereUniqueInput
@@ -6058,6 +6117,10 @@ export namespace Prisma {
      */
     omit?: KnowledgeDocumentOmit<ExtArgs> | null
     /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: KnowledgeDocumentInclude<ExtArgs> | null
+    /**
      * Filter, which KnowledgeDocument to fetch.
      */
     where: KnowledgeDocumentWhereUniqueInput
@@ -6075,6 +6138,10 @@ export namespace Prisma {
      * Omit specific fields from the KnowledgeDocument
      */
     omit?: KnowledgeDocumentOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: KnowledgeDocumentInclude<ExtArgs> | null
     /**
      * Filter, which KnowledgeDocument to fetch.
      */
@@ -6124,6 +6191,10 @@ export namespace Prisma {
      */
     omit?: KnowledgeDocumentOmit<ExtArgs> | null
     /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: KnowledgeDocumentInclude<ExtArgs> | null
+    /**
      * Filter, which KnowledgeDocument to fetch.
      */
     where?: KnowledgeDocumentWhereInput
@@ -6172,6 +6243,10 @@ export namespace Prisma {
      */
     omit?: KnowledgeDocumentOmit<ExtArgs> | null
     /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: KnowledgeDocumentInclude<ExtArgs> | null
+    /**
      * Filter, which KnowledgeDocuments to fetch.
      */
     where?: KnowledgeDocumentWhereInput
@@ -6215,6 +6290,10 @@ export namespace Prisma {
      */
     omit?: KnowledgeDocumentOmit<ExtArgs> | null
     /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: KnowledgeDocumentInclude<ExtArgs> | null
+    /**
      * The data needed to create a KnowledgeDocument.
      */
     data: XOR<KnowledgeDocumentCreateInput, KnowledgeDocumentUncheckedCreateInput>
@@ -6242,6 +6321,10 @@ export namespace Prisma {
      * Omit specific fields from the KnowledgeDocument
      */
     omit?: KnowledgeDocumentOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: KnowledgeDocumentInclude<ExtArgs> | null
     /**
      * The data needed to update a KnowledgeDocument.
      */
@@ -6283,6 +6366,10 @@ export namespace Prisma {
      */
     omit?: KnowledgeDocumentOmit<ExtArgs> | null
     /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: KnowledgeDocumentInclude<ExtArgs> | null
+    /**
      * The filter to search for the KnowledgeDocument to update in case it exists.
      */
     where: KnowledgeDocumentWhereUniqueInput
@@ -6308,6 +6395,10 @@ export namespace Prisma {
      * Omit specific fields from the KnowledgeDocument
      */
     omit?: KnowledgeDocumentOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: KnowledgeDocumentInclude<ExtArgs> | null
     /**
      * Filter which KnowledgeDocument to delete.
      */
@@ -6368,6 +6459,10 @@ export namespace Prisma {
      * Omit specific fields from the KnowledgeDocument
      */
     omit?: KnowledgeDocumentOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: KnowledgeDocumentInclude<ExtArgs> | null
   }
 
 
@@ -6426,6 +6521,7 @@ export namespace Prisma {
 
   export const KnowledgeDocumentScalarFieldEnum: {
     id: 'id',
+    userId: 'userId',
     title: 'title',
     category: 'category',
     status: 'status',
@@ -6535,6 +6631,7 @@ export namespace Prisma {
     createdAt?: DateTimeFilter<"User"> | Date | string
     conversations?: ConversationListRelationFilter
     models?: AiModelListRelationFilter
+    knowledgeDocs?: KnowledgeDocumentListRelationFilter
   }
 
   export type UserOrderByWithRelationInput = {
@@ -6545,6 +6642,7 @@ export namespace Prisma {
     createdAt?: SortOrder
     conversations?: ConversationOrderByRelationAggregateInput
     models?: AiModelOrderByRelationAggregateInput
+    knowledgeDocs?: KnowledgeDocumentOrderByRelationAggregateInput
   }
 
   export type UserWhereUniqueInput = Prisma.AtLeast<{
@@ -6558,6 +6656,7 @@ export namespace Prisma {
     createdAt?: DateTimeFilter<"User"> | Date | string
     conversations?: ConversationListRelationFilter
     models?: AiModelListRelationFilter
+    knowledgeDocs?: KnowledgeDocumentListRelationFilter
   }, "id" | "clerkId" | "email">
 
   export type UserOrderByWithAggregationInput = {
@@ -6783,22 +6882,26 @@ export namespace Prisma {
     OR?: KnowledgeDocumentWhereInput[]
     NOT?: KnowledgeDocumentWhereInput | KnowledgeDocumentWhereInput[]
     id?: StringFilter<"KnowledgeDocument"> | string
+    userId?: StringFilter<"KnowledgeDocument"> | string
     title?: StringFilter<"KnowledgeDocument"> | string
     category?: StringFilter<"KnowledgeDocument"> | string
     status?: StringFilter<"KnowledgeDocument"> | string
     chunkCount?: IntNullableFilter<"KnowledgeDocument"> | number | null
     createdAt?: DateTimeFilter<"KnowledgeDocument"> | Date | string
     updatedAt?: DateTimeFilter<"KnowledgeDocument"> | Date | string
+    user?: XOR<UserScalarRelationFilter, UserWhereInput>
   }
 
   export type KnowledgeDocumentOrderByWithRelationInput = {
     id?: SortOrder
+    userId?: SortOrder
     title?: SortOrder
     category?: SortOrder
     status?: SortOrder
     chunkCount?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+    user?: UserOrderByWithRelationInput
   }
 
   export type KnowledgeDocumentWhereUniqueInput = Prisma.AtLeast<{
@@ -6806,16 +6909,19 @@ export namespace Prisma {
     AND?: KnowledgeDocumentWhereInput | KnowledgeDocumentWhereInput[]
     OR?: KnowledgeDocumentWhereInput[]
     NOT?: KnowledgeDocumentWhereInput | KnowledgeDocumentWhereInput[]
+    userId?: StringFilter<"KnowledgeDocument"> | string
     title?: StringFilter<"KnowledgeDocument"> | string
     category?: StringFilter<"KnowledgeDocument"> | string
     status?: StringFilter<"KnowledgeDocument"> | string
     chunkCount?: IntNullableFilter<"KnowledgeDocument"> | number | null
     createdAt?: DateTimeFilter<"KnowledgeDocument"> | Date | string
     updatedAt?: DateTimeFilter<"KnowledgeDocument"> | Date | string
+    user?: XOR<UserScalarRelationFilter, UserWhereInput>
   }, "id">
 
   export type KnowledgeDocumentOrderByWithAggregationInput = {
     id?: SortOrder
+    userId?: SortOrder
     title?: SortOrder
     category?: SortOrder
     status?: SortOrder
@@ -6834,6 +6940,7 @@ export namespace Prisma {
     OR?: KnowledgeDocumentScalarWhereWithAggregatesInput[]
     NOT?: KnowledgeDocumentScalarWhereWithAggregatesInput | KnowledgeDocumentScalarWhereWithAggregatesInput[]
     id?: StringWithAggregatesFilter<"KnowledgeDocument"> | string
+    userId?: StringWithAggregatesFilter<"KnowledgeDocument"> | string
     title?: StringWithAggregatesFilter<"KnowledgeDocument"> | string
     category?: StringWithAggregatesFilter<"KnowledgeDocument"> | string
     status?: StringWithAggregatesFilter<"KnowledgeDocument"> | string
@@ -6850,6 +6957,7 @@ export namespace Prisma {
     createdAt?: Date | string
     conversations?: ConversationCreateNestedManyWithoutUserInput
     models?: AiModelCreateNestedManyWithoutUserInput
+    knowledgeDocs?: KnowledgeDocumentCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateInput = {
@@ -6860,6 +6968,7 @@ export namespace Prisma {
     createdAt?: Date | string
     conversations?: ConversationUncheckedCreateNestedManyWithoutUserInput
     models?: AiModelUncheckedCreateNestedManyWithoutUserInput
+    knowledgeDocs?: KnowledgeDocumentUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserUpdateInput = {
@@ -6869,6 +6978,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     conversations?: ConversationUpdateManyWithoutUserNestedInput
     models?: AiModelUpdateManyWithoutUserNestedInput
+    knowledgeDocs?: KnowledgeDocumentUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateInput = {
@@ -6878,6 +6988,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     conversations?: ConversationUncheckedUpdateManyWithoutUserNestedInput
     models?: AiModelUncheckedUpdateManyWithoutUserNestedInput
+    knowledgeDocs?: KnowledgeDocumentUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserCreateManyInput = {
@@ -7109,10 +7220,12 @@ export namespace Prisma {
     chunkCount?: number | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    user: UserCreateNestedOneWithoutKnowledgeDocsInput
   }
 
   export type KnowledgeDocumentUncheckedCreateInput = {
     id?: string
+    userId: string
     title: string
     category: string
     status: string
@@ -7128,9 +7241,11 @@ export namespace Prisma {
     chunkCount?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    user?: UserUpdateOneRequiredWithoutKnowledgeDocsNestedInput
   }
 
   export type KnowledgeDocumentUncheckedUpdateInput = {
+    userId?: StringFieldUpdateOperationsInput | string
     title?: StringFieldUpdateOperationsInput | string
     category?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
@@ -7141,6 +7256,7 @@ export namespace Prisma {
 
   export type KnowledgeDocumentCreateManyInput = {
     id?: string
+    userId: string
     title: string
     category: string
     status: string
@@ -7159,6 +7275,7 @@ export namespace Prisma {
   }
 
   export type KnowledgeDocumentUncheckedUpdateManyInput = {
+    userId?: StringFieldUpdateOperationsInput | string
     title?: StringFieldUpdateOperationsInput | string
     category?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
@@ -7221,11 +7338,21 @@ export namespace Prisma {
     none?: AiModelWhereInput
   }
 
+  export type KnowledgeDocumentListRelationFilter = {
+    every?: KnowledgeDocumentWhereInput
+    some?: KnowledgeDocumentWhereInput
+    none?: KnowledgeDocumentWhereInput
+  }
+
   export type ConversationOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
   export type AiModelOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type KnowledgeDocumentOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -7486,6 +7613,7 @@ export namespace Prisma {
 
   export type KnowledgeDocumentCountOrderByAggregateInput = {
     id?: SortOrder
+    userId?: SortOrder
     title?: SortOrder
     category?: SortOrder
     status?: SortOrder
@@ -7500,6 +7628,7 @@ export namespace Prisma {
 
   export type KnowledgeDocumentMaxOrderByAggregateInput = {
     id?: SortOrder
+    userId?: SortOrder
     title?: SortOrder
     category?: SortOrder
     status?: SortOrder
@@ -7510,6 +7639,7 @@ export namespace Prisma {
 
   export type KnowledgeDocumentMinOrderByAggregateInput = {
     id?: SortOrder
+    userId?: SortOrder
     title?: SortOrder
     category?: SortOrder
     status?: SortOrder
@@ -7553,6 +7683,13 @@ export namespace Prisma {
     connect?: AiModelWhereUniqueInput | AiModelWhereUniqueInput[]
   }
 
+  export type KnowledgeDocumentCreateNestedManyWithoutUserInput = {
+    create?: XOR<KnowledgeDocumentCreateWithoutUserInput, KnowledgeDocumentUncheckedCreateWithoutUserInput> | KnowledgeDocumentCreateWithoutUserInput[] | KnowledgeDocumentUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: KnowledgeDocumentCreateOrConnectWithoutUserInput | KnowledgeDocumentCreateOrConnectWithoutUserInput[]
+    createMany?: KnowledgeDocumentCreateManyUserInputEnvelope
+    connect?: KnowledgeDocumentWhereUniqueInput | KnowledgeDocumentWhereUniqueInput[]
+  }
+
   export type ConversationUncheckedCreateNestedManyWithoutUserInput = {
     create?: XOR<ConversationCreateWithoutUserInput, ConversationUncheckedCreateWithoutUserInput> | ConversationCreateWithoutUserInput[] | ConversationUncheckedCreateWithoutUserInput[]
     connectOrCreate?: ConversationCreateOrConnectWithoutUserInput | ConversationCreateOrConnectWithoutUserInput[]
@@ -7565,6 +7702,13 @@ export namespace Prisma {
     connectOrCreate?: AiModelCreateOrConnectWithoutUserInput | AiModelCreateOrConnectWithoutUserInput[]
     createMany?: AiModelCreateManyUserInputEnvelope
     connect?: AiModelWhereUniqueInput | AiModelWhereUniqueInput[]
+  }
+
+  export type KnowledgeDocumentUncheckedCreateNestedManyWithoutUserInput = {
+    create?: XOR<KnowledgeDocumentCreateWithoutUserInput, KnowledgeDocumentUncheckedCreateWithoutUserInput> | KnowledgeDocumentCreateWithoutUserInput[] | KnowledgeDocumentUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: KnowledgeDocumentCreateOrConnectWithoutUserInput | KnowledgeDocumentCreateOrConnectWithoutUserInput[]
+    createMany?: KnowledgeDocumentCreateManyUserInputEnvelope
+    connect?: KnowledgeDocumentWhereUniqueInput | KnowledgeDocumentWhereUniqueInput[]
   }
 
   export type StringFieldUpdateOperationsInput = {
@@ -7608,6 +7752,20 @@ export namespace Prisma {
     deleteMany?: AiModelScalarWhereInput | AiModelScalarWhereInput[]
   }
 
+  export type KnowledgeDocumentUpdateManyWithoutUserNestedInput = {
+    create?: XOR<KnowledgeDocumentCreateWithoutUserInput, KnowledgeDocumentUncheckedCreateWithoutUserInput> | KnowledgeDocumentCreateWithoutUserInput[] | KnowledgeDocumentUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: KnowledgeDocumentCreateOrConnectWithoutUserInput | KnowledgeDocumentCreateOrConnectWithoutUserInput[]
+    upsert?: KnowledgeDocumentUpsertWithWhereUniqueWithoutUserInput | KnowledgeDocumentUpsertWithWhereUniqueWithoutUserInput[]
+    createMany?: KnowledgeDocumentCreateManyUserInputEnvelope
+    set?: KnowledgeDocumentWhereUniqueInput | KnowledgeDocumentWhereUniqueInput[]
+    disconnect?: KnowledgeDocumentWhereUniqueInput | KnowledgeDocumentWhereUniqueInput[]
+    delete?: KnowledgeDocumentWhereUniqueInput | KnowledgeDocumentWhereUniqueInput[]
+    connect?: KnowledgeDocumentWhereUniqueInput | KnowledgeDocumentWhereUniqueInput[]
+    update?: KnowledgeDocumentUpdateWithWhereUniqueWithoutUserInput | KnowledgeDocumentUpdateWithWhereUniqueWithoutUserInput[]
+    updateMany?: KnowledgeDocumentUpdateManyWithWhereWithoutUserInput | KnowledgeDocumentUpdateManyWithWhereWithoutUserInput[]
+    deleteMany?: KnowledgeDocumentScalarWhereInput | KnowledgeDocumentScalarWhereInput[]
+  }
+
   export type ConversationUncheckedUpdateManyWithoutUserNestedInput = {
     create?: XOR<ConversationCreateWithoutUserInput, ConversationUncheckedCreateWithoutUserInput> | ConversationCreateWithoutUserInput[] | ConversationUncheckedCreateWithoutUserInput[]
     connectOrCreate?: ConversationCreateOrConnectWithoutUserInput | ConversationCreateOrConnectWithoutUserInput[]
@@ -7634,6 +7792,20 @@ export namespace Prisma {
     update?: AiModelUpdateWithWhereUniqueWithoutUserInput | AiModelUpdateWithWhereUniqueWithoutUserInput[]
     updateMany?: AiModelUpdateManyWithWhereWithoutUserInput | AiModelUpdateManyWithWhereWithoutUserInput[]
     deleteMany?: AiModelScalarWhereInput | AiModelScalarWhereInput[]
+  }
+
+  export type KnowledgeDocumentUncheckedUpdateManyWithoutUserNestedInput = {
+    create?: XOR<KnowledgeDocumentCreateWithoutUserInput, KnowledgeDocumentUncheckedCreateWithoutUserInput> | KnowledgeDocumentCreateWithoutUserInput[] | KnowledgeDocumentUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: KnowledgeDocumentCreateOrConnectWithoutUserInput | KnowledgeDocumentCreateOrConnectWithoutUserInput[]
+    upsert?: KnowledgeDocumentUpsertWithWhereUniqueWithoutUserInput | KnowledgeDocumentUpsertWithWhereUniqueWithoutUserInput[]
+    createMany?: KnowledgeDocumentCreateManyUserInputEnvelope
+    set?: KnowledgeDocumentWhereUniqueInput | KnowledgeDocumentWhereUniqueInput[]
+    disconnect?: KnowledgeDocumentWhereUniqueInput | KnowledgeDocumentWhereUniqueInput[]
+    delete?: KnowledgeDocumentWhereUniqueInput | KnowledgeDocumentWhereUniqueInput[]
+    connect?: KnowledgeDocumentWhereUniqueInput | KnowledgeDocumentWhereUniqueInput[]
+    update?: KnowledgeDocumentUpdateWithWhereUniqueWithoutUserInput | KnowledgeDocumentUpdateWithWhereUniqueWithoutUserInput[]
+    updateMany?: KnowledgeDocumentUpdateManyWithWhereWithoutUserInput | KnowledgeDocumentUpdateManyWithWhereWithoutUserInput[]
+    deleteMany?: KnowledgeDocumentScalarWhereInput | KnowledgeDocumentScalarWhereInput[]
   }
 
   export type UserCreateNestedOneWithoutConversationsInput = {
@@ -7748,6 +7920,12 @@ export namespace Prisma {
     update?: XOR<XOR<UserUpdateToOneWithWhereWithoutModelsInput, UserUpdateWithoutModelsInput>, UserUncheckedUpdateWithoutModelsInput>
   }
 
+  export type UserCreateNestedOneWithoutKnowledgeDocsInput = {
+    create?: XOR<UserCreateWithoutKnowledgeDocsInput, UserUncheckedCreateWithoutKnowledgeDocsInput>
+    connectOrCreate?: UserCreateOrConnectWithoutKnowledgeDocsInput
+    connect?: UserWhereUniqueInput
+  }
+
   export type NullableIntFieldUpdateOperationsInput = {
     set?: number | null
     increment?: number
@@ -7755,6 +7933,14 @@ export namespace Prisma {
     multiply?: number
     divide?: number
     unset?: boolean
+  }
+
+  export type UserUpdateOneRequiredWithoutKnowledgeDocsNestedInput = {
+    create?: XOR<UserCreateWithoutKnowledgeDocsInput, UserUncheckedCreateWithoutKnowledgeDocsInput>
+    connectOrCreate?: UserCreateOrConnectWithoutKnowledgeDocsInput
+    upsert?: UserUpsertWithoutKnowledgeDocsInput
+    connect?: UserWhereUniqueInput
+    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutKnowledgeDocsInput, UserUpdateWithoutKnowledgeDocsInput>, UserUncheckedUpdateWithoutKnowledgeDocsInput>
   }
 
   export type NestedStringFilter<$PrismaModel = never> = {
@@ -8003,6 +8189,35 @@ export namespace Prisma {
     data: AiModelCreateManyUserInput | AiModelCreateManyUserInput[]
   }
 
+  export type KnowledgeDocumentCreateWithoutUserInput = {
+    id?: string
+    title: string
+    category: string
+    status: string
+    chunkCount?: number | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type KnowledgeDocumentUncheckedCreateWithoutUserInput = {
+    id?: string
+    title: string
+    category: string
+    status: string
+    chunkCount?: number | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type KnowledgeDocumentCreateOrConnectWithoutUserInput = {
+    where: KnowledgeDocumentWhereUniqueInput
+    create: XOR<KnowledgeDocumentCreateWithoutUserInput, KnowledgeDocumentUncheckedCreateWithoutUserInput>
+  }
+
+  export type KnowledgeDocumentCreateManyUserInputEnvelope = {
+    data: KnowledgeDocumentCreateManyUserInput | KnowledgeDocumentCreateManyUserInput[]
+  }
+
   export type ConversationUpsertWithWhereUniqueWithoutUserInput = {
     where: ConversationWhereUniqueInput
     update: XOR<ConversationUpdateWithoutUserInput, ConversationUncheckedUpdateWithoutUserInput>
@@ -8060,6 +8275,36 @@ export namespace Prisma {
     updatedAt?: DateTimeNullableFilter<"AiModel"> | Date | string | null
   }
 
+  export type KnowledgeDocumentUpsertWithWhereUniqueWithoutUserInput = {
+    where: KnowledgeDocumentWhereUniqueInput
+    update: XOR<KnowledgeDocumentUpdateWithoutUserInput, KnowledgeDocumentUncheckedUpdateWithoutUserInput>
+    create: XOR<KnowledgeDocumentCreateWithoutUserInput, KnowledgeDocumentUncheckedCreateWithoutUserInput>
+  }
+
+  export type KnowledgeDocumentUpdateWithWhereUniqueWithoutUserInput = {
+    where: KnowledgeDocumentWhereUniqueInput
+    data: XOR<KnowledgeDocumentUpdateWithoutUserInput, KnowledgeDocumentUncheckedUpdateWithoutUserInput>
+  }
+
+  export type KnowledgeDocumentUpdateManyWithWhereWithoutUserInput = {
+    where: KnowledgeDocumentScalarWhereInput
+    data: XOR<KnowledgeDocumentUpdateManyMutationInput, KnowledgeDocumentUncheckedUpdateManyWithoutUserInput>
+  }
+
+  export type KnowledgeDocumentScalarWhereInput = {
+    AND?: KnowledgeDocumentScalarWhereInput | KnowledgeDocumentScalarWhereInput[]
+    OR?: KnowledgeDocumentScalarWhereInput[]
+    NOT?: KnowledgeDocumentScalarWhereInput | KnowledgeDocumentScalarWhereInput[]
+    id?: StringFilter<"KnowledgeDocument"> | string
+    userId?: StringFilter<"KnowledgeDocument"> | string
+    title?: StringFilter<"KnowledgeDocument"> | string
+    category?: StringFilter<"KnowledgeDocument"> | string
+    status?: StringFilter<"KnowledgeDocument"> | string
+    chunkCount?: IntNullableFilter<"KnowledgeDocument"> | number | null
+    createdAt?: DateTimeFilter<"KnowledgeDocument"> | Date | string
+    updatedAt?: DateTimeFilter<"KnowledgeDocument"> | Date | string
+  }
+
   export type UserCreateWithoutConversationsInput = {
     id?: string
     clerkId: string
@@ -8067,6 +8312,7 @@ export namespace Prisma {
     name?: string | null
     createdAt?: Date | string
     models?: AiModelCreateNestedManyWithoutUserInput
+    knowledgeDocs?: KnowledgeDocumentCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutConversationsInput = {
@@ -8076,6 +8322,7 @@ export namespace Prisma {
     name?: string | null
     createdAt?: Date | string
     models?: AiModelUncheckedCreateNestedManyWithoutUserInput
+    knowledgeDocs?: KnowledgeDocumentUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutConversationsInput = {
@@ -8129,6 +8376,7 @@ export namespace Prisma {
     name?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     models?: AiModelUpdateManyWithoutUserNestedInput
+    knowledgeDocs?: KnowledgeDocumentUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutConversationsInput = {
@@ -8137,6 +8385,7 @@ export namespace Prisma {
     name?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     models?: AiModelUncheckedUpdateManyWithoutUserNestedInput
+    knowledgeDocs?: KnowledgeDocumentUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type MessageUpsertWithWhereUniqueWithoutConversationInput = {
@@ -8230,6 +8479,7 @@ export namespace Prisma {
     name?: string | null
     createdAt?: Date | string
     conversations?: ConversationCreateNestedManyWithoutUserInput
+    knowledgeDocs?: KnowledgeDocumentCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutModelsInput = {
@@ -8239,6 +8489,7 @@ export namespace Prisma {
     name?: string | null
     createdAt?: Date | string
     conversations?: ConversationUncheckedCreateNestedManyWithoutUserInput
+    knowledgeDocs?: KnowledgeDocumentUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutModelsInput = {
@@ -8263,6 +8514,7 @@ export namespace Prisma {
     name?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     conversations?: ConversationUpdateManyWithoutUserNestedInput
+    knowledgeDocs?: KnowledgeDocumentUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutModelsInput = {
@@ -8271,6 +8523,61 @@ export namespace Prisma {
     name?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     conversations?: ConversationUncheckedUpdateManyWithoutUserNestedInput
+    knowledgeDocs?: KnowledgeDocumentUncheckedUpdateManyWithoutUserNestedInput
+  }
+
+  export type UserCreateWithoutKnowledgeDocsInput = {
+    id?: string
+    clerkId: string
+    email: string
+    name?: string | null
+    createdAt?: Date | string
+    conversations?: ConversationCreateNestedManyWithoutUserInput
+    models?: AiModelCreateNestedManyWithoutUserInput
+  }
+
+  export type UserUncheckedCreateWithoutKnowledgeDocsInput = {
+    id?: string
+    clerkId: string
+    email: string
+    name?: string | null
+    createdAt?: Date | string
+    conversations?: ConversationUncheckedCreateNestedManyWithoutUserInput
+    models?: AiModelUncheckedCreateNestedManyWithoutUserInput
+  }
+
+  export type UserCreateOrConnectWithoutKnowledgeDocsInput = {
+    where: UserWhereUniqueInput
+    create: XOR<UserCreateWithoutKnowledgeDocsInput, UserUncheckedCreateWithoutKnowledgeDocsInput>
+  }
+
+  export type UserUpsertWithoutKnowledgeDocsInput = {
+    update: XOR<UserUpdateWithoutKnowledgeDocsInput, UserUncheckedUpdateWithoutKnowledgeDocsInput>
+    create: XOR<UserCreateWithoutKnowledgeDocsInput, UserUncheckedCreateWithoutKnowledgeDocsInput>
+    where?: UserWhereInput
+  }
+
+  export type UserUpdateToOneWithWhereWithoutKnowledgeDocsInput = {
+    where?: UserWhereInput
+    data: XOR<UserUpdateWithoutKnowledgeDocsInput, UserUncheckedUpdateWithoutKnowledgeDocsInput>
+  }
+
+  export type UserUpdateWithoutKnowledgeDocsInput = {
+    clerkId?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    name?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    conversations?: ConversationUpdateManyWithoutUserNestedInput
+    models?: AiModelUpdateManyWithoutUserNestedInput
+  }
+
+  export type UserUncheckedUpdateWithoutKnowledgeDocsInput = {
+    clerkId?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    name?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    conversations?: ConversationUncheckedUpdateManyWithoutUserNestedInput
+    models?: AiModelUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type IntFilter<$PrismaModel = never> = {
@@ -8299,6 +8606,16 @@ export namespace Prisma {
     isValid?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string | null
+  }
+
+  export type KnowledgeDocumentCreateManyUserInput = {
+    id?: string
+    title: string
+    category: string
+    status: string
+    chunkCount?: number | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
   }
 
   export type ConversationUpdateWithoutUserInput = {
@@ -8346,6 +8663,33 @@ export namespace Prisma {
     isValid?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type KnowledgeDocumentUpdateWithoutUserInput = {
+    title?: StringFieldUpdateOperationsInput | string
+    category?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    chunkCount?: NullableIntFieldUpdateOperationsInput | number | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type KnowledgeDocumentUncheckedUpdateWithoutUserInput = {
+    title?: StringFieldUpdateOperationsInput | string
+    category?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    chunkCount?: NullableIntFieldUpdateOperationsInput | number | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type KnowledgeDocumentUncheckedUpdateManyWithoutUserInput = {
+    title?: StringFieldUpdateOperationsInput | string
+    category?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    chunkCount?: NullableIntFieldUpdateOperationsInput | number | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type MessageCreateManyConversationInput = {

@@ -153,6 +153,7 @@ exports.Prisma.AiModelScalarFieldEnum = {
 
 exports.Prisma.KnowledgeDocumentScalarFieldEnum = {
   id: 'id',
+  userId: 'userId',
   title: 'title',
   category: 'category',
   status: 'status',
