@@ -63,6 +63,56 @@ const fileProps: Props = {
 };
 const fileRequired = ["filepath", "filename", "filetype"];
 
+// Free-form object (dynamic keys), e.g. a chart row like { month: "Jan", desktop: 186 }.
+const record = (description: string) => ({ type: "object", description });
+
+// shadcn charts = `data` rows + a ChartConfig ({ [key]: { label, color } }) + <ChartTooltip />.
+// `series` is the flattened ChartConfig; `tooltip` maps to <ChartTooltipContent indicator={...} />.
+const tooltipProp = enumStr(
+  "Tooltip indicator style (shadcn ChartTooltipContent). Defaults to 'dot'; 'none' hides the tooltip",
+  ["dot", "line", "dashed", "none"],
+);
+
+const seriesProp = arrayOf(
+  obj(
+    {
+      key: str("Field name in each data row that this series plots (the recharts dataKey)"),
+      label: str("Display name in legend/tooltip (defaults to key)"),
+      color: str("CSS color; defaults to theme chart colors (--chart-1, --chart-2, ...)"),
+    },
+    ["key"],
+  ),
+  "One entry per plotted series (ChartConfig)",
+);
+
+// Area, bar, line and radar all share: rows + category key + series.
+const cartesianProps: Props = {
+  data: arrayOf(record("One row, e.g. {\"month\":\"Jan\",\"desktop\":186,\"mobile\":80}"), "Chart data rows"),
+  x_key: str("Field in each row used as the category axis, e.g. 'month'"),
+  series: seriesProp,
+  tooltip: tooltipProp,
+};
+const cartesianRequired = ["data", "x_key", "series"];
+
+// Pie and radial share: one value per named slice/bar.
+const sliceProps: Props = {
+  data: arrayOf(
+    obj(
+      {
+        label: str("Name of the slice/bar"),
+        value: num("Numeric value"),
+        color: str("CSS color; defaults to theme chart colors"),
+      },
+      ["label", "value"],
+    ),
+    "Chart data",
+  ),
+  tooltip: tooltipProp,
+};
+
+const curveProp = enumStr("Curve type", ["linear", "natural", "step"]);
+const mock = (kind: string) => () => `Mock Test: displayed a ${kind} given by a data from test.xlsx`;
+
 // Tools (handlers are MOCK for now)
 const registeredTools: RegisteredTool[] = [
   // I. Tests
@@ -88,9 +138,6 @@ const registeredTools: RegisteredTool[] = [
     properties: { ...fileProps, content: str("Content of the new file") },
     required: [...fileRequired, "content"],
     handler: () => "Mock Test: new file created named test.pdf",
-    // TODO: place the function here
-    // e.g. handler: ({ filepath, filename, filetype, content }) =>
-    // createFile(filepath, filename, filetype, content),
   }),
   defineTool({
     name: "read_file",
@@ -158,90 +205,60 @@ const registeredTools: RegisteredTool[] = [
       rows: arrayOf(arrayOf(str("Value of a table cell")), "Table rows; each row is an array of cell values"),
     },
     required: ["rows"],
-    handler: () => "Mock Test: displayed a table given by a data from test.xlsx",
+    handler: mock("table"),
   }),
   defineTool({
-    name: "visualize_line_graph",
-    description: "Visualize data by line graph",
+    name: "visualize_area_chart",
+    description: "Visualize data by area chart",
     properties: {
-      layers: arrayOf(
-        obj(
-          {
-            data: arrayOf(num("Value of a line graph node"), "Node values of the line"),
-            line_color: str("Outline color of the line"),
-            has_aul: bool("Whether to fill the area under the line"),
-            has_legend: bool("Whether the graph has a legend"),
-            aul_color: str("Fill color under the line"),
-            x_min: num("Minimum x-value"),
-            x_max: num("Maximum x-value"),
-            x_interval: num("Interval of the x-axis"),
-            x_text: str("Label of the x-axis"),
-            y_min: num("Minimum y-value"),
-            y_max: num("Maximum y-value"),
-            y_interval: num("Interval of the y-axis"),
-            y_text: str("Label of the y-axis"),
-          },
-          ["data", "x_text", "y_text"],
-        ),
-        "One entry per line drawn on the graph",
-      ),
+      ...cartesianProps,
+      stacked: bool("Stack the areas on top of each other (default false)"),
+      curve: curveProp,
     },
-    required: ["layers"],
-    handler: () => "Mock Test: displayed a line graph given by a data from test.xlsx",
+    required: cartesianRequired,
+    handler: mock("area chart"),
   }),
   defineTool({
-    name: "visualize_bar_graph",
-    description: "Visualize data by bar graph",
+    name: "visualize_bar_chart",
+    description: "Visualize data by bar chart",
     properties: {
-      data: arrayOf(
-        obj(
-          { label: str("Label of the bar"), value: num("Value of the bar"), color: str("Color of the bar") },
-          ["label", "value"],
-        ),
-      ),
-      orientation: enumStr("Orientation of the bar graph", ["vertical", "horizontal"]),
-      x_text: str("Label of the x-axis"),
-      y_text: str("Label of the y-axis"),
+      ...cartesianProps,
+      stacked: bool("Stack the bars (default false)"),
+      horizontal: bool("Draw bars horizontally (default false)"),
     },
-    required: ["data", "x_text", "y_text"],
-    handler: () => "Mock Test: displayed a bar graph given by a data from test.xlsx",
+    required: cartesianRequired,
+    handler: mock("bar chart"),
+  }),
+  defineTool({
+    name: "visualize_line_chart",
+    description: "Visualize data by line chart",
+    properties: { ...cartesianProps, curve: curveProp },
+    required: cartesianRequired,
+    handler: mock("line chart"),
   }),
   defineTool({
     name: "visualize_pie_chart",
     description: "Visualize data by pie chart",
-    properties: {
-      data: arrayOf(
-        obj(
-          { label: str("Label of the slice"), value: num("Value of the slice"), color: str("Color of the slice") },
-          ["label", "value"],
-        ),
-      ),
-    },
+    properties: { ...sliceProps, donut: bool("Render as a donut chart (default false)") },
     required: ["data"],
-    handler: () => "Mock Test: displayed a pie chart given by a data from test.xlsx",
+    handler: mock("pie chart"),
   }),
   defineTool({
-    name: "visualize_scatter_graph",
-    description: "Visualize data by scatter graph",
+    name: "visualize_radar_chart",
+    description: "Visualize data by radar chart",
     properties: {
-      data: arrayOf(
-        obj({ x: num("X-value of the point"), y: num("Y-value of the point"), color: str("Color of the point") }, [
-          "x",
-          "y",
-        ]),
-      ),
+      ...cartesianProps, // x_key is the field used for the radar's angle axis
+      filled: bool("Fill the radar polygons (default true)"),
     },
-    required: ["data"],
-    handler: () => "Mock Test: displayed a scatter graph given by a data from test.xlsx",
+    required: cartesianRequired,
+    handler: mock("radar chart"),
   }),
   defineTool({
-    name: "visualize_heatmap",
-    description: "Visualize data by heatmap",
-    properties: {
-      data: arrayOf(obj({ label: str("Label of the cell"), value: num("Value of the cell") }, ["label", "value"])),
-    },
+    name: "visualize_radial_chart",
+    description: "Visualize data by radial bar chart",
+    properties: { ...sliceProps, max: num("Value that represents a full circle (defaults to the largest value)") },
     required: ["data"],
-    handler: () => "Mock Test: displayed a heatmap given by a data from test.xlsx",
+    handler: mock("radial chart"),
   }),
   defineTool({
     name: "visualize_flowchart",
@@ -250,35 +267,32 @@ const registeredTools: RegisteredTool[] = [
       nodes: arrayOf(
         obj(
           {
-            id: str("Unique node id (same as label; append a number if duplicated)"),
-            type: str("Node type, e.g. start, process, decision, end"),
-            label: str("Label of the node"),
-            color: str("Color of the node"),
+            id: str("Unique node id, e.g. 'n1'"),
+            label: str("Text shown in the node (maps to data.label)"),
+            type: enumStr("Node type (default 'default')", ["input", "default", "output"]),
+            position: obj({ x: num("X position"), y: num("Y position") }, ["x", "y"]),
           },
-          ["type", "label"],
+          ["id", "label"],
         ),
+        "Flowchart nodes",
       ),
-      arrows: arrayOf(
-        obj({ from_id: str("Starting node id"), to_id: str("Ending node id") }, ["from_id", "to_id"]),
-      ),
-      conditionals: arrayOf(
+      edges: arrayOf(
         obj(
           {
-            conditional_label: str("Condition text shown at the branching point"),
-            from_id: str("Node id the condition branches from"),
-            branches: arrayOf(
-              obj({ label: str("Branch label, e.g. yes/no"), to_id: str("Node id this branch leads to") }, [
-                "label",
-                "to_id",
-              ]),
-            ),
+            source: str("Id of the node the edge starts from"),
+            target: str("Id of the node the edge ends at"),
+            label: str("Text on the edge, e.g. 'yes' / 'no' for branches"),
+            animated: bool("Animate the edge (default false)"),
+            type: enumStr("Edge style (default 'default')", ["default", "straight", "step", "smoothstep"]),
           },
-          ["conditional_label", "from_id", "branches"],
+          ["source", "target"],
         ),
+        "Connections between nodes",
       ),
+      direction: enumStr("Auto-layout direction when positions are omitted (default 'TB')", ["TB", "LR"]),
     },
-    required: ["nodes", "arrows"],
-    handler: () => "Mock Test: displayed a flowchart given by a data from test.xlsx",
+    required: ["nodes", "edges"],
+    handler: mock("flowchart"),
   }),
 
   // II-4. Database management
@@ -348,6 +362,8 @@ async function agentLoop(userPrompt: string): Promise<string> {
   // `think: true` errors on models without thinking support, so make it switchable.
   const think = process.env.OLLAMA_THINK !== "false";
   const messages: Message[] = [{ role: "user", content: userPrompt }];
+  const visualizations: { name: string; args: Args }[] = [];
+
   for (let i = 0; i < MAX_ITERATIONS; i++) {
     const response = await ollama.chat({ model, messages, tools: toolDefinitions, think });
 
@@ -367,6 +383,7 @@ async function agentLoop(userPrompt: string): Promise<string> {
       }
       try {
         const result = await tool.handler(args);
+        if (name.startsWith("visualize_")) visualizations.push({ name, args });
         console.log(`Called ${name}(${JSON.stringify(args)}) -> ${result}`);
         messages.push({ role: "tool", tool_name: name, content: String(result) });
       } catch (err) {

@@ -165,14 +165,18 @@ e. npx prisma db push
 - and DATABASE_URL_POOLER="postgres://postgres.<project-id>:<password>@aws-0-<area>.pooler.supabase.com:6543/postgres"
 - npx supabase gen types typescript --project-id <project-id> > <output path of ts types>
 
-### 5.11. Other installations
+### 5.11. Visualization toolcall
+- npm i @xyflow/react
+- npx shadcn@latest add chart table
+
+### 5.12. Other installations
 - refer to requirements.txt, package.json
 - npm install -i
 
-### 5.12. Run the development server
+### 5.13. Run the development server
 - (npm run/yarn/pnpm/bun) dev
 
-### 5.13. Deploy on Vercel
+### 5.14. Deploy on Vercel
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
 
