@@ -93,3 +93,15 @@ export const invokeRagGraphWithOnlineEval = traceable(
   },
   { name: "ragGraph.invoke", run_type: "chain" }
 );
+
+export const evaluateAnswer = traceable(
+  async (output: GraphOutput) => {
+    const runTree = getCurrentRunTree();
+    if (!runTree) return null;
+    return runOnlineEvaluators(runTree.id, output).catch((err) => {
+      console.error("online eval failed:", err);
+      return null;
+    });
+  },
+  { name: "chat.evaluate", run_type: "chain" },
+);

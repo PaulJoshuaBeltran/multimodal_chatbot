@@ -35,6 +35,13 @@ export interface OllamaInstalledModel {
   family?: string
 }
 
+export interface Visualization {
+  id?: string
+  name: string
+  args: Record<string, unknown>
+  order?: number
+}
+
 export type Message = {
   id?: string
   role: ChatRole
@@ -43,6 +50,7 @@ export type Message = {
   isError?: boolean
   createdAt?: string
   updatedAt?: string | null
+  visualizations?: Visualization[]
 }
 
 export interface ProcessedMessage {

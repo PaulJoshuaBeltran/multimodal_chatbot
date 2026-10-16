@@ -36,7 +36,8 @@ export async function GET(req: Request) {
     : { conversation: { userId: user.id } } // fallback: scope to this user's conversations only
 
   if (q) where.content = { contains: q, mode: 'insensitive' }
-  const messages = await prisma.message.findMany({ where, orderBy: { createdAt: 'asc' } })
+  const withViz = { visualizations: { orderBy: { order: 'asc' as const } } }
+  const messages = await prisma.message.findMany({ where, orderBy: { createdAt: 'asc' }, include: withViz })
   return new Response(JSON.stringify(messages), { status: 200, headers: { 'Content-Type': 'application/json' } })
 }
 
@@ -52,15 +53,22 @@ function toAttachments(list: unknown) {
       size: a.size as number,
     }))
 }
+function toVisualizations(list: unknown) {
+  if (!Array.isArray(list)) return []
+  return list
+    .filter((v) => typeof v?.name === 'string' && v.name.startsWith('visualize_') && v.args && typeof v.args === 'object')
+    .map((v, i) => ({ name: v.name as string, args: v.args as Prisma.InputJsonObject, order: i }))
+}
 
 export async function POST(req: Request) {
   const user = await getLocalUser()
   if (!user) return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401, headers: { 'Content-Type': 'application/json' } })
 
-  const { conversationId, role, content, attachments, isError } = await req.json()
+  const { conversationId, role, content, attachments, visualizations, isError } = await req.json()
   const files = toAttachments(attachments)
+  const viz = toVisualizations(visualizations)
 
-  if ((!content && files.length === 0) || !role) {
+  if ((!content && files.length === 0 && viz.length === 0) || !role) {
     return new Response(JSON.stringify({ error: 'Missing fields' }), { status: 400, headers: { 'Content-Type': 'application/json' } })
   }
 
@@ -73,14 +81,17 @@ export async function POST(req: Request) {
     if (!conv || conv.userId !== user.id) return new Response(JSON.stringify({ error: 'Conversation not found' }), { status: 404, headers: { 'Content-Type': 'application/json' } })
   }
 
+  const withViz = { visualizations: { orderBy: { order: 'asc' as const } } }
   const message = await prisma.message.create({
     data: {
       conversationId: convId,
       role,
       content: content ?? '',
       isError: Boolean(isError),
-      attachments: files, // always an array, never undefined
+      attachments: files,
+      visualizations: { create: viz },
     },
+    include: withViz,
   })
   return new Response(JSON.stringify(message), { status: 201, headers: { 'Content-Type': 'application/json' } })
 }

@@ -44,9 +44,22 @@ model Message {
   role           String
   content        String
   attachments    Attachment[]
+  visualizations Visualization[]
   isError        Boolean @default(false)
   createdAt      DateTime     @default(now())
   updatedAt      DateTime?    @updatedAt
+}
+
+model Visualization {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  messageId String   @db.ObjectId
+  message   Message  @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  name      String   // visualize_bar_chart, visualize_table, ...
+  args      Json     // exact tool-call arguments, rendered by MessageVisualization
+  order     Int      @default(0)
+  createdAt DateTime @default(now())
+
+  @@index([messageId])
 }
 
 type Attachment {

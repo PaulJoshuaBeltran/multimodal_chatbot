@@ -14,7 +14,9 @@ import type {
   AiModel,
   OllamaPayload,
   Attachment,
+  Visualization,
 } from '@/src/types/msg_conversation_model'
+import type { StreamEvent, ChatPart } from '@/src/types/chat_parts'
 
 import { ChatSidebar } from '../components/sidebar/ChatSidebar'
 import { ChatInput } from '../components/main/ChatInput'
@@ -157,9 +159,9 @@ export default function Page() {
     topK?: number
     numCtx?: number
     numPredict?: number
-    onToken: (text: string) => void
+    onEvent: (ev: StreamEvent) => void
     signal: AbortSignal
-  }): Promise<string> {
+  }): Promise<{ parts: ChatPart[]; error?: string }> {
     if (!selectedModel?.modelId) {
       toast.add({
         title: "ERROR",
@@ -202,35 +204,44 @@ export default function Page() {
 
     const reader = res.body!.getReader()
     const dec = new TextDecoder()
-    let full = ''
+    let buf = ''
+    let parts: ChatPart[] = []
+    let error: string | undefined
+
+    const handle = (line: string) => {
+      if (!line.trim()) return
+      let ev: StreamEvent
+      try { ev = JSON.parse(line) } catch { return }
+      if (ev.type === 'done') parts = ev.parts
+      else if (ev.type === 'error') error = ev.message
+      params.onEvent(ev)
+    }
 
     while (true) {
       const { done, value } = await reader.read()
       if (done) break
-      const chunk = dec.decode(value)
-      full += chunk
-      params.onToken(chunk)
+      buf += dec.decode(value, { stream: true })
+      const lines = buf.split('\n')
+      buf = lines.pop() ?? '' // keep the partial trailing line for the next chunk
+      lines.forEach(handle)
     }
+    handle(buf)
 
-    return full
+    return { parts, error }
   }
 
   async function persistAssistant(
     convId: string,
     content: string,
-    isError: boolean
+    isError: boolean,
+    attachments: Attachment[],
+    visualizations: Visualization[],
   ): Promise<ChatMessage | null> {
     try {
       const r = await fetch('/api/messages', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          conversationId: convId,
-          role: 'assistant',
-          content,
-          attachments: [],
-          isError,
-        }),
+        body: JSON.stringify({ conversationId: convId, role: 'assistant', content, attachments, visualizations, isError }),
       })
       return r.ok ? await r.json() : null
     } catch {
@@ -245,92 +256,78 @@ export default function Page() {
 
     setIsThinking(true)
     setStreaming(true)
-    setMessages([
-      ...history,
-      { role: 'assistant', content: '', createdAt: new Date().toISOString() },
-    ])
+    setMessages([...history, { role: 'assistant', content: '', createdAt: new Date().toISOString() }])
 
-    let reply = ''
+    const patchAssistant = (fn: (m: ChatMessage) => ChatMessage) =>
+      setMessages((prev) => {
+        const copy = [...prev]
+        if (copy[assistantIndex]) copy[assistantIndex] = fn(copy[assistantIndex])
+        return copy
+      })
+
     let streamed = ''
+    const visualizations: Visualization[] = []
+    const attachments: Attachment[] = []
     let errorText: string | null = null
 
     try {
-      reply = await generateAssistantReply({
+      const result = await generateAssistantReply({
         messages: toContext(history),
         conversationId: convId,
-        systemPrompt,
-        temperature,
-        topP,
-        topK,
-        numCtx,
-        numPredict,
+        systemPrompt, temperature, topP, topK, numCtx, numPredict,
         signal: controller.signal,
-        onToken: (chunk) => {
-          streamed += chunk
+        onEvent: (ev) => {
           setIsThinking(false)
-          setMessages((prev) => {
-            const copy = [...prev]
-            const existing = copy[assistantIndex]
-            copy[assistantIndex] = {
-              ...existing,
-              role: 'assistant',
-              content: (existing?.content ?? '') + chunk,
-              createdAt: existing?.createdAt ?? new Date().toISOString(),
-            }
-            return copy
-          })
+          switch (ev.type) {
+            case 'text':
+              streamed += ev.text
+              patchAssistant((m) => ({ ...m, content: (m.content ?? '') + ev.text }))
+              break
+            case 'visualization':
+              visualizations.push({ name: ev.name, args: ev.args })
+              patchAssistant((m) => ({ ...m, visualizations: [...visualizations] }))
+              break
+            case 'image':
+            case 'document':
+              attachments.push({
+                url: ev.url, fileName: ev.fileName, mimeType: ev.mimeType, size: ev.size, fileType: ev.type,
+              } as Attachment)
+              patchAssistant((m) => ({ ...m, attachments: [...attachments] }))
+              break
+          }
         },
       })
+      if (result.error) errorText = result.error
     } catch (err) {
       if ((err as Error)?.name !== 'AbortError') {
         errorText = err instanceof Error ? err.message : 'Unknown error'
       }
     }
 
-    // Decide what gets shown and saved
-    const streamErr = STREAM_ERR.exec(reply)
-    let content: string
-    let isError = false
-
-    if (errorText !== null) {
-      isError = true
-      content = streamed
-        ? `${streamed}\n\n⚠️ Ollama: ${errorText}`
-        : `⚠️ Ollama: ${errorText}`
-    } else if (streamErr) {
-      isError = true
-      content = `${reply.slice(0, streamErr.index)}\n\n⚠️ Ollama: ${streamErr[1]}`.trimStart()
-    } else {
-      content = streamed // full reply, or the partial text if the user hit stop
-    }
+    const isError = errorText !== null
+    const content = isError
+      ? streamed ? `${streamed}\n\n⚠️ Ollama: ${errorText}` : `⚠️ Ollama: ${errorText}`
+      : streamed
 
     setIsThinking(false)
     setStreaming(false)
 
-    if (!content.trim()) {
-      // aborted before any token arrived: drop the empty placeholder
-      setMessages((prev) => prev.slice(0, assistantIndex))
+    if (!content.trim() && !visualizations.length && !attachments.length) {
+      setMessages((prev) => prev.slice(0, assistantIndex)) // aborted before anything arrived
       return
     }
 
-    setMessages((prev) => {
-      const copy = [...prev]
-      if (copy[assistantIndex]) {
-        copy[assistantIndex] = { ...copy[assistantIndex], role: 'assistant', content, isError }
-      }
-      return copy
-    })
+    patchAssistant((m) => ({ ...m, role: 'assistant', content, isError }))
 
     if (isError) {
-      toast.add({ title: 'ERROR', description: content.split('\n').pop() ?? 'Generation failed' })
+      toast.add({ title: 'ERROR', description: errorText ?? 'Generation failed' })
     }
 
-    const saved = await persistAssistant(convId, content, isError)
+    const saved = await persistAssistant(convId, content, isError, attachments, visualizations)
     if (saved) {
       setMessages((prev) => {
         const copy = [...prev]
         const cur = copy[assistantIndex]
-        // guard: only swap in the saved row if the slot is still the same unsaved message
         if (cur && !cur.id && cur.content === content) copy[assistantIndex] = saved
         return copy
       })

@@ -332,15 +332,6 @@ export function ChatInput({
               <FileText className="w-4 h-4 mr-2" />
               Upload Documents
             </DropdownMenuItem>
-            {/* <DropdownMenuItem
-              className="cursor-pointer"
-              onClick={() => audioInputRef.current?.click()}
-              onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray2)')}
-              onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}
-            >
-              <Music className="w-4 h-4 mr-2" />
-              Upload Audio
-            </DropdownMenuItem> */}
             <DropdownMenuItem
               className="cursor-pointer"
               onClick={onOpenSystemPrompt}

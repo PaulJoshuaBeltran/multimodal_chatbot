@@ -34,6 +34,11 @@ export type Conversation = $Result.DefaultSelection<Prisma.$ConversationPayload>
  */
 export type Message = $Result.DefaultSelection<Prisma.$MessagePayload>
 /**
+ * Model Visualization
+ * 
+ */
+export type Visualization = $Result.DefaultSelection<Prisma.$VisualizationPayload>
+/**
  * Model AiModel
  * 
  */
@@ -158,6 +163,16 @@ export class PrismaClient<
     * ```
     */
   get message(): Prisma.MessageDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.visualization`: Exposes CRUD operations for the **Visualization** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more Visualizations
+    * const visualizations = await prisma.visualization.findMany()
+    * ```
+    */
+  get visualization(): Prisma.VisualizationDelegate<ExtArgs, ClientOptions>;
 
   /**
    * `prisma.aiModel`: Exposes CRUD operations for the **AiModel** model.
@@ -622,6 +637,7 @@ export namespace Prisma {
     User: 'User',
     Conversation: 'Conversation',
     Message: 'Message',
+    Visualization: 'Visualization',
     AiModel: 'AiModel',
     KnowledgeDocument: 'KnowledgeDocument'
   };
@@ -642,7 +658,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "user" | "conversation" | "message" | "aiModel" | "knowledgeDocument"
+      modelProps: "user" | "conversation" | "message" | "visualization" | "aiModel" | "knowledgeDocument"
       txIsolationLevel: never
     }
     model: {
@@ -865,6 +881,80 @@ export namespace Prisma {
           count: {
             args: Prisma.MessageCountArgs<ExtArgs>
             result: $Utils.Optional<MessageCountAggregateOutputType> | number
+          }
+        }
+      }
+      Visualization: {
+        payload: Prisma.$VisualizationPayload<ExtArgs>
+        fields: Prisma.VisualizationFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.VisualizationFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$VisualizationPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.VisualizationFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$VisualizationPayload>
+          }
+          findFirst: {
+            args: Prisma.VisualizationFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$VisualizationPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.VisualizationFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$VisualizationPayload>
+          }
+          findMany: {
+            args: Prisma.VisualizationFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$VisualizationPayload>[]
+          }
+          create: {
+            args: Prisma.VisualizationCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$VisualizationPayload>
+          }
+          createMany: {
+            args: Prisma.VisualizationCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          delete: {
+            args: Prisma.VisualizationDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$VisualizationPayload>
+          }
+          update: {
+            args: Prisma.VisualizationUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$VisualizationPayload>
+          }
+          deleteMany: {
+            args: Prisma.VisualizationDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.VisualizationUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          upsert: {
+            args: Prisma.VisualizationUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$VisualizationPayload>
+          }
+          aggregate: {
+            args: Prisma.VisualizationAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateVisualization>
+          }
+          groupBy: {
+            args: Prisma.VisualizationGroupByArgs<ExtArgs>
+            result: $Utils.Optional<VisualizationGroupByOutputType>[]
+          }
+          findRaw: {
+            args: Prisma.VisualizationFindRawArgs<ExtArgs>
+            result: JsonObject
+          }
+          aggregateRaw: {
+            args: Prisma.VisualizationAggregateRawArgs<ExtArgs>
+            result: JsonObject
+          }
+          count: {
+            args: Prisma.VisualizationCountArgs<ExtArgs>
+            result: $Utils.Optional<VisualizationCountAggregateOutputType> | number
           }
         }
       }
@@ -1098,6 +1188,7 @@ export namespace Prisma {
     user?: UserOmit
     conversation?: ConversationOmit
     message?: MessageOmit
+    visualization?: VisualizationOmit
     aiModel?: AiModelOmit
     knowledgeDocument?: KnowledgeDocumentOmit
   }
@@ -1252,6 +1343,37 @@ export namespace Prisma {
    */
   export type ConversationCountOutputTypeCountMessagesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: MessageWhereInput
+  }
+
+
+  /**
+   * Count Type MessageCountOutputType
+   */
+
+  export type MessageCountOutputType = {
+    visualizations: number
+  }
+
+  export type MessageCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    visualizations?: boolean | MessageCountOutputTypeCountVisualizationsArgs
+  }
+
+  // Custom InputTypes
+  /**
+   * MessageCountOutputType without action
+   */
+  export type MessageCountOutputTypeDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the MessageCountOutputType
+     */
+    select?: MessageCountOutputTypeSelect<ExtArgs> | null
+  }
+
+  /**
+   * MessageCountOutputType without action
+   */
+  export type MessageCountOutputTypeCountVisualizationsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: VisualizationWhereInput
   }
 
 
@@ -3586,6 +3708,8 @@ export namespace Prisma {
     createdAt?: boolean
     updatedAt?: boolean
     conversation?: boolean | ConversationDefaultArgs<ExtArgs>
+    visualizations?: boolean | Message$visualizationsArgs<ExtArgs>
+    _count?: boolean | MessageCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["message"]>
 
 
@@ -3603,12 +3727,15 @@ export namespace Prisma {
   export type MessageOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "conversationId" | "role" | "content" | "attachments" | "isError" | "createdAt" | "updatedAt", ExtArgs["result"]["message"]>
   export type MessageInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     conversation?: boolean | ConversationDefaultArgs<ExtArgs>
+    visualizations?: boolean | Message$visualizationsArgs<ExtArgs>
+    _count?: boolean | MessageCountOutputTypeDefaultArgs<ExtArgs>
   }
 
   export type $MessagePayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "Message"
     objects: {
       conversation: Prisma.$ConversationPayload<ExtArgs>
+      visualizations: Prisma.$VisualizationPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -3984,6 +4111,7 @@ export namespace Prisma {
   export interface Prisma__MessageClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
     conversation<T extends ConversationDefaultArgs<ExtArgs> = {}>(args?: Subset<T, ConversationDefaultArgs<ExtArgs>>): Prisma__ConversationClient<$Result.GetResult<Prisma.$ConversationPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    visualizations<T extends Message$visualizationsArgs<ExtArgs> = {}>(args?: Subset<T, Message$visualizationsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$VisualizationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -4390,6 +4518,30 @@ export namespace Prisma {
   }
 
   /**
+   * Message.visualizations
+   */
+  export type Message$visualizationsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Visualization
+     */
+    select?: VisualizationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Visualization
+     */
+    omit?: VisualizationOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: VisualizationInclude<ExtArgs> | null
+    where?: VisualizationWhereInput
+    orderBy?: VisualizationOrderByWithRelationInput | VisualizationOrderByWithRelationInput[]
+    cursor?: VisualizationWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: VisualizationScalarFieldEnum | VisualizationScalarFieldEnum[]
+  }
+
+  /**
    * Message without action
    */
   export type MessageDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -4405,6 +4557,1026 @@ export namespace Prisma {
      * Choose, which related nodes to fetch as well
      */
     include?: MessageInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model Visualization
+   */
+
+  export type AggregateVisualization = {
+    _count: VisualizationCountAggregateOutputType | null
+    _avg: VisualizationAvgAggregateOutputType | null
+    _sum: VisualizationSumAggregateOutputType | null
+    _min: VisualizationMinAggregateOutputType | null
+    _max: VisualizationMaxAggregateOutputType | null
+  }
+
+  export type VisualizationAvgAggregateOutputType = {
+    order: number | null
+  }
+
+  export type VisualizationSumAggregateOutputType = {
+    order: number | null
+  }
+
+  export type VisualizationMinAggregateOutputType = {
+    id: string | null
+    messageId: string | null
+    name: string | null
+    order: number | null
+    createdAt: Date | null
+  }
+
+  export type VisualizationMaxAggregateOutputType = {
+    id: string | null
+    messageId: string | null
+    name: string | null
+    order: number | null
+    createdAt: Date | null
+  }
+
+  export type VisualizationCountAggregateOutputType = {
+    id: number
+    messageId: number
+    name: number
+    args: number
+    order: number
+    createdAt: number
+    _all: number
+  }
+
+
+  export type VisualizationAvgAggregateInputType = {
+    order?: true
+  }
+
+  export type VisualizationSumAggregateInputType = {
+    order?: true
+  }
+
+  export type VisualizationMinAggregateInputType = {
+    id?: true
+    messageId?: true
+    name?: true
+    order?: true
+    createdAt?: true
+  }
+
+  export type VisualizationMaxAggregateInputType = {
+    id?: true
+    messageId?: true
+    name?: true
+    order?: true
+    createdAt?: true
+  }
+
+  export type VisualizationCountAggregateInputType = {
+    id?: true
+    messageId?: true
+    name?: true
+    args?: true
+    order?: true
+    createdAt?: true
+    _all?: true
+  }
+
+  export type VisualizationAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which Visualization to aggregate.
+     */
+    where?: VisualizationWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Visualizations to fetch.
+     */
+    orderBy?: VisualizationOrderByWithRelationInput | VisualizationOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: VisualizationWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Visualizations from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Visualizations.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned Visualizations
+    **/
+    _count?: true | VisualizationCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: VisualizationAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: VisualizationSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: VisualizationMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: VisualizationMaxAggregateInputType
+  }
+
+  export type GetVisualizationAggregateType<T extends VisualizationAggregateArgs> = {
+        [P in keyof T & keyof AggregateVisualization]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateVisualization[P]>
+      : GetScalarType<T[P], AggregateVisualization[P]>
+  }
+
+
+
+
+  export type VisualizationGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: VisualizationWhereInput
+    orderBy?: VisualizationOrderByWithAggregationInput | VisualizationOrderByWithAggregationInput[]
+    by: VisualizationScalarFieldEnum[] | VisualizationScalarFieldEnum
+    having?: VisualizationScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: VisualizationCountAggregateInputType | true
+    _avg?: VisualizationAvgAggregateInputType
+    _sum?: VisualizationSumAggregateInputType
+    _min?: VisualizationMinAggregateInputType
+    _max?: VisualizationMaxAggregateInputType
+  }
+
+  export type VisualizationGroupByOutputType = {
+    id: string
+    messageId: string
+    name: string
+    args: JsonValue
+    order: number
+    createdAt: Date
+    _count: VisualizationCountAggregateOutputType | null
+    _avg: VisualizationAvgAggregateOutputType | null
+    _sum: VisualizationSumAggregateOutputType | null
+    _min: VisualizationMinAggregateOutputType | null
+    _max: VisualizationMaxAggregateOutputType | null
+  }
+
+  type GetVisualizationGroupByPayload<T extends VisualizationGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<VisualizationGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof VisualizationGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], VisualizationGroupByOutputType[P]>
+            : GetScalarType<T[P], VisualizationGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type VisualizationSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    messageId?: boolean
+    name?: boolean
+    args?: boolean
+    order?: boolean
+    createdAt?: boolean
+    message?: boolean | MessageDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["visualization"]>
+
+
+
+  export type VisualizationSelectScalar = {
+    id?: boolean
+    messageId?: boolean
+    name?: boolean
+    args?: boolean
+    order?: boolean
+    createdAt?: boolean
+  }
+
+  export type VisualizationOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "messageId" | "name" | "args" | "order" | "createdAt", ExtArgs["result"]["visualization"]>
+  export type VisualizationInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    message?: boolean | MessageDefaultArgs<ExtArgs>
+  }
+
+  export type $VisualizationPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "Visualization"
+    objects: {
+      message: Prisma.$MessagePayload<ExtArgs>
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      messageId: string
+      name: string
+      args: Prisma.JsonValue
+      order: number
+      createdAt: Date
+    }, ExtArgs["result"]["visualization"]>
+    composites: {}
+  }
+
+  type VisualizationGetPayload<S extends boolean | null | undefined | VisualizationDefaultArgs> = $Result.GetResult<Prisma.$VisualizationPayload, S>
+
+  type VisualizationCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<VisualizationFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: VisualizationCountAggregateInputType | true
+    }
+
+  export interface VisualizationDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['Visualization'], meta: { name: 'Visualization' } }
+    /**
+     * Find zero or one Visualization that matches the filter.
+     * @param {VisualizationFindUniqueArgs} args - Arguments to find a Visualization
+     * @example
+     * // Get one Visualization
+     * const visualization = await prisma.visualization.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends VisualizationFindUniqueArgs>(args: SelectSubset<T, VisualizationFindUniqueArgs<ExtArgs>>): Prisma__VisualizationClient<$Result.GetResult<Prisma.$VisualizationPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one Visualization that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {VisualizationFindUniqueOrThrowArgs} args - Arguments to find a Visualization
+     * @example
+     * // Get one Visualization
+     * const visualization = await prisma.visualization.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends VisualizationFindUniqueOrThrowArgs>(args: SelectSubset<T, VisualizationFindUniqueOrThrowArgs<ExtArgs>>): Prisma__VisualizationClient<$Result.GetResult<Prisma.$VisualizationPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first Visualization that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {VisualizationFindFirstArgs} args - Arguments to find a Visualization
+     * @example
+     * // Get one Visualization
+     * const visualization = await prisma.visualization.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends VisualizationFindFirstArgs>(args?: SelectSubset<T, VisualizationFindFirstArgs<ExtArgs>>): Prisma__VisualizationClient<$Result.GetResult<Prisma.$VisualizationPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first Visualization that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {VisualizationFindFirstOrThrowArgs} args - Arguments to find a Visualization
+     * @example
+     * // Get one Visualization
+     * const visualization = await prisma.visualization.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends VisualizationFindFirstOrThrowArgs>(args?: SelectSubset<T, VisualizationFindFirstOrThrowArgs<ExtArgs>>): Prisma__VisualizationClient<$Result.GetResult<Prisma.$VisualizationPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more Visualizations that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {VisualizationFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all Visualizations
+     * const visualizations = await prisma.visualization.findMany()
+     * 
+     * // Get first 10 Visualizations
+     * const visualizations = await prisma.visualization.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const visualizationWithIdOnly = await prisma.visualization.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends VisualizationFindManyArgs>(args?: SelectSubset<T, VisualizationFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$VisualizationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a Visualization.
+     * @param {VisualizationCreateArgs} args - Arguments to create a Visualization.
+     * @example
+     * // Create one Visualization
+     * const Visualization = await prisma.visualization.create({
+     *   data: {
+     *     // ... data to create a Visualization
+     *   }
+     * })
+     * 
+     */
+    create<T extends VisualizationCreateArgs>(args: SelectSubset<T, VisualizationCreateArgs<ExtArgs>>): Prisma__VisualizationClient<$Result.GetResult<Prisma.$VisualizationPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many Visualizations.
+     * @param {VisualizationCreateManyArgs} args - Arguments to create many Visualizations.
+     * @example
+     * // Create many Visualizations
+     * const visualization = await prisma.visualization.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends VisualizationCreateManyArgs>(args?: SelectSubset<T, VisualizationCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Delete a Visualization.
+     * @param {VisualizationDeleteArgs} args - Arguments to delete one Visualization.
+     * @example
+     * // Delete one Visualization
+     * const Visualization = await prisma.visualization.delete({
+     *   where: {
+     *     // ... filter to delete one Visualization
+     *   }
+     * })
+     * 
+     */
+    delete<T extends VisualizationDeleteArgs>(args: SelectSubset<T, VisualizationDeleteArgs<ExtArgs>>): Prisma__VisualizationClient<$Result.GetResult<Prisma.$VisualizationPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one Visualization.
+     * @param {VisualizationUpdateArgs} args - Arguments to update one Visualization.
+     * @example
+     * // Update one Visualization
+     * const visualization = await prisma.visualization.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends VisualizationUpdateArgs>(args: SelectSubset<T, VisualizationUpdateArgs<ExtArgs>>): Prisma__VisualizationClient<$Result.GetResult<Prisma.$VisualizationPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more Visualizations.
+     * @param {VisualizationDeleteManyArgs} args - Arguments to filter Visualizations to delete.
+     * @example
+     * // Delete a few Visualizations
+     * const { count } = await prisma.visualization.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends VisualizationDeleteManyArgs>(args?: SelectSubset<T, VisualizationDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more Visualizations.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {VisualizationUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many Visualizations
+     * const visualization = await prisma.visualization.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends VisualizationUpdateManyArgs>(args: SelectSubset<T, VisualizationUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create or update one Visualization.
+     * @param {VisualizationUpsertArgs} args - Arguments to update or create a Visualization.
+     * @example
+     * // Update or create a Visualization
+     * const visualization = await prisma.visualization.upsert({
+     *   create: {
+     *     // ... data to create a Visualization
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the Visualization we want to update
+     *   }
+     * })
+     */
+    upsert<T extends VisualizationUpsertArgs>(args: SelectSubset<T, VisualizationUpsertArgs<ExtArgs>>): Prisma__VisualizationClient<$Result.GetResult<Prisma.$VisualizationPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more Visualizations that matches the filter.
+     * @param {VisualizationFindRawArgs} args - Select which filters you would like to apply.
+     * @example
+     * const visualization = await prisma.visualization.findRaw({
+     *   filter: { age: { $gt: 25 } }
+     * })
+     */
+    findRaw(args?: VisualizationFindRawArgs): Prisma.PrismaPromise<JsonObject>
+
+    /**
+     * Perform aggregation operations on a Visualization.
+     * @param {VisualizationAggregateRawArgs} args - Select which aggregations you would like to apply.
+     * @example
+     * const visualization = await prisma.visualization.aggregateRaw({
+     *   pipeline: [
+     *     { $match: { status: "registered" } },
+     *     { $group: { _id: "$country", total: { $sum: 1 } } }
+     *   ]
+     * })
+     */
+    aggregateRaw(args?: VisualizationAggregateRawArgs): Prisma.PrismaPromise<JsonObject>
+
+
+    /**
+     * Count the number of Visualizations.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {VisualizationCountArgs} args - Arguments to filter Visualizations to count.
+     * @example
+     * // Count the number of Visualizations
+     * const count = await prisma.visualization.count({
+     *   where: {
+     *     // ... the filter for the Visualizations we want to count
+     *   }
+     * })
+    **/
+    count<T extends VisualizationCountArgs>(
+      args?: Subset<T, VisualizationCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], VisualizationCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a Visualization.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {VisualizationAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends VisualizationAggregateArgs>(args: Subset<T, VisualizationAggregateArgs>): Prisma.PrismaPromise<GetVisualizationAggregateType<T>>
+
+    /**
+     * Group by Visualization.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {VisualizationGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends VisualizationGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: VisualizationGroupByArgs['orderBy'] }
+        : { orderBy?: VisualizationGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, VisualizationGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetVisualizationGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the Visualization model
+   */
+  readonly fields: VisualizationFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for Visualization.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__VisualizationClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    message<T extends MessageDefaultArgs<ExtArgs> = {}>(args?: Subset<T, MessageDefaultArgs<ExtArgs>>): Prisma__MessageClient<$Result.GetResult<Prisma.$MessagePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the Visualization model
+   */
+  interface VisualizationFieldRefs {
+    readonly id: FieldRef<"Visualization", 'String'>
+    readonly messageId: FieldRef<"Visualization", 'String'>
+    readonly name: FieldRef<"Visualization", 'String'>
+    readonly args: FieldRef<"Visualization", 'Json'>
+    readonly order: FieldRef<"Visualization", 'Int'>
+    readonly createdAt: FieldRef<"Visualization", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * Visualization findUnique
+   */
+  export type VisualizationFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Visualization
+     */
+    select?: VisualizationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Visualization
+     */
+    omit?: VisualizationOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: VisualizationInclude<ExtArgs> | null
+    /**
+     * Filter, which Visualization to fetch.
+     */
+    where: VisualizationWhereUniqueInput
+  }
+
+  /**
+   * Visualization findUniqueOrThrow
+   */
+  export type VisualizationFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Visualization
+     */
+    select?: VisualizationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Visualization
+     */
+    omit?: VisualizationOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: VisualizationInclude<ExtArgs> | null
+    /**
+     * Filter, which Visualization to fetch.
+     */
+    where: VisualizationWhereUniqueInput
+  }
+
+  /**
+   * Visualization findFirst
+   */
+  export type VisualizationFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Visualization
+     */
+    select?: VisualizationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Visualization
+     */
+    omit?: VisualizationOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: VisualizationInclude<ExtArgs> | null
+    /**
+     * Filter, which Visualization to fetch.
+     */
+    where?: VisualizationWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Visualizations to fetch.
+     */
+    orderBy?: VisualizationOrderByWithRelationInput | VisualizationOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for Visualizations.
+     */
+    cursor?: VisualizationWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Visualizations from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Visualizations.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of Visualizations.
+     */
+    distinct?: VisualizationScalarFieldEnum | VisualizationScalarFieldEnum[]
+  }
+
+  /**
+   * Visualization findFirstOrThrow
+   */
+  export type VisualizationFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Visualization
+     */
+    select?: VisualizationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Visualization
+     */
+    omit?: VisualizationOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: VisualizationInclude<ExtArgs> | null
+    /**
+     * Filter, which Visualization to fetch.
+     */
+    where?: VisualizationWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Visualizations to fetch.
+     */
+    orderBy?: VisualizationOrderByWithRelationInput | VisualizationOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for Visualizations.
+     */
+    cursor?: VisualizationWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Visualizations from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Visualizations.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of Visualizations.
+     */
+    distinct?: VisualizationScalarFieldEnum | VisualizationScalarFieldEnum[]
+  }
+
+  /**
+   * Visualization findMany
+   */
+  export type VisualizationFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Visualization
+     */
+    select?: VisualizationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Visualization
+     */
+    omit?: VisualizationOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: VisualizationInclude<ExtArgs> | null
+    /**
+     * Filter, which Visualizations to fetch.
+     */
+    where?: VisualizationWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Visualizations to fetch.
+     */
+    orderBy?: VisualizationOrderByWithRelationInput | VisualizationOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing Visualizations.
+     */
+    cursor?: VisualizationWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Visualizations from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Visualizations.
+     */
+    skip?: number
+    distinct?: VisualizationScalarFieldEnum | VisualizationScalarFieldEnum[]
+  }
+
+  /**
+   * Visualization create
+   */
+  export type VisualizationCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Visualization
+     */
+    select?: VisualizationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Visualization
+     */
+    omit?: VisualizationOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: VisualizationInclude<ExtArgs> | null
+    /**
+     * The data needed to create a Visualization.
+     */
+    data: XOR<VisualizationCreateInput, VisualizationUncheckedCreateInput>
+  }
+
+  /**
+   * Visualization createMany
+   */
+  export type VisualizationCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many Visualizations.
+     */
+    data: VisualizationCreateManyInput | VisualizationCreateManyInput[]
+  }
+
+  /**
+   * Visualization update
+   */
+  export type VisualizationUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Visualization
+     */
+    select?: VisualizationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Visualization
+     */
+    omit?: VisualizationOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: VisualizationInclude<ExtArgs> | null
+    /**
+     * The data needed to update a Visualization.
+     */
+    data: XOR<VisualizationUpdateInput, VisualizationUncheckedUpdateInput>
+    /**
+     * Choose, which Visualization to update.
+     */
+    where: VisualizationWhereUniqueInput
+  }
+
+  /**
+   * Visualization updateMany
+   */
+  export type VisualizationUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update Visualizations.
+     */
+    data: XOR<VisualizationUpdateManyMutationInput, VisualizationUncheckedUpdateManyInput>
+    /**
+     * Filter which Visualizations to update
+     */
+    where?: VisualizationWhereInput
+    /**
+     * Limit how many Visualizations to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * Visualization upsert
+   */
+  export type VisualizationUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Visualization
+     */
+    select?: VisualizationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Visualization
+     */
+    omit?: VisualizationOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: VisualizationInclude<ExtArgs> | null
+    /**
+     * The filter to search for the Visualization to update in case it exists.
+     */
+    where: VisualizationWhereUniqueInput
+    /**
+     * In case the Visualization found by the `where` argument doesn't exist, create a new Visualization with this data.
+     */
+    create: XOR<VisualizationCreateInput, VisualizationUncheckedCreateInput>
+    /**
+     * In case the Visualization was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<VisualizationUpdateInput, VisualizationUncheckedUpdateInput>
+  }
+
+  /**
+   * Visualization delete
+   */
+  export type VisualizationDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Visualization
+     */
+    select?: VisualizationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Visualization
+     */
+    omit?: VisualizationOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: VisualizationInclude<ExtArgs> | null
+    /**
+     * Filter which Visualization to delete.
+     */
+    where: VisualizationWhereUniqueInput
+  }
+
+  /**
+   * Visualization deleteMany
+   */
+  export type VisualizationDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which Visualizations to delete
+     */
+    where?: VisualizationWhereInput
+    /**
+     * Limit how many Visualizations to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * Visualization findRaw
+   */
+  export type VisualizationFindRawArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The query predicate filter. If unspecified, then all documents in the collection will match the predicate. ${@link https://docs.mongodb.com/manual/reference/operator/query MongoDB Docs}.
+     */
+    filter?: InputJsonValue
+    /**
+     * Additional options to pass to the `find` command ${@link https://docs.mongodb.com/manual/reference/command/find/#command-fields MongoDB Docs}.
+     */
+    options?: InputJsonValue
+  }
+
+  /**
+   * Visualization aggregateRaw
+   */
+  export type VisualizationAggregateRawArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * An array of aggregation stages to process and transform the document stream via the aggregation pipeline. ${@link https://docs.mongodb.com/manual/reference/operator/aggregation-pipeline MongoDB Docs}.
+     */
+    pipeline?: InputJsonValue[]
+    /**
+     * Additional options to pass to the `aggregate` command ${@link https://docs.mongodb.com/manual/reference/command/aggregate/#command-fields MongoDB Docs}.
+     */
+    options?: InputJsonValue
+  }
+
+  /**
+   * Visualization without action
+   */
+  export type VisualizationDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Visualization
+     */
+    select?: VisualizationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Visualization
+     */
+    omit?: VisualizationOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: VisualizationInclude<ExtArgs> | null
   }
 
 
@@ -6505,6 +7677,18 @@ export namespace Prisma {
   export type MessageScalarFieldEnum = (typeof MessageScalarFieldEnum)[keyof typeof MessageScalarFieldEnum]
 
 
+  export const VisualizationScalarFieldEnum: {
+    id: 'id',
+    messageId: 'messageId',
+    name: 'name',
+    args: 'args',
+    order: 'order',
+    createdAt: 'createdAt'
+  };
+
+  export type VisualizationScalarFieldEnum = (typeof VisualizationScalarFieldEnum)[keyof typeof VisualizationScalarFieldEnum]
+
+
   export const AiModelScalarFieldEnum: {
     id: 'id',
     name: 'name',
@@ -6586,6 +7770,13 @@ export namespace Prisma {
    * Reference to a field of type 'Boolean'
    */
   export type BooleanFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Boolean'>
+    
+
+
+  /**
+   * Reference to a field of type 'Json'
+   */
+  export type JsonFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Json'>
     
 
 
@@ -6752,6 +7943,7 @@ export namespace Prisma {
     createdAt?: DateTimeFilter<"Message"> | Date | string
     updatedAt?: DateTimeNullableFilter<"Message"> | Date | string | null
     conversation?: XOR<ConversationScalarRelationFilter, ConversationWhereInput>
+    visualizations?: VisualizationListRelationFilter
   }
 
   export type MessageOrderByWithRelationInput = {
@@ -6764,6 +7956,7 @@ export namespace Prisma {
     createdAt?: SortOrder
     updatedAt?: SortOrder
     conversation?: ConversationOrderByWithRelationInput
+    visualizations?: VisualizationOrderByRelationAggregateInput
   }
 
   export type MessageWhereUniqueInput = Prisma.AtLeast<{
@@ -6779,6 +7972,7 @@ export namespace Prisma {
     createdAt?: DateTimeFilter<"Message"> | Date | string
     updatedAt?: DateTimeNullableFilter<"Message"> | Date | string | null
     conversation?: XOR<ConversationScalarRelationFilter, ConversationWhereInput>
+    visualizations?: VisualizationListRelationFilter
   }, "id">
 
   export type MessageOrderByWithAggregationInput = {
@@ -6805,6 +7999,68 @@ export namespace Prisma {
     isError?: BoolWithAggregatesFilter<"Message"> | boolean
     createdAt?: DateTimeWithAggregatesFilter<"Message"> | Date | string
     updatedAt?: DateTimeNullableWithAggregatesFilter<"Message"> | Date | string | null
+  }
+
+  export type VisualizationWhereInput = {
+    AND?: VisualizationWhereInput | VisualizationWhereInput[]
+    OR?: VisualizationWhereInput[]
+    NOT?: VisualizationWhereInput | VisualizationWhereInput[]
+    id?: StringFilter<"Visualization"> | string
+    messageId?: StringFilter<"Visualization"> | string
+    name?: StringFilter<"Visualization"> | string
+    args?: JsonFilter<"Visualization">
+    order?: IntFilter<"Visualization"> | number
+    createdAt?: DateTimeFilter<"Visualization"> | Date | string
+    message?: XOR<MessageScalarRelationFilter, MessageWhereInput>
+  }
+
+  export type VisualizationOrderByWithRelationInput = {
+    id?: SortOrder
+    messageId?: SortOrder
+    name?: SortOrder
+    args?: SortOrder
+    order?: SortOrder
+    createdAt?: SortOrder
+    message?: MessageOrderByWithRelationInput
+  }
+
+  export type VisualizationWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    AND?: VisualizationWhereInput | VisualizationWhereInput[]
+    OR?: VisualizationWhereInput[]
+    NOT?: VisualizationWhereInput | VisualizationWhereInput[]
+    messageId?: StringFilter<"Visualization"> | string
+    name?: StringFilter<"Visualization"> | string
+    args?: JsonFilter<"Visualization">
+    order?: IntFilter<"Visualization"> | number
+    createdAt?: DateTimeFilter<"Visualization"> | Date | string
+    message?: XOR<MessageScalarRelationFilter, MessageWhereInput>
+  }, "id">
+
+  export type VisualizationOrderByWithAggregationInput = {
+    id?: SortOrder
+    messageId?: SortOrder
+    name?: SortOrder
+    args?: SortOrder
+    order?: SortOrder
+    createdAt?: SortOrder
+    _count?: VisualizationCountOrderByAggregateInput
+    _avg?: VisualizationAvgOrderByAggregateInput
+    _max?: VisualizationMaxOrderByAggregateInput
+    _min?: VisualizationMinOrderByAggregateInput
+    _sum?: VisualizationSumOrderByAggregateInput
+  }
+
+  export type VisualizationScalarWhereWithAggregatesInput = {
+    AND?: VisualizationScalarWhereWithAggregatesInput | VisualizationScalarWhereWithAggregatesInput[]
+    OR?: VisualizationScalarWhereWithAggregatesInput[]
+    NOT?: VisualizationScalarWhereWithAggregatesInput | VisualizationScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"Visualization"> | string
+    messageId?: StringWithAggregatesFilter<"Visualization"> | string
+    name?: StringWithAggregatesFilter<"Visualization"> | string
+    args?: JsonWithAggregatesFilter<"Visualization">
+    order?: IntWithAggregatesFilter<"Visualization"> | number
+    createdAt?: DateTimeWithAggregatesFilter<"Visualization"> | Date | string
   }
 
   export type AiModelWhereInput = {
@@ -7077,6 +8333,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string | null
     conversation: ConversationCreateNestedOneWithoutMessagesInput
+    visualizations?: VisualizationCreateNestedManyWithoutMessageInput
   }
 
   export type MessageUncheckedCreateInput = {
@@ -7088,6 +8345,7 @@ export namespace Prisma {
     isError?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string | null
+    visualizations?: VisualizationUncheckedCreateNestedManyWithoutMessageInput
   }
 
   export type MessageUpdateInput = {
@@ -7098,6 +8356,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     conversation?: ConversationUpdateOneRequiredWithoutMessagesNestedInput
+    visualizations?: VisualizationUpdateManyWithoutMessageNestedInput
   }
 
   export type MessageUncheckedUpdateInput = {
@@ -7108,6 +8367,7 @@ export namespace Prisma {
     isError?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    visualizations?: VisualizationUncheckedUpdateManyWithoutMessageNestedInput
   }
 
   export type MessageCreateManyInput = {
@@ -7138,6 +8398,64 @@ export namespace Prisma {
     isError?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type VisualizationCreateInput = {
+    id?: string
+    name: string
+    args: InputJsonValue
+    order?: number
+    createdAt?: Date | string
+    message: MessageCreateNestedOneWithoutVisualizationsInput
+  }
+
+  export type VisualizationUncheckedCreateInput = {
+    id?: string
+    messageId: string
+    name: string
+    args: InputJsonValue
+    order?: number
+    createdAt?: Date | string
+  }
+
+  export type VisualizationUpdateInput = {
+    name?: StringFieldUpdateOperationsInput | string
+    args?: InputJsonValue | InputJsonValue
+    order?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    message?: MessageUpdateOneRequiredWithoutVisualizationsNestedInput
+  }
+
+  export type VisualizationUncheckedUpdateInput = {
+    messageId?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    args?: InputJsonValue | InputJsonValue
+    order?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type VisualizationCreateManyInput = {
+    id?: string
+    messageId: string
+    name: string
+    args: InputJsonValue
+    order?: number
+    createdAt?: Date | string
+  }
+
+  export type VisualizationUpdateManyMutationInput = {
+    name?: StringFieldUpdateOperationsInput | string
+    args?: InputJsonValue | InputJsonValue
+    order?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type VisualizationUncheckedUpdateManyInput = {
+    messageId?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    args?: InputJsonValue | InputJsonValue
+    order?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type AiModelCreateInput = {
@@ -7524,7 +8842,17 @@ export namespace Prisma {
     isNot?: ConversationWhereInput
   }
 
+  export type VisualizationListRelationFilter = {
+    every?: VisualizationWhereInput
+    some?: VisualizationWhereInput
+    none?: VisualizationWhereInput
+  }
+
   export type AttachmentOrderByCompositeAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type VisualizationOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -7564,6 +8892,96 @@ export namespace Prisma {
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedBoolFilter<$PrismaModel>
     _max?: NestedBoolFilter<$PrismaModel>
+  }
+  export type JsonFilter<$PrismaModel = never> =
+    | PatchUndefined<
+        Either<Required<JsonFilterBase<$PrismaModel>>, Exclude<keyof Required<JsonFilterBase<$PrismaModel>>, 'path'>>,
+        Required<JsonFilterBase<$PrismaModel>>
+      >
+    | OptionalFlat<Omit<Required<JsonFilterBase<$PrismaModel>>, 'path'>>
+
+  export type JsonFilterBase<$PrismaModel = never> = {
+    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+  }
+
+  export type IntFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel>
+    in?: number[] | ListIntFieldRefInput<$PrismaModel>
+    notIn?: number[] | ListIntFieldRefInput<$PrismaModel>
+    lt?: number | IntFieldRefInput<$PrismaModel>
+    lte?: number | IntFieldRefInput<$PrismaModel>
+    gt?: number | IntFieldRefInput<$PrismaModel>
+    gte?: number | IntFieldRefInput<$PrismaModel>
+    not?: NestedIntFilter<$PrismaModel> | number
+  }
+
+  export type MessageScalarRelationFilter = {
+    is?: MessageWhereInput
+    isNot?: MessageWhereInput
+  }
+
+  export type VisualizationCountOrderByAggregateInput = {
+    id?: SortOrder
+    messageId?: SortOrder
+    name?: SortOrder
+    args?: SortOrder
+    order?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type VisualizationAvgOrderByAggregateInput = {
+    order?: SortOrder
+  }
+
+  export type VisualizationMaxOrderByAggregateInput = {
+    id?: SortOrder
+    messageId?: SortOrder
+    name?: SortOrder
+    order?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type VisualizationMinOrderByAggregateInput = {
+    id?: SortOrder
+    messageId?: SortOrder
+    name?: SortOrder
+    order?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type VisualizationSumOrderByAggregateInput = {
+    order?: SortOrder
+  }
+  export type JsonWithAggregatesFilter<$PrismaModel = never> =
+    | PatchUndefined<
+        Either<Required<JsonWithAggregatesFilterBase<$PrismaModel>>, Exclude<keyof Required<JsonWithAggregatesFilterBase<$PrismaModel>>, 'path'>>,
+        Required<JsonWithAggregatesFilterBase<$PrismaModel>>
+      >
+    | OptionalFlat<Omit<Required<JsonWithAggregatesFilterBase<$PrismaModel>>, 'path'>>
+
+  export type JsonWithAggregatesFilterBase<$PrismaModel = never> = {
+    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedJsonFilter<$PrismaModel>
+    _max?: NestedJsonFilter<$PrismaModel>
+  }
+
+  export type IntWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel>
+    in?: number[] | ListIntFieldRefInput<$PrismaModel>
+    notIn?: number[] | ListIntFieldRefInput<$PrismaModel>
+    lt?: number | IntFieldRefInput<$PrismaModel>
+    lte?: number | IntFieldRefInput<$PrismaModel>
+    gt?: number | IntFieldRefInput<$PrismaModel>
+    gte?: number | IntFieldRefInput<$PrismaModel>
+    not?: NestedIntWithAggregatesFilter<$PrismaModel> | number
+    _count?: NestedIntFilter<$PrismaModel>
+    _avg?: NestedFloatFilter<$PrismaModel>
+    _sum?: NestedIntFilter<$PrismaModel>
+    _min?: NestedIntFilter<$PrismaModel>
+    _max?: NestedIntFilter<$PrismaModel>
   }
 
   export type AiModelCountOrderByAggregateInput = {
@@ -7887,6 +9305,20 @@ export namespace Prisma {
     connect?: ConversationWhereUniqueInput
   }
 
+  export type VisualizationCreateNestedManyWithoutMessageInput = {
+    create?: XOR<VisualizationCreateWithoutMessageInput, VisualizationUncheckedCreateWithoutMessageInput> | VisualizationCreateWithoutMessageInput[] | VisualizationUncheckedCreateWithoutMessageInput[]
+    connectOrCreate?: VisualizationCreateOrConnectWithoutMessageInput | VisualizationCreateOrConnectWithoutMessageInput[]
+    createMany?: VisualizationCreateManyMessageInputEnvelope
+    connect?: VisualizationWhereUniqueInput | VisualizationWhereUniqueInput[]
+  }
+
+  export type VisualizationUncheckedCreateNestedManyWithoutMessageInput = {
+    create?: XOR<VisualizationCreateWithoutMessageInput, VisualizationUncheckedCreateWithoutMessageInput> | VisualizationCreateWithoutMessageInput[] | VisualizationUncheckedCreateWithoutMessageInput[]
+    connectOrCreate?: VisualizationCreateOrConnectWithoutMessageInput | VisualizationCreateOrConnectWithoutMessageInput[]
+    createMany?: VisualizationCreateManyMessageInputEnvelope
+    connect?: VisualizationWhereUniqueInput | VisualizationWhereUniqueInput[]
+  }
+
   export type AttachmentListUpdateEnvelopeInput = {
     set?: AttachmentCreateInput | AttachmentCreateInput[]
     push?: AttachmentCreateInput | AttachmentCreateInput[]
@@ -7904,6 +9336,56 @@ export namespace Prisma {
     upsert?: ConversationUpsertWithoutMessagesInput
     connect?: ConversationWhereUniqueInput
     update?: XOR<XOR<ConversationUpdateToOneWithWhereWithoutMessagesInput, ConversationUpdateWithoutMessagesInput>, ConversationUncheckedUpdateWithoutMessagesInput>
+  }
+
+  export type VisualizationUpdateManyWithoutMessageNestedInput = {
+    create?: XOR<VisualizationCreateWithoutMessageInput, VisualizationUncheckedCreateWithoutMessageInput> | VisualizationCreateWithoutMessageInput[] | VisualizationUncheckedCreateWithoutMessageInput[]
+    connectOrCreate?: VisualizationCreateOrConnectWithoutMessageInput | VisualizationCreateOrConnectWithoutMessageInput[]
+    upsert?: VisualizationUpsertWithWhereUniqueWithoutMessageInput | VisualizationUpsertWithWhereUniqueWithoutMessageInput[]
+    createMany?: VisualizationCreateManyMessageInputEnvelope
+    set?: VisualizationWhereUniqueInput | VisualizationWhereUniqueInput[]
+    disconnect?: VisualizationWhereUniqueInput | VisualizationWhereUniqueInput[]
+    delete?: VisualizationWhereUniqueInput | VisualizationWhereUniqueInput[]
+    connect?: VisualizationWhereUniqueInput | VisualizationWhereUniqueInput[]
+    update?: VisualizationUpdateWithWhereUniqueWithoutMessageInput | VisualizationUpdateWithWhereUniqueWithoutMessageInput[]
+    updateMany?: VisualizationUpdateManyWithWhereWithoutMessageInput | VisualizationUpdateManyWithWhereWithoutMessageInput[]
+    deleteMany?: VisualizationScalarWhereInput | VisualizationScalarWhereInput[]
+  }
+
+  export type VisualizationUncheckedUpdateManyWithoutMessageNestedInput = {
+    create?: XOR<VisualizationCreateWithoutMessageInput, VisualizationUncheckedCreateWithoutMessageInput> | VisualizationCreateWithoutMessageInput[] | VisualizationUncheckedCreateWithoutMessageInput[]
+    connectOrCreate?: VisualizationCreateOrConnectWithoutMessageInput | VisualizationCreateOrConnectWithoutMessageInput[]
+    upsert?: VisualizationUpsertWithWhereUniqueWithoutMessageInput | VisualizationUpsertWithWhereUniqueWithoutMessageInput[]
+    createMany?: VisualizationCreateManyMessageInputEnvelope
+    set?: VisualizationWhereUniqueInput | VisualizationWhereUniqueInput[]
+    disconnect?: VisualizationWhereUniqueInput | VisualizationWhereUniqueInput[]
+    delete?: VisualizationWhereUniqueInput | VisualizationWhereUniqueInput[]
+    connect?: VisualizationWhereUniqueInput | VisualizationWhereUniqueInput[]
+    update?: VisualizationUpdateWithWhereUniqueWithoutMessageInput | VisualizationUpdateWithWhereUniqueWithoutMessageInput[]
+    updateMany?: VisualizationUpdateManyWithWhereWithoutMessageInput | VisualizationUpdateManyWithWhereWithoutMessageInput[]
+    deleteMany?: VisualizationScalarWhereInput | VisualizationScalarWhereInput[]
+  }
+
+  export type MessageCreateNestedOneWithoutVisualizationsInput = {
+    create?: XOR<MessageCreateWithoutVisualizationsInput, MessageUncheckedCreateWithoutVisualizationsInput>
+    connectOrCreate?: MessageCreateOrConnectWithoutVisualizationsInput
+    connect?: MessageWhereUniqueInput
+  }
+
+  export type IntFieldUpdateOperationsInput = {
+    set?: number
+    increment?: number
+    decrement?: number
+    multiply?: number
+    divide?: number
+  }
+
+  export type MessageUpdateOneRequiredWithoutVisualizationsNestedInput = {
+    create?: XOR<MessageCreateWithoutVisualizationsInput, MessageUncheckedCreateWithoutVisualizationsInput>
+    connectOrCreate?: MessageCreateOrConnectWithoutVisualizationsInput
+    upsert?: MessageUpsertWithoutVisualizationsInput
+    connect?: MessageWhereUniqueInput
+    update?: XOR<XOR<MessageUpdateToOneWithWhereWithoutVisualizationsInput, MessageUpdateWithoutVisualizationsInput>, MessageUncheckedUpdateWithoutVisualizationsInput>
   }
 
   export type UserCreateNestedOneWithoutModelsInput = {
@@ -8104,6 +9586,44 @@ export namespace Prisma {
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedBoolFilter<$PrismaModel>
     _max?: NestedBoolFilter<$PrismaModel>
+  }
+  export type NestedJsonFilter<$PrismaModel = never> =
+    | PatchUndefined<
+        Either<Required<NestedJsonFilterBase<$PrismaModel>>, Exclude<keyof Required<NestedJsonFilterBase<$PrismaModel>>, 'path'>>,
+        Required<NestedJsonFilterBase<$PrismaModel>>
+      >
+    | OptionalFlat<Omit<Required<NestedJsonFilterBase<$PrismaModel>>, 'path'>>
+
+  export type NestedJsonFilterBase<$PrismaModel = never> = {
+    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+  }
+
+  export type NestedIntWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel>
+    in?: number[] | ListIntFieldRefInput<$PrismaModel>
+    notIn?: number[] | ListIntFieldRefInput<$PrismaModel>
+    lt?: number | IntFieldRefInput<$PrismaModel>
+    lte?: number | IntFieldRefInput<$PrismaModel>
+    gt?: number | IntFieldRefInput<$PrismaModel>
+    gte?: number | IntFieldRefInput<$PrismaModel>
+    not?: NestedIntWithAggregatesFilter<$PrismaModel> | number
+    _count?: NestedIntFilter<$PrismaModel>
+    _avg?: NestedFloatFilter<$PrismaModel>
+    _sum?: NestedIntFilter<$PrismaModel>
+    _min?: NestedIntFilter<$PrismaModel>
+    _max?: NestedIntFilter<$PrismaModel>
+  }
+
+  export type NestedFloatFilter<$PrismaModel = never> = {
+    equals?: number | FloatFieldRefInput<$PrismaModel>
+    in?: number[] | ListFloatFieldRefInput<$PrismaModel>
+    notIn?: number[] | ListFloatFieldRefInput<$PrismaModel>
+    lt?: number | FloatFieldRefInput<$PrismaModel>
+    lte?: number | FloatFieldRefInput<$PrismaModel>
+    gt?: number | FloatFieldRefInput<$PrismaModel>
+    gte?: number | FloatFieldRefInput<$PrismaModel>
+    not?: NestedFloatFilter<$PrismaModel> | number
   }
 
   export type NestedIntNullableWithAggregatesFilter<$PrismaModel = never> = {
@@ -8338,6 +9858,7 @@ export namespace Prisma {
     isError?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string | null
+    visualizations?: VisualizationCreateNestedManyWithoutMessageInput
   }
 
   export type MessageUncheckedCreateWithoutConversationInput = {
@@ -8348,6 +9869,7 @@ export namespace Prisma {
     isError?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string | null
+    visualizations?: VisualizationUncheckedCreateNestedManyWithoutMessageInput
   }
 
   export type MessageCreateOrConnectWithoutConversationInput = {
@@ -8438,6 +9960,31 @@ export namespace Prisma {
     create: XOR<ConversationCreateWithoutMessagesInput, ConversationUncheckedCreateWithoutMessagesInput>
   }
 
+  export type VisualizationCreateWithoutMessageInput = {
+    id?: string
+    name: string
+    args: InputJsonValue
+    order?: number
+    createdAt?: Date | string
+  }
+
+  export type VisualizationUncheckedCreateWithoutMessageInput = {
+    id?: string
+    name: string
+    args: InputJsonValue
+    order?: number
+    createdAt?: Date | string
+  }
+
+  export type VisualizationCreateOrConnectWithoutMessageInput = {
+    where: VisualizationWhereUniqueInput
+    create: XOR<VisualizationCreateWithoutMessageInput, VisualizationUncheckedCreateWithoutMessageInput>
+  }
+
+  export type VisualizationCreateManyMessageInputEnvelope = {
+    data: VisualizationCreateManyMessageInput | VisualizationCreateManyMessageInput[]
+  }
+
   export type AttachmentUpdateManyInput = {
     where: AttachmentWhereInput
     data: AttachmentUpdateInput
@@ -8468,6 +10015,92 @@ export namespace Prisma {
   export type ConversationUncheckedUpdateWithoutMessagesInput = {
     title?: StringFieldUpdateOperationsInput | string
     userId?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type VisualizationUpsertWithWhereUniqueWithoutMessageInput = {
+    where: VisualizationWhereUniqueInput
+    update: XOR<VisualizationUpdateWithoutMessageInput, VisualizationUncheckedUpdateWithoutMessageInput>
+    create: XOR<VisualizationCreateWithoutMessageInput, VisualizationUncheckedCreateWithoutMessageInput>
+  }
+
+  export type VisualizationUpdateWithWhereUniqueWithoutMessageInput = {
+    where: VisualizationWhereUniqueInput
+    data: XOR<VisualizationUpdateWithoutMessageInput, VisualizationUncheckedUpdateWithoutMessageInput>
+  }
+
+  export type VisualizationUpdateManyWithWhereWithoutMessageInput = {
+    where: VisualizationScalarWhereInput
+    data: XOR<VisualizationUpdateManyMutationInput, VisualizationUncheckedUpdateManyWithoutMessageInput>
+  }
+
+  export type VisualizationScalarWhereInput = {
+    AND?: VisualizationScalarWhereInput | VisualizationScalarWhereInput[]
+    OR?: VisualizationScalarWhereInput[]
+    NOT?: VisualizationScalarWhereInput | VisualizationScalarWhereInput[]
+    id?: StringFilter<"Visualization"> | string
+    messageId?: StringFilter<"Visualization"> | string
+    name?: StringFilter<"Visualization"> | string
+    args?: JsonFilter<"Visualization">
+    order?: IntFilter<"Visualization"> | number
+    createdAt?: DateTimeFilter<"Visualization"> | Date | string
+  }
+
+  export type MessageCreateWithoutVisualizationsInput = {
+    id?: string
+    role: string
+    content: string
+    attachments?: XOR<AttachmentListCreateEnvelopeInput, AttachmentCreateInput> | AttachmentCreateInput[]
+    isError?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string | null
+    conversation: ConversationCreateNestedOneWithoutMessagesInput
+  }
+
+  export type MessageUncheckedCreateWithoutVisualizationsInput = {
+    id?: string
+    conversationId: string
+    role: string
+    content: string
+    attachments?: XOR<AttachmentListCreateEnvelopeInput, AttachmentCreateInput> | AttachmentCreateInput[]
+    isError?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string | null
+  }
+
+  export type MessageCreateOrConnectWithoutVisualizationsInput = {
+    where: MessageWhereUniqueInput
+    create: XOR<MessageCreateWithoutVisualizationsInput, MessageUncheckedCreateWithoutVisualizationsInput>
+  }
+
+  export type MessageUpsertWithoutVisualizationsInput = {
+    update: XOR<MessageUpdateWithoutVisualizationsInput, MessageUncheckedUpdateWithoutVisualizationsInput>
+    create: XOR<MessageCreateWithoutVisualizationsInput, MessageUncheckedCreateWithoutVisualizationsInput>
+    where?: MessageWhereInput
+  }
+
+  export type MessageUpdateToOneWithWhereWithoutVisualizationsInput = {
+    where?: MessageWhereInput
+    data: XOR<MessageUpdateWithoutVisualizationsInput, MessageUncheckedUpdateWithoutVisualizationsInput>
+  }
+
+  export type MessageUpdateWithoutVisualizationsInput = {
+    role?: StringFieldUpdateOperationsInput | string
+    content?: StringFieldUpdateOperationsInput | string
+    attachments?: XOR<AttachmentListUpdateEnvelopeInput, AttachmentCreateInput> | AttachmentCreateInput[]
+    isError?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    conversation?: ConversationUpdateOneRequiredWithoutMessagesNestedInput
+  }
+
+  export type MessageUncheckedUpdateWithoutVisualizationsInput = {
+    conversationId?: StringFieldUpdateOperationsInput | string
+    role?: StringFieldUpdateOperationsInput | string
+    content?: StringFieldUpdateOperationsInput | string
+    attachments?: XOR<AttachmentListUpdateEnvelopeInput, AttachmentCreateInput> | AttachmentCreateInput[]
+    isError?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
@@ -8578,17 +10211,6 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     conversations?: ConversationUncheckedUpdateManyWithoutUserNestedInput
     models?: AiModelUncheckedUpdateManyWithoutUserNestedInput
-  }
-
-  export type IntFilter<$PrismaModel = never> = {
-    equals?: number | IntFieldRefInput<$PrismaModel>
-    in?: number[] | ListIntFieldRefInput<$PrismaModel>
-    notIn?: number[] | ListIntFieldRefInput<$PrismaModel>
-    lt?: number | IntFieldRefInput<$PrismaModel>
-    lte?: number | IntFieldRefInput<$PrismaModel>
-    gt?: number | IntFieldRefInput<$PrismaModel>
-    gte?: number | IntFieldRefInput<$PrismaModel>
-    not?: NestedIntFilter<$PrismaModel> | number
   }
 
   export type ConversationCreateManyUserInput = {
@@ -8709,6 +10331,7 @@ export namespace Prisma {
     isError?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    visualizations?: VisualizationUpdateManyWithoutMessageNestedInput
   }
 
   export type MessageUncheckedUpdateWithoutConversationInput = {
@@ -8718,6 +10341,7 @@ export namespace Prisma {
     isError?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    visualizations?: VisualizationUncheckedUpdateManyWithoutMessageNestedInput
   }
 
   export type MessageUncheckedUpdateManyWithoutConversationInput = {
@@ -8729,6 +10353,14 @@ export namespace Prisma {
     updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
 
+  export type VisualizationCreateManyMessageInput = {
+    id?: string
+    name: string
+    args: InputJsonValue
+    order?: number
+    createdAt?: Date | string
+  }
+
   export type AttachmentUpdateInput = {
     url?: StringFieldUpdateOperationsInput | string
     fileName?: StringFieldUpdateOperationsInput | string
@@ -8737,12 +10369,25 @@ export namespace Prisma {
     size?: IntFieldUpdateOperationsInput | number
   }
 
-  export type IntFieldUpdateOperationsInput = {
-    set?: number
-    increment?: number
-    decrement?: number
-    multiply?: number
-    divide?: number
+  export type VisualizationUpdateWithoutMessageInput = {
+    name?: StringFieldUpdateOperationsInput | string
+    args?: InputJsonValue | InputJsonValue
+    order?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type VisualizationUncheckedUpdateWithoutMessageInput = {
+    name?: StringFieldUpdateOperationsInput | string
+    args?: InputJsonValue | InputJsonValue
+    order?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type VisualizationUncheckedUpdateManyWithoutMessageInput = {
+    name?: StringFieldUpdateOperationsInput | string
+    args?: InputJsonValue | InputJsonValue
+    order?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
 

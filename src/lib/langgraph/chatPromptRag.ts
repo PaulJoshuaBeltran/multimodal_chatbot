@@ -10,7 +10,7 @@ import { ALLOWED_EXT, FileType } from '@/src/types/file_upload'
 import path from 'path'
 import { readFile, writeFile, mkdir } from 'fs/promises'
 import { randomUUID } from 'crypto'
-import { loadImageBase64 } from "@/src/app/api/chat/ollama/route";
+import { loadImageBase64 } from "@/src/lib/uploads";
 import { ChatTurn, RagInputType, RetrievedMatch } from "@/src/types/chat";
 
 // Types
@@ -43,6 +43,7 @@ const RagState = Annotation.Root({
   retryExhausted: Annotation<boolean>({ reducer: (_, n) => n, default: () => false }),
 
   // Prompt construction + output
+  skipLlm: Annotation<boolean>({ reducer: (_, n) => n, default: () => false }),
   context: Annotation<string>({ reducer: (_, n) => n, default: () => "" }),
   isFallback: Annotation<boolean>({ reducer: (_, n) => n, default: () => false }),
   prompt: Annotation<string>({ reducer: (_, n) => n, default: () => "" }),
@@ -70,14 +71,8 @@ async function documentLoaderNode(state: RagStateType) {
 
   const UPLOAD_DIR = path.join(process.cwd(), 'data', 'uploads', 'document')
   await mkdir(UPLOAD_DIR, { recursive: true })
-  const safeName = `${randomUUID()}.${ext}`
-  const serverPath = path.join(UPLOAD_DIR, safeName)
 
-  const buffer = await readFile(state.filePath)
-  await writeFile(serverPath, buffer)
-  console.log(`Written ${serverPath}`)
-
-  const rawDocs = await readDocument(serverPath, state.fileType);
+  const rawDocs = await readDocument(state.filePath, state.fileType);
   if (!rawDocs) throw new Error(`documentLoaderNode: unsupported file type "${state.fileType}"`);
 
   const chunks = await splitChunkDocument(rawDocs);
@@ -247,6 +242,7 @@ function promptConstructionNode(state: RagStateType) {
 
 // LLM response
 async function llmResponseNode(state: RagStateType) {
+  if (state.skipLlm) return { response: "" };
   const model = process.env.OLLAMA_DEFAULT_MODEL || "";
   const result = await ollama.chat({
     model,

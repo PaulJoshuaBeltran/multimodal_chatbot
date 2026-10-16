@@ -19,8 +19,9 @@ import { MoreHorizontal, Pencil, Trash2, Copy, RotateCcw, AlertCircle, FileText,
 import { cn } from '@/src/lib/utils'
 import { toast } from "@/src/components/ui/toast"
 import { HastNode } from '@/src/types/hast_nodes'
-import type { Attachment } from '@/src/types/msg_conversation_model'
 import ImagePreviewDialog from '../dialogs/ImagePreviewDialog'
+import { MessageVisualizations } from '@/src/components/tabs/MessageVisualization'
+import type { Attachment, Visualization } from '@/src/types/msg_conversation_model'
 
 function rehypeHighlightQuery({ query }: { query?: string }) {
   return (tree: HastNode): void => {
@@ -214,7 +215,8 @@ export default function MessageBubble({
   onDelete,
   highlightQuery,
   onRegenerate,
-  attachments
+  attachments,
+  visualizations,
 }: {
   role: 'user' | 'assistant'
   id?: string
@@ -224,11 +226,16 @@ export default function MessageBubble({
   highlightQuery?: string
   onRegenerate?: () => void
   attachments?: Attachment[] | null
+  visualizations?: Visualization[] | null
 }) {
   const [menuOpen, setMenuOpen] = useState(false)
+
   const isUser = role === 'user'
   const hasAttachments = !!attachments && attachments.length > 0
   const hasText = content.trim().length > 0
+  const hasViz = !isUser && !!visualizations?.length
+  const showDots = !hasText && !hasViz && !hasAttachments
+
   const imageCount = attachments?.filter((a) => a.fileType === 'image').length ?? 0
   const fileCount = (attachments?.length ?? 0) - imageCount
   const wide = imageCount >= 2 || fileCount >= 2
@@ -333,7 +340,8 @@ export default function MessageBubble({
               isUser && hasAttachments && (wide ? 'w-[38.5rem]' : 'w-80') + ' max-w-full',
               isUser
                 ? 'bg-primary text-primary-foreground rounded-br-sm border border-white'
-                : 'bg-white text-black border rounded-bl-sm'
+                : 'bg-white text-black border rounded-bl-sm',
+              !isUser && !hasText && hasViz && 'hidden',
             )}
           >
             {isUser ? (
@@ -350,14 +358,14 @@ export default function MessageBubble({
                   >
                     {escapePercentInMath(content)}
                   </ReactMarkdown>
-                ) : (
+                ) : showDots ? (
                   /* Instant visual placeholder matching line height while thinking */
                   <div className="flex items-center gap-1 py-0.5">
                     <span className="w-1.5 h-1.5 bg-black/40 rounded-full animate-bounce [animation-delay:-0.3s]" />
                     <span className="w-1.5 h-1.5 bg-black/40 rounded-full animate-bounce [animation-delay:-0.15s]" />
                     <span className="w-1.5 h-1.5 bg-black/40 rounded-full animate-bounce" />
                   </div>
-                )}
+                ) : null }
               </div>
             )}
 
@@ -406,6 +414,12 @@ export default function MessageBubble({
             </div>
           )}
         </div>
+
+        {hasViz && (
+          <div className="mt-1 w-[36rem] max-w-full">
+            <MessageVisualizations calls={visualizations!} />
+          </div>
+        )}
 
         {/* Attachments displayed below message for assistant */}
         {!isUser && hasAttachments && (

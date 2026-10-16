@@ -14,7 +14,8 @@ export async function PATCH(req: Request, { params }: { params: { id: string } |
   if (!m) return new Response(JSON.stringify({ error: 'Not found' }), { status: 404, headers: { 'Content-Type': 'application/json' } })
   const conv = await prisma.conversation.findUnique({ where: { id: m.conversationId } })
   if (!conv || conv.userId !== user.id) return new Response(JSON.stringify({ error: 'Forbidden' }), { status: 403, headers: { 'Content-Type': 'application/json' } })
-  const updated = await prisma.message.update({ where: { id }, data: { content } })
+  const updated = await prisma.message.update({ where: { id }, data: { content },
+                                                include: { visualizations: { orderBy: { order: 'asc' }}}})
   return new Response(JSON.stringify(updated), { status: 200, headers: { 'Content-Type': 'application/json' } })
 }
 

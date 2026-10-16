@@ -21,6 +21,7 @@ export interface GraphInput {
   filePath?: string;
   fileType?: FileType;
   imageBase64?: string;
+  skipLlm?: boolean;
 }
 
 export interface RerankResult {

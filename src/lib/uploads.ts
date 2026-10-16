@@ -1,12 +1,28 @@
 // src/lib/uploads.ts
 import { MIME_TYPES, UploadValidationError } from '@/src/types/file_upload'
 import { fileType } from '@/src/types/msg_conversation_model'
+import { readFile } from 'fs/promises'
 import path from 'path'
 
 export const UPLOAD_DIR = (file_type: string) => path.join(process.cwd(), 'data', 'uploads', file_type)
 
 export const MAX_FILE_SIZE = 25 * 1024 * 1024 // 25MB
 export const MAX_AUDIO_SIZE = 50 * 1024 * 1024 // 50MB — audio files run bigger
+
+export async function loadImageBase64(url: string): Promise<string | null> {
+  try {
+    const filePath = uploadPathFromUrl(url)
+    console.log('Loading image from:', filePath, '| raw url was:', url)
+    const buf = await readFile(filePath)
+    console.log('Image loaded successfully, size:', buf.length, 'bytes')
+
+    // Clean raw base64 string (no data URI header, no newlines)
+    return buf.toString('base64').replace(/[\r\n\s]+/g, '')
+  } catch (err) {
+    console.error('Failed to load image:', url, err)
+    return null
+  }
+}
 
 export function classifyAndValidate(
   file: { type: string; size: number; name: string }

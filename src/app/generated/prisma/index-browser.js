@@ -140,6 +140,15 @@ exports.Prisma.MessageScalarFieldEnum = {
   updatedAt: 'updatedAt'
 };
 
+exports.Prisma.VisualizationScalarFieldEnum = {
+  id: 'id',
+  messageId: 'messageId',
+  name: 'name',
+  args: 'args',
+  order: 'order',
+  createdAt: 'createdAt'
+};
+
 exports.Prisma.AiModelScalarFieldEnum = {
   id: 'id',
   name: 'name',
@@ -177,6 +186,7 @@ exports.Prisma.ModelName = {
   User: 'User',
   Conversation: 'Conversation',
   Message: 'Message',
+  Visualization: 'Visualization',
   AiModel: 'AiModel',
   KnowledgeDocument: 'KnowledgeDocument'
 };

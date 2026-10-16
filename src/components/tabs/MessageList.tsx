@@ -216,6 +216,7 @@ export default function MessageList({
                   onRegenerate={
                     m.role === 'assistant' && onRegenerate ? () => onRegenerate(currentIndex) : undefined
                   }
+                  visualizations={m.visualizations}
                 />
               )
             })}
