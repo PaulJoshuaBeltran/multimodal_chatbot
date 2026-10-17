@@ -1,17 +1,7 @@
 // src/lib/toolcall/registry.ts
 import type { Tool } from "ollama";
-import type { ChatPart } from "@/src/types/chat_parts";
-
-// Types + helpers
-export type Args = Record<string, unknown>;
-type Handler = (args: Args) => string | number | Promise<string | number>;
-type Props = NonNullable<NonNullable<Tool["function"]["parameters"]>["properties"]>;
-
-interface RegisteredTool {
-  name: string;
-  definition: Tool;
-  handler: Handler;
-}
+import type { ChatPart } from "@/src/types/chat";
+import { Args, Handler, Props, RegisteredTool, ToolOutput } from "@/src/types/toolcall";
 
 // Define schema + handler together so the name, schema and function can't drift apart.
 function defineTool(opts: {
@@ -359,8 +349,6 @@ export const chatToolDefinitions: Tool[] = registeredTools
   .filter((t) => isVisualizationTool(t.name))
   .map((t) => t.definition);
 
-export interface ToolOutput { content: string; parts: ChatPart[] }
-
 export async function executeTool(
   name: string,
   args: Args,
@@ -375,7 +363,7 @@ export async function executeTool(
     const out: { content: string; parts?: ChatPart[] } =
       typeof raw === "object" ? raw : { content: String(raw) };
     const parts: ChatPart[] = [...(out.parts ?? [])];
-    // The tool call itself IS the visualization part: args are rendered client-side
+    // args are rendered client-side
     if (isVisualizationTool(name)) parts.unshift({ type: "visualization", name, args });
     return { content: out.content, parts };
   } catch (err) {

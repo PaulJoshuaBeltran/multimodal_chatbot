@@ -16,7 +16,7 @@ import type {
   Attachment,
   Visualization,
 } from '@/src/types/msg_conversation_model'
-import type { StreamEvent, ChatPart } from '@/src/types/chat_parts'
+import type { StreamEvent, ChatPart } from '@/src/types/chat'
 
 import { ChatSidebar } from '../components/sidebar/ChatSidebar'
 import { ChatInput } from '../components/main/ChatInput'

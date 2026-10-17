@@ -3,8 +3,8 @@ import { ollama } from '@/src/lib/ollama'
 import { loadImageBase64 } from '@/src/lib/uploads'
 import type { Message as OllamaMessage, Tool, ToolCall } from 'ollama'
 import type { ProcessedMessage } from '@/src/types/msg_conversation_model'
-import type { IncomingMessage, GraphOutput } from '@/src/types/chat'
-import type { ChatPart, StreamEvent } from '@/src/types/chat_parts'
+import type { IncomingMessage, GraphOutput, ChatChunk, OllamaStream } from '@/src/types/chat'
+import type { ChatPart, StreamEvent } from '@/src/types/chat'
 import { retrieveForDocument, formatDocumentContext } from '@/src/lib/langchain/rag'
 import { evaluateAnswer } from '@/src/lib/langsmith/onlineEval'
 import { chatToolDefinitions, executeTool, type Args } from '@/src/lib/toolcall/registry'
@@ -17,12 +17,6 @@ const TOOLS_UNSUPPORTED = /does not support tools/i
 const VIZ_HINT =
   'When the user asks to chart, plot, tabulate or diagram data, call the matching visualize_* tool ' +
   'instead of describing it in text, then add at most a short comment. Do not repeat the data afterwards.'
-
-type ChatChunk = {
-  message?: { content?: string; tool_calls?: ToolCall[] }
-  content?: string
-  done?: boolean
-}
 
 const startChat = (
   model: string,
@@ -37,7 +31,7 @@ const startChat = (
     ...(tools?.length && { tools }),
     ...(Object.keys(options).length > 0 && { options }),
   })
-type OllamaStream = Awaited<ReturnType<typeof startChat>>
+
 
 const RUNNER_CRASH =
   /llama-server process has terminated|runner process has terminated|0xc0000409|CUDA error/i

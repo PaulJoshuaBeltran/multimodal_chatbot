@@ -4,16 +4,7 @@ import { traceable } from "langsmith/traceable";
 import { ragGraph } from "@/src/lib/langgraph/chatPromptRag";
 import { uploadPathFromUrl } from "@/src/lib/uploads";
 import { ALLOWED_EXT, type FileType } from "@/src/types/file_upload";
-import type { IncomingMessage } from "@/src/types/chat";
-
-type IncomingAttachment = NonNullable<IncomingMessage["attachments"]>[number];
-
-export interface DocumentRagResult {
-  fileName: string;
-  uploadedContent: string;
-  context: string;
-  isFallback: boolean;
-}
+import type { DocumentRagResult, IncomingAttachment } from "@/src/types/chat";
 
 const MAX_DOC_CHARS = Number(process.env.CHAT_MAX_DOC_CHARS ?? 8000);
 

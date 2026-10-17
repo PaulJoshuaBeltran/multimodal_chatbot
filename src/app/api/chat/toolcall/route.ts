@@ -2,7 +2,7 @@
 import { ollama } from "@/src/lib/ollama";
 import type { Message } from "ollama";
 import { allToolDefinitions, executeTool, type Args } from "@/src/lib/toolcall/registry";
-import type { VisualizationPart } from "@/src/types/chat_parts";
+import type { VisualizationPart } from "@/src/types/chat";
 
 export const dynamic = "force-dynamic";
 
